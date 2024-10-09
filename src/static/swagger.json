@@ -1,0 +1,116 @@
+{
+  "openapi": "3.0.3",
+
+  "info": {
+    "title": "Υπουργείο Εσωτερικών",
+    "version": "0.0.1",
+    "description": "Τεκμηρίωση του API τoυ συστήματος παρακολούθησης αρμοδιοτήτων μεταξύ των φορέων της Δημόσιας Διοίκησης.",
+    "contact": {
+      "name": "Υπουργείο Εσωτερικών",
+      "url": "https://www.ypes.gr",
+      "email": "antpsarakis@gmail.com"
+    },
+    "license": {
+      "name": "Άδεια Χρήσης",
+      "url": "https://creativecommons.org/licenses/by/4.0/"
+    }
+  },
+
+  "tags": [
+    {
+      "name": "ΠΣΠΕΔ - Φορείς",
+      "description": "Δεδομένα Φορέων, όπως εμπλουτίζονται στο ΠΣΠΕΔ"
+    },
+
+    {
+      "name": "Δεδομένα Απογραφής - Λεξικά",
+      "description": "Λεξικά που συγχρονίζονται ημερήσια από το API της Απογραφής",
+      "externalDocs": {
+        "description": "Λεξικά Απογραφής",
+        "url": "https://t.ly/-WBAk"
+      }
+    },
+
+    {
+      "name": "Δεδομένα Απογραφής - Φορείς",
+      "description": "Φορείς που συγχρονίζονται ημερήσια από το API της Απογραφής",
+      "externalDocs": {
+        "description": "Φορείς Απογραφής",
+        "url": "https://t.ly/gIFkc"
+      }
+    },
+
+    {
+      "name": "Δεδομένα Απογραφής - Μονάδες",
+      "description": "Μονάδες που συγχρονίζονται ημερήσια από το API της Απογραφής",
+      "externalDocs": {
+        "description": "Μονάδες Απογραφής",
+        "url": "https://t.ly/wX3Dc"
+      }
+    },
+
+    {
+      "name": "Δεδομένα Απογραφής - Στατιστικά",
+      "description": "Στατιστικά των δεδομένων που συγχρονίζονται ημερήσια από το API της Απογραφής"
+    }
+  ],
+
+  "paths": {
+    "/apografi/stats/count": {
+      "$ref": "./apografi/stats_count.json"
+    },
+
+    "/apografi/dictionary/{dictionary}/{id}/description": {
+      "$ref": "./apografi/dictionary_dictionary_id_description.json"
+    },
+
+    "/apografi/dictionary/{dictionary}/{description}/id": {
+      "$ref": "./apografi/dictionary_dictionary_description_id.json"
+    },
+
+    "/apografi/dictionary/{dictionary}": {
+      "$ref": "./apografi/dictionary_dictionary.json"
+    },
+
+    "/apografi/dictionary/{dictionary}/ids": {
+      "$ref": "./apografi/dictionary_dictionary_ids.json"
+    },
+
+    "/apografi/organization/{code}": {
+      "$ref": "./apografi/organization_code.json"
+    },
+
+    "/apografi/organization/{label}/label": {
+      "$ref": "./apografi/organization_label_label.json"
+    },
+
+    "/apografi/organization/{code}/units": {
+      "$ref": "./apografi/organization_code_units.json"
+    },
+
+    "/apografi/organization/{code}/general-directorates": {
+      "$ref": "./apografi/organization_code_general-directorates.json"
+    },
+
+    "/apografi/organization/{code}/{gen_dir_code}/directorates": {
+      "$ref": "./apografi/organization_code_gen_dir_code_directorates.json"
+    },
+
+    "/apografi/organization/{code}/{dir_code}/departments": {
+      "$ref": "./apografi/organization_code_dir_code_departments.json"
+    },
+
+
+    "/psped/foreas/all": {
+      "$ref": "./psped/foreas_all.json"
+    },
+
+    "/psped/foreas/{code}": {
+      "$ref": "./psped/foreas_code.json"
+    },
+
+    "/psped/foreas/{code}/enchanched": {
+      "$ref": "./psped/foreas_code_enchanched.json"
+    }
+  }
+}
