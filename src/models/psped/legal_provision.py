@@ -40,7 +40,7 @@ class LegalProvision(me.Document):
                             "regulatedObject.regulatedObjectType", "regulatedObject.regulatedObjectId", 
                             "legalAct",
                             "legalProvisionSpecs.meros", "legalProvisionSpecs.arthro", "legalProvisionSpecs.paragrafos", "legalProvisionSpecs.edafio", "legalProvisionSpecs.pararthma"
-                        ], "unique": True }
+                        ], "unique": True, "name":"regulatedObject_legalAct_legalProvisionSpecs" }
         ],
     }
 
