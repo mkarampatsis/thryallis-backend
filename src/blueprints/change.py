@@ -95,7 +95,7 @@ def getOrganizations():
         )
 
 @change.route("/<string:code>", methods=["GET"])
-# @jwt_required()
+@jwt_required()
 def retrieve_change_by_code(code):
     print(code)
     changes = Change.objects(__raw__={"$or":[
