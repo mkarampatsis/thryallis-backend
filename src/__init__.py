@@ -20,6 +20,7 @@ from src.blueprints.legal_provision import legal_provision
 from src.blueprints.legal_act import legal_act
 
 from src.blueprints.upload import upload
+from src.blueprints.change import change
 
 from src.config import (
     MONGO_HOST,
@@ -90,3 +91,4 @@ app.register_blueprint(upload, url_prefix="/upload")
 app.register_blueprint(remit, url_prefix="/remit")
 app.register_blueprint(legal_provision, url_prefix="/legal_provision")
 app.register_blueprint(legal_act, url_prefix="/legal_act")
+app.register_blueprint(change, url_prefix="/change")
