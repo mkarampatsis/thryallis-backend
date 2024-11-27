@@ -89,7 +89,7 @@ def get_legal_provisions_by_regulated_remit(code: str):
         regulatedObjectType="remit",
         regulatedObjectId=code,
     )
-    print(regulatedObject.to_mongo().to_dict())
+    # print(regulatedObject.to_mongo().to_dict())
 
     legal_provisions = [provision.to_mongo().to_dict() for provision in LegalProvision.objects(regulatedObject=regulatedObject)]
     # debug_print("LEGAL PROVISIONS BY ORGANIZATION UNIT CODE", legal_provisions)
@@ -109,7 +109,7 @@ def get_legal_provisions_by_regulated_remit(code: str):
         # Delete all ObjectId fields as they are not JSON serializable
         del provision["legalAct"]
         del provision["regulatedObject"]
-        print(provision)
+        # print(provision)
 
     # debug_print("LEGAL PROVISIONS BY ORGANIZATION UNIT CODE", legal_provisions)
 
