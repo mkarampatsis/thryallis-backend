@@ -192,7 +192,7 @@ def count_all_remits():
 def retrieve_remit_by_code(code):
     # print(code)
     remits = Remit.objects(organizationalUnitCode=code)
-    debug_print("GET REMIT BY CODE", remits.to_json())
+    # debug_print("GET REMIT BY CODE", remits.to_json())
 
     remitsToReturn = []
     for remit in remits:

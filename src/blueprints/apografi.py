@@ -129,7 +129,8 @@ def get_organizational_unit_count():
 def get_organizational_unit(code: str):
     try:
         monada = OrganizationalUnit.objects.get(code=code)
-        # print("<<<<<<", str(monada.to_json_enhanced()))
+        print("1<<<<<<", monada.to_json())
+        print("2<<<<<<", str(monada.to_json_enhanced()))
         return Response(
             monada.to_json_enhanced(),
             mimetype="application/json",
