@@ -8,6 +8,7 @@ class Helpbox(me.Document):
     firstName = me.StringField(required=True)
     lastName = me.StringField(required=True)
     organizations = me.ListField(me.StringField(), default=[])
+    questionTitle = me.StringField(required=True)
     questionText = me.StringField(required=True)
     answerText = me.StringField()
     toWhom = me.StringField()

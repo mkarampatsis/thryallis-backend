@@ -11,6 +11,26 @@ from src.blueprints.decorators import can_edit, can_update_delete, can_finalize_
 
 helpbox = Blueprint("helpbox", __name__)
 
+@helpbox.route("", methods=["GET"])
+@jwt_required()
+def retrieve_all_questions():
+    try:
+        questions = Helpbox.objects()
+
+        return Response(
+            questions.to_json(),
+            mimetype="application/json",
+            status=200,
+        )
+    except Exception as e:
+        print(e)
+        return Response(
+            json.dumps({"message": f"<strong>Αποτυχία εμφάνθσης ερωτημάτων:</strong> {e}"}),
+            mimetype="application/json",
+            status=500,
+        )    
+
+
 @helpbox.route("", methods=["POST"])
 @jwt_required()
 def create_question():
@@ -56,6 +76,7 @@ def create_question():
         lastName = data["lastName"]
         firstName = data["firstName"]
         organizations = data["organizations"]
+        questionTitle = data["questionTitle"]
         questionText = data["questionText"]
 
         newHelpbox = Helpbox(
@@ -63,6 +84,7 @@ def create_question():
             lastName=lastName,
             firstName=firstName,
             organizations=organizations,
+            questionTitle=questionTitle,
             questionText=questionText,
             toWhom=email_with_lowest_count['email']            
         ).save()
