@@ -4,6 +4,7 @@ from flask import Blueprint, Response, request
 from flask_jwt_extended import get_jwt_identity, jwt_required, get_jwt
 
 from src.models.psped.helpbox import Helpbox
+from src.models.user import User
 from src.blueprints.utils import debug_print, dict2string
 from src.blueprints.decorators import can_edit, can_update_delete, can_finalize_remits
 
@@ -13,7 +14,40 @@ helpbox = Blueprint("helpbox", __name__)
 @helpbox.route("", methods=["POST"])
 @jwt_required()
 def create_question():
-    curr_change = {}
+
+    emails = User.objects(roles__role='HELPDESK').only('email').exclude("id")
+    print (emails.to_json())
+
+    pipeline = [
+        {
+            "$group":{
+                "_id": {"email":"$toWhom"},
+                "countNumberOfDocuments": {"$count": {}}
+            }
+        },
+        {
+            "$project": {
+                "_id": 0,
+                "email":"$_id.email",
+                "countNumberOfDocuments":1,
+            }
+        }
+    ]
+
+    document_counts = list(Helpbox.objects.aggregate(pipeline))
+    print (document_counts)
+
+    # Create a lookup for document counts
+    count_dict = {entry['email']: entry['countNumberOfDocuments'] for entry in document_counts}
+
+    # Assign a default high value (e.g., float('inf')) for emails not in document_counts
+    all_counts = [{'email': email['email'], 'countNumberOfDocuments': count_dict.get(email['email'], 0)} for email in emails]
+
+    # Find the email with the lowest countNumberOfDocuments
+    email_with_lowest_count = min(all_counts, key=lambda x: x['countNumberOfDocuments'])
+
+    print("Email with lowest countNumberOfDocuments:", email_with_lowest_count['email'])
+
     try:
         data = request.get_json()
         debug_print("POST HELPBOX", data)
@@ -29,7 +63,8 @@ def create_question():
             lastName=lastName,
             firstName=firstName,
             organizations=organizations,
-            questionText=questionText            
+            questionText=questionText,
+            toWhom=email_with_lowest_count['email']            
         ).save()
 
         return Response(
