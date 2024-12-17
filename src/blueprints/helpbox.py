@@ -70,6 +70,7 @@ def create_question():
                 "_id": 0,
                 "email":"$_id.email",
                 "countNumberOfDocuments":1,
+                "count": {"$size":"$questions"}
             }
         }
     ]
@@ -97,15 +98,15 @@ def create_question():
         firstName = data["firstName"]
         organizations = data["organizations"]
         questionTitle = data["questionTitle"]
-        questionText = data["questionText"]
+        question = [data["question"]]
 
         newHelpbox = Helpbox(
             email=email,
             lastName=lastName,
             firstName=firstName,
             organizations=organizations,
-            questionTitle=questionTitle,
-            questionText=questionText,
+            questionTitle = questionTitle,
+            question = question,
             toWhom=email_with_lowest_count['email']            
         ).save()
 
