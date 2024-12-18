@@ -3,11 +3,12 @@ from bson import ObjectId
 from flask import Blueprint, Response, request
 from flask_jwt_extended import get_jwt_identity, jwt_required, get_jwt
 
-from src.models.psped.helpbox import Helpbox
+from src.models.psped.helpbox import Helpbox, Question
 from src.models.psped.change import Change
 from src.models.user import User
 from src.blueprints.utils import debug_print, dict2string
 from src.blueprints.decorators import can_edit, can_update_delete, can_finalize_remits
+from datetime import datetime
 
 
 helpbox = Blueprint("helpbox", __name__)
@@ -26,7 +27,7 @@ def retrieve_all_questions():
     except Exception as e:
         print(e)
         return Response(
-            json.dumps({"message": f"<strong>Αποτυχία εμφάνθσης ερωτημάτων:</strong> {e}"}),
+            json.dumps({"message": f"<strong>Αποτυχία εμφάνισης ερωτημάτων:</strong> {e}"}),
             mimetype="application/json",
             status=500,
         )    
@@ -45,7 +46,26 @@ def retrieve_question_by_id(id):
     except Exception as e:
         print(e)
         return Response(
-            json.dumps({"message": f"<strong>Αποτυχία εμφάνθσης ερωτημάτων:</strong> {e}"}),
+            json.dumps({"message": f"<strong>Αποτυχία εμφάνισης ερωτημάτων:</strong> {e}"}),
+            mimetype="application/json",
+            status=500,
+        )   
+
+@helpbox.route("/not-finalized", methods=["GET"])
+# @jwt_required()
+def retrieve_all_questions_not_finilized():
+    try:
+        questions = Helpbox.objects(finalized=False)
+
+        return Response(
+            questions.to_json(),
+            mimetype="application/json",
+            status=200,
+        )
+    except Exception as e:
+        print(e)
+        return Response(
+            json.dumps({"message": f"<strong>Αποτυχία εμφάνισης ερωτημάτων:</strong> {e}"}),
             mimetype="application/json",
             status=500,
         )   
@@ -106,7 +126,7 @@ def create_question():
             firstName=firstName,
             organizations=organizations,
             questionTitle = questionTitle,
-            question = question,
+            questions = question,
             toWhom=email_with_lowest_count['email']            
         ).save()
 
@@ -124,20 +144,73 @@ def create_question():
             status=500,
         )
 
-@helpbox.route("", methods=["PUT"])
+@helpbox.route("/<string:id>", methods=["PUT"])
 @jwt_required()
-def update_question():
+def update_question(id):
     try:
         data = request.get_json()
-        debug_print("UPDATE HELPBOX", data)
+        debug_print("INSERT NEW QUESTION TO HELPBOX", data)
 
-        helpboxID = data["id"]
-        answerText = data["answerText"]
+        helpboxID = id
+        questionText = data["question"]["questionText"]
 
         helpbox = Helpbox.objects.get(id=ObjectId(helpboxID))
-        print (helpbox.to_json())
+        # print (helpbox.to_json())
 
-        helpbox.update(status=True, answerText=answerText)
+        new_question = Question(
+            questionText=questionText,
+        )
+        
+        # Add the new question to the 'questions' field
+        helpbox.questions.append(new_question)
+        
+        # Save the updated Helpbox document
+        helpbox.save()
+
+        return Response(
+            json.dumps({"message": "Η απάντηση σας καταχωρήθηκε με επιτυχία"}),
+            mimetype="application/json",
+            status=201,
+        )
+
+    except Exception as e:
+        print(e)
+        return Response(
+            json.dumps({"message": f"<strong>Αποτυχία καταχώρησης απάντησης:</strong> {e}"}),
+            mimetype="application/json",
+            status=500,
+        )
+
+
+@helpbox.route("", methods=["PUT"])
+@jwt_required()
+def answer_question():
+    try:
+        data = request.get_json()
+        debug_print("ANSWER HELPBOX", data)
+
+        helpboxId = data["helpBoxId"]
+        questionId = data["questionId"]
+        answerText = data["answerText"]
+        fromWhom = data["fromWhom"]
+
+        helpbox = Helpbox.objects.get(id=ObjectId(helpboxId))
+        print (helpbox.to_json())
+        if helpbox:
+            # Locate the specific Question in the questions list
+            question_to_update = next((q for q in helpbox.questions if str(q.id) == questionId), None)
+            
+            if question_to_update:
+                # Update the `answered` field
+                question_to_update.answered = True
+                question_to_update.whenAnswered = datetime.now()
+                question_to_update.answerText = answerText 
+                question_to_update.fromWhom = fromWhom
+                
+                # Save the document to persist changes
+                helpbox.save()
+
+        # helpbox.update(status=True, answerText=answerText)
 
         # who = get_jwt_identity()
         # what = {"entity": "helpbox", "key": {"helpboxID": helpboxID}}

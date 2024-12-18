@@ -1,13 +1,15 @@
 import mongoengine as me
 from datetime import datetime
+from bson import ObjectId
 
 class Question(me.EmbeddedDocument):
+    id = me.ObjectIdField(default=ObjectId, required=True)
     questionText = me.StringField(required=True)
     answerText = me.StringField()
     # file?: string | null;
-    fromWhom = me.StringField()
-    whenAsked = me.DateTimeField()
+    whenAsked = me.DateTimeField(default=datetime.now)
     whenAnswered = me.DateTimeField()
+    fromWhom = me.StringField()
     answered= me.BooleanField(default=False)
 
 class Helpbox(me.Document):
@@ -18,7 +20,6 @@ class Helpbox(me.Document):
     lastName = me.StringField(required=True)
     organizations = me.ListField(me.StringField(), default=[])
     questionTitle = me.StringField(required=True)
-    question = me.EmbeddedDocumentListField(Question, required=True)
+    questions = me.EmbeddedDocumentListField(Question, required=True)
     toWhom = me.StringField()
-    when = me.DateTimeField(default=datetime.now)
     finalized = me.BooleanField(default=False)  
