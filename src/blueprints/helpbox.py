@@ -210,11 +210,36 @@ def answer_question():
                 # Save the document to persist changes
                 helpbox.save()
 
-        # helpbox.update(status=True, answerText=answerText)
+        return Response(
+            json.dumps({"message": "Η απάντηση σας καταχωρήθηκε με επιτυχία"}),
+            mimetype="application/json",
+            status=201,
+        )
 
-        # who = get_jwt_identity()
-        # what = {"entity": "helpbox", "key": {"helpboxID": helpboxID}}
-        # Change(action="update", who=who, what=what, change={"status": True, "answerText":answerText}).save()        
+    except Exception as e:
+        print(e)
+        return Response(
+            json.dumps({"message": f"<strong>Αποτυχία καταχώρησης απάντησης:</strong> {e}"}),
+            mimetype="application/json",
+            status=500,
+        )
+
+@helpbox.route("/finalize", methods=["PUT"])
+@jwt_required()
+def finalize_question():
+    try:
+        data = request.get_json()
+        debug_print("FINALIZE HELPBOX", data)
+
+        helpboxId = data["id"]
+        finalized = data["finalized"]
+
+        helpbox = Helpbox.objects.get(id=ObjectId(helpboxId))
+        print (helpbox.to_json())
+        
+        helpbox.update(finalized=finalized)
+
+        helpbox.save()
 
         return Response(
             json.dumps({"message": "Η απάντηση σας καταχωρήθηκε με επιτυχία"}),
