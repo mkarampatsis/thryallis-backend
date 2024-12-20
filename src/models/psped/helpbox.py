@@ -11,6 +11,7 @@ class Question(me.EmbeddedDocument):
     whenAnswered = me.DateTimeField()
     fromWhom = me.StringField()
     answered= me.BooleanField(default=False)
+    published= me.BooleanField(default=False)
 
 class Helpbox(me.Document):
     meta = {"collection": "helpbox", "db_alias": "psped"}

@@ -32,25 +32,6 @@ def retrieve_all_questions():
             status=500,
         )    
 
-@helpbox.route("/email/<string:email>", methods=["GET"])
-@jwt_required()
-def retrieve_question_by_email(email):
-    try:
-        questions = Helpbox.objects(email=email)
-
-        return Response(
-            questions.to_json(),
-            mimetype="application/json",
-            status=200,
-        )
-    except Exception as e:
-        print(e)
-        return Response(
-            json.dumps({"message": f"<strong>Αποτυχία εμφάνισης ερωτημάτων:</strong> {e}"}),
-            mimetype="application/json",
-            status=500,
-        )   
-
 @helpbox.route("/id/<string:id>", methods=["GET"])
 @jwt_required()
 def retrieve_question_by_id(id):
@@ -69,26 +50,6 @@ def retrieve_question_by_id(id):
             mimetype="application/json",
             status=500,
         )   
-
-@helpbox.route("/not-finalized", methods=["GET"])
-@jwt_required()
-def retrieve_all_questions_not_finilized():
-    try:
-        questions = Helpbox.objects(finalized=False)
-
-        return Response(
-            questions.to_json(),
-            mimetype="application/json",
-            status=200,
-        )
-    except Exception as e:
-        print(e)
-        return Response(
-            json.dumps({"message": f"<strong>Αποτυχία εμφάνισης ερωτημάτων:</strong> {e}"}),
-            mimetype="application/json",
-            status=500,
-        )   
-
 
 @helpbox.route("", methods=["POST"])
 @jwt_required()
@@ -226,6 +187,45 @@ def answer_question():
                 question_to_update.answerText = answerText 
                 question_to_update.fromWhom = fromWhom
                 
+                # Save the document to persist changes
+                helpbox.save()
+
+        return Response(
+            json.dumps({"message": "Η απάντηση σας καταχωρήθηκε με επιτυχία"}),
+            mimetype="application/json",
+            status=201,
+        )
+
+    except Exception as e:
+        print(e)
+        return Response(
+            json.dumps({"message": f"<strong>Αποτυχία καταχώρησης απάντησης:</strong> {e}"}),
+            mimetype="application/json",
+            status=500,
+        )
+
+@helpbox.route("/publish", methods=["PUT"])
+@jwt_required()
+def publish_question():
+    try:
+        data = request.get_json()
+        debug_print("PUBLISH HELPBOX", data)
+
+        helpboxId = data["helpBoxId"]
+        questionId = data["questionId"]
+        published = data["published"]
+
+        helpbox = Helpbox.objects.get(id=ObjectId(helpboxId))
+        print (helpbox.to_json())
+        
+        if helpbox:
+            # Locate the specific Question in the questions list
+            question_to_update = next((q for q in helpbox.questions if str(q.id) == questionId), None)
+            
+            if question_to_update:
+                # Update the `answered` field
+                question_to_update.published = published
+                                
                 # Save the document to persist changes
                 helpbox.save()
 
