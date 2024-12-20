@@ -50,6 +50,45 @@ def retrieve_question_by_id(id):
             mimetype="application/json",
             status=500,
         )   
+@helpbox.route("/all/published", methods=["GET"])
+@jwt_required()
+def retrieve_all_published_questions():
+
+    pipeline = [
+        {
+            "$unwind": "$questions"
+        },
+        {
+            "$match": {
+                "questions.published": True
+            }
+        },
+        {
+            "$project": {
+                "_id":0,
+                "questionTitle":1,
+                "questions.questionText":1,
+                "questions.answerText":1
+            }
+        }
+    ]
+
+    try:
+        pubished = list(Helpbox.objects.aggregate(pipeline))
+
+        return Response(
+            json.dumps({"data": pubished}),
+            mimetype="application/json",
+            status=200,
+        )
+    except Exception as e:
+        print(e)
+        return Response(
+            json.dumps({"message": f"<strong>Αποτυχία εμφάνισης απαντημένων ερωτημάτων:</strong> {e}"}),
+            mimetype="application/json",
+            status=500,
+        )
+
 
 @helpbox.route("", methods=["POST"])
 @jwt_required()
