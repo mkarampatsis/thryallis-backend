@@ -32,8 +32,27 @@ def retrieve_all_questions():
             status=500,
         )    
 
+@helpbox.route("/email/<string:email>", methods=["GET"])
+@jwt_required()
+def retrieve_question_by_email(email):
+    try:
+        questions = Helpbox.objects(email=email)
+
+        return Response(
+            questions.to_json(),
+            mimetype="application/json",
+            status=200,
+        )
+    except Exception as e:
+        print(e)
+        return Response(
+            json.dumps({"message": f"<strong>Αποτυχία εμφάνισης ερωτημάτων:</strong> {e}"}),
+            mimetype="application/json",
+            status=500,
+        )   
+
 @helpbox.route("/id/<string:id>", methods=["GET"])
-# @jwt_required()
+@jwt_required()
 def retrieve_question_by_id(id):
     try:
         questions = Helpbox.objects(id=id)
@@ -52,7 +71,7 @@ def retrieve_question_by_id(id):
         )   
 
 @helpbox.route("/not-finalized", methods=["GET"])
-# @jwt_required()
+@jwt_required()
 def retrieve_all_questions_not_finilized():
     try:
         questions = Helpbox.objects(finalized=False)
