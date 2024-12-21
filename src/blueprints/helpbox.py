@@ -4,7 +4,8 @@ from flask import Blueprint, Response, request
 from flask_jwt_extended import get_jwt_identity, jwt_required, get_jwt
 
 from src.models.psped.helpbox import Helpbox, Question
-from src.models.psped.change import Change
+from src.models.psped.general_info import GeneralInfo
+# from src.models.psped.change import Change
 from src.models.user import User
 from src.blueprints.utils import debug_print, dict2string
 from src.blueprints.decorators import can_edit, can_update_delete, can_finalize_remits
@@ -50,6 +51,7 @@ def retrieve_question_by_id(id):
             mimetype="application/json",
             status=500,
         )   
+    
 @helpbox.route("/all/published", methods=["GET"])
 @jwt_required()
 def retrieve_all_published_questions():
@@ -309,6 +311,62 @@ def finalize_question():
         print(e)
         return Response(
             json.dumps({"message": f"<strong>Αποτυχία καταχώρησης απάντησης:</strong> {e}"}),
+            mimetype="application/json",
+            status=500,
+        )
+
+# GENERAL INFO API
+@helpbox.route("/general-info", methods=["GET"])
+@jwt_required()
+def retrieve_all_general_info():
+    try:
+        infos = GeneralInfo.objects()
+
+        return Response(
+            infos.to_json(),
+            mimetype="application/json",
+            status=200,
+        )
+    except Exception as e:
+        print(e)
+        return Response(
+            json.dumps({"message": f"<strong>Αποτυχία εμφάνισης ενημερώσεων:</strong> {e}"}),
+            mimetype="application/json",
+            status=500,
+        )    
+    
+@helpbox.route("/general-info", methods=["POST"])
+@jwt_required()
+def create_general_info():
+
+    try:
+        data = request.get_json()
+        debug_print("POST GENERAL INFO", data)
+
+        email = data["email"]
+        lastName = data["lastName"]
+        firstName = data["firstName"]
+        title = data["title"]
+        text = data["text"]
+
+        newInfo = GeneralInfo(
+            email=email,
+            lastName=lastName,
+            firstName=firstName,
+            title = title,
+            text = text,
+        ).save()
+
+        return Response(
+            json.dumps({"message": "Η ενημέρωση σας καταχωρήθηκε με επιτυχία"}),
+            mimetype="application/json",
+            status=201,
+        )
+
+    except Exception as e:
+        print(e)
+        return Response(
+            json.dumps({"message": f"<strong>Αποτυχία καταχώρησης ενημέρωσης:</strong> {e}"}),
             mimetype="application/json",
             status=500,
         )
