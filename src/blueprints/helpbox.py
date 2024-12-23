@@ -1,6 +1,6 @@
 import json
 from bson import ObjectId
-from flask import Blueprint, Response, request
+from flask import Blueprint, Response, request, jsonify
 from flask_jwt_extended import get_jwt_identity, jwt_required, get_jwt
 
 from src.models.psped.helpbox import Helpbox, Question
@@ -10,7 +10,6 @@ from src.models.user import User
 from src.blueprints.utils import debug_print, dict2string
 from src.blueprints.decorators import can_edit, can_update_delete, can_finalize_remits
 from datetime import datetime
-
 
 helpbox = Blueprint("helpbox", __name__)
 
@@ -70,8 +69,15 @@ def retrieve_all_published_questions():
                 "_id":0,
                 "questionTitle":1,
                 "questions.questionText":1,
-                "questions.answerText":1
+                "questions.answerText":1,
+                "questions.whenAsked":1,
+                "questions.whenAnswered":1,
             }
+        },
+        { 
+            "$sort" : { 
+                "questions.whenAnswered" : -1 
+            } 
         }
     ]
 
@@ -79,7 +85,8 @@ def retrieve_all_published_questions():
         pubished = list(Helpbox.objects.aggregate(pipeline))
 
         return Response(
-            json.dumps({"data": pubished}),
+            json.dumps({"data": pubished}, default=custom_serializer),
+            # jsonify(json.loads(json.dumps(pubished, default=custom_serializer))),
             mimetype="application/json",
             status=200,
         )
@@ -320,7 +327,7 @@ def finalize_question():
 @jwt_required()
 def retrieve_all_general_info():
     try:
-        infos = GeneralInfo.objects()
+        infos = GeneralInfo.objects().order_by('-when')
 
         return Response(
             infos.to_json(),
@@ -370,3 +377,8 @@ def create_general_info():
             mimetype="application/json",
             status=500,
         )
+
+def custom_serializer(obj):
+    if isinstance(obj, datetime):
+        return obj.isoformat()  # Convert datetime to ISO 8601 format
+    raise TypeError("Type not serializable")
