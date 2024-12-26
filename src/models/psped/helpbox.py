@@ -1,12 +1,14 @@
 import mongoengine as me
 from datetime import datetime
 from bson import ObjectId
+from src.models.upload import FileUpload
 
 class Question(me.EmbeddedDocument):
     id = me.ObjectIdField(default=ObjectId, required=True)
     questionText = me.StringField(required=True)
     answerText = me.StringField()
-    # file?: string | null;
+    questionFile = me.ReferenceField(FileUpload)
+    answerFile = me.ReferenceField(FileUpload)
     whenAsked = me.DateTimeField(default=datetime.now)
     whenAnswered = me.DateTimeField()
     fromWhom = me.StringField()

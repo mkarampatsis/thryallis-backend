@@ -181,12 +181,14 @@ def update_question(id):
 
         helpboxID = id
         questionText = data["question"]["questionText"]
+        questionFile = data["question"]['questionFile']
 
         helpbox = Helpbox.objects.get(id=ObjectId(helpboxID))
         # print (helpbox.to_json())
-
+  
         new_question = Question(
-            questionText=questionText,
+            questionText = questionText,
+            questionFile = questionFile
         )
         
         # Add the new question to the 'questions' field
@@ -220,6 +222,7 @@ def answer_question():
         helpboxId = data["helpBoxId"]
         questionId = data["questionId"]
         answerText = data["answerText"]
+        answerFile = data["answerFile"]
         fromWhom = data["fromWhom"]
 
         helpbox = Helpbox.objects.get(id=ObjectId(helpboxId))
@@ -232,7 +235,8 @@ def answer_question():
                 # Update the `answered` field
                 question_to_update.answered = True
                 question_to_update.whenAnswered = datetime.now()
-                question_to_update.answerText = answerText 
+                question_to_update.answerText = answerText
+                question_to_update.answerFile = ObjectId(answerFile) 
                 question_to_update.fromWhom = fromWhom
                 
                 # Save the document to persist changes
@@ -355,6 +359,7 @@ def create_general_info():
         firstName = data["firstName"]
         title = data["title"]
         text = data["text"]
+        file = data["file"]
 
         newInfo = GeneralInfo(
             email=email,
@@ -362,6 +367,7 @@ def create_general_info():
             firstName=firstName,
             title = title,
             text = text,
+            file = file
         ).save()
 
         return Response(

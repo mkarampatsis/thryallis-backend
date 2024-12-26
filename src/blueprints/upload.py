@@ -58,7 +58,6 @@ def get_file():
         status=200,
     )
 
-
 @upload.route("<docid>", methods=["GET"])
 @jwt_required()
 def uploaded_file(docid):
