@@ -332,7 +332,7 @@ def finalize_question():
 def retrieve_all_general_info():
     try:
         infos = GeneralInfo.objects().order_by('-when')
-
+        print(infos.to_json())
         return Response(
             infos.to_json(),
             mimetype="application/json",
