@@ -1,12 +1,14 @@
 import mongoengine as me
 from src.models.apografi.organization import Organization
 from src.models.apografi.organizational_unit import OrganizationalUnit
+from src.models.psped.monada import Monada
 
 
 class TreeNode(me.EmbeddedDocument):
     expandable = me.BooleanField()
     monada = me.ReferenceField(OrganizationalUnit)
     level = me.IntField()
+    remitsFinalized = me.BooleanField()
 
 
 def print_tree(node, indent=0):
@@ -35,8 +37,9 @@ def build_tree(monades):
 
 
 def convert_tree_to_flat_nodes(node, level=0):
+    monada = Monada.objects.get(code=node.code)
     flat_nodes = []
-    flat_node = TreeNode(expandable=bool(node.subordinates), monada=node, level=level)
+    flat_node = TreeNode(expandable=bool(node.subordinates), monada=node, level=level, remitsFinalized=monada.remitsFinalized)
     flat_nodes.append(flat_node)
     for subordinate in node.subordinates:
         flat_nodes.extend(convert_tree_to_flat_nodes(subordinate, level + 1))
@@ -84,6 +87,7 @@ class Foreas(me.Document):
                         "code": node.monada.code,
                     },
                     "level": node.level,
+                    "remitsFinalized": node.remitsFinalized
                 }
             )
         return tree
