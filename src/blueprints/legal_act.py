@@ -130,3 +130,17 @@ def get_nomiki_praxi_by_id(id: str):
             mimetype="application/json",
             status=404,
         )
+
+@legal_act.route("/by-act-key/<path:act_id>", methods=["GET"])
+@jwt_required()
+def get_nomiki_praxi_act_key(act_id):
+    print(act_id)
+    try:
+        legalAct = LegalAct.objects.get(legalActKey=act_id)
+        return Response(legalAct.to_json(), mimetype="application/json", status=200)
+    except LegalAct.DoesNotExist:
+        return Response(
+            json.dumps({"message": f"Νομική πράξη με Act-Key {id} δεν βρέθηκε"}),
+            mimetype="application/json",
+            status=404,
+        )

@@ -1,6 +1,7 @@
 from bson import ObjectId
 from flask import Blueprint, Response, request
 from flask_jwt_extended import get_jwt_identity, jwt_required
+from mongoengine import DoesNotExist
 
 from src.models.psped.legal_act import LegalAct
 from src.models.psped.remit import Remit
@@ -232,3 +233,35 @@ def retrieve_remit_by_code(code):
         mimetype="application/json",
         status=200,
     )
+
+@remit.route("/<string:id>", methods=["DELETE"])
+@jwt_required()
+def delete_remit_by_code(id):
+    print("1>",id)
+    
+    try: 
+        remit_to_delete = Remit.objects(id=ObjectId(id))
+        print("2>",remit_to_delete.to_json())
+        
+        print("3>",remit_to_delete.organizationalUnitCode)
+        # Delete referenced legal provisions
+        # for ref_id in remit_to_delete.legalProvisionRefs:
+        #     print(">>",ref_id)
+        #     legal_provision = LegalProvision.objects(id=ref_id.id).first()
+        #     if legal_provision:
+        #         print (legal_provision.to_json())
+                # legal_provision.delete()
+        # Delete the main document
+        # remit_to_delete.delete()
+    
+    except DoesNotExist:
+        return Response(json.dumps({"message": "Η διάταξη δεν υπάρχει"}), mimetype="application/json", status=404)
+    except Exception as e:
+        return Response(json.dumps({"message": f"<strong>Error:</strong> {str(e)}"}), mimetype="application/json", status=500)
+    
+    # who = get_jwt_identity()
+    # what = {"entity": "Remits", "key": {"RemitID": id}}
+    # change = remit_to_delete.to_mongo().to_dict()
+    # Change(action="delete", who=who, what=what, change=change).save()
+    return Response(json.dumps({"message": "<strong>H Αρμοδιότητα διαγράφηκε</strong>"}), mimetype="application/json", status=201)
+    # print(remitsToReurn)
