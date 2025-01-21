@@ -243,10 +243,13 @@ def delete_remit_by_code(id):
         remit_to_delete = Remit.objects(id=ObjectId(id))
         print("2>",remit_to_delete.to_json())
         
-        print("3>",remit_to_delete.organizationalUnitCode)
+        # print("3>",remit_to_delete.organizationalUnitCode)
         # Delete referenced legal provisions
-        # for ref_id in remit_to_delete.legalProvisionRefs:
-        #     print(">>",ref_id)
+        for remit in remit_to_delete:
+            print("3>>", remit.organizationalUnitCode)
+            for item in remit.legalProvisionRefs:
+                print("4>>",item.to_json())
+                print("4>>",item["_id"]["$oid"])
         #     legal_provision = LegalProvision.objects(id=ref_id.id).first()
         #     if legal_provision:
         #         print (legal_provision.to_json())
