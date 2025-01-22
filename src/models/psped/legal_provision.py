@@ -60,7 +60,6 @@ class LegalProvision(me.Document):
             legalAct = LegalAct.objects.get(legalActKey=legalActKey)
             legalProvisionSpecs = provision["legalProvisionSpecs"]
             legalProvisionText = provision["legalProvisionText"]
-
             legalProvision = LegalProvision(
                 regulatedObject=regulatedObject,
                 legalAct=legalAct,
@@ -68,7 +67,6 @@ class LegalProvision(me.Document):
                 legalProvisionText=legalProvisionText,
             ).save()
             legal_provisions_docs.append(legalProvision)
-
         return legal_provisions_docs
 
     @staticmethod

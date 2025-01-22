@@ -237,6 +237,8 @@ def retrieve_remit_by_code(code):
 @remit.route("/copy/<string:id>", methods=["GET"])
 @jwt_required()
 def copy_remit(id):
+    curr_change = {}
+    newLegalProvisions = []
     try:
         remit = Remit.objects(id=ObjectId(id)).first()
         debug_print("COPY REMIT BY ID", remit.to_json())
@@ -245,7 +247,7 @@ def copy_remit(id):
         remitText = remit.remitText
         remitType = remit.remitType
         cofog = remit.cofog
-        legalProvisions = remit.legalProvisions
+        legalProvisions = remit.legalProvisionRefs
 
         newRemit = Remit(
             organizationalUnitCode=organizationalUnitCode,
@@ -259,10 +261,19 @@ def copy_remit(id):
             regulatedObjectType="remit",
             regulatedObjectId=newRemitID,
         )
+        
+        for legalProvision in legalProvisions:
+
+            newLegalProvisions.append({
+                "legalActKey": legalProvision.legalAct.legalActKey,
+                "legalProvisionSpecs" : legalProvision.legalProvisionSpecs,
+                "legalProvisionText" : legalProvision.legalProvisionText,
+                'isNew': True
+            })
 
         legal_provisions_changes_inserts = []
 
-        legal_provisions_docs = LegalProvision.save_new_legal_provisions(legalProvisions, regulatedObject)
+        legal_provisions_docs = LegalProvision.save_new_legal_provisions(newLegalProvisions, regulatedObject)
         legal_provisions_changes_inserts = [provision.to_mongo() for provision in legal_provisions_docs]
 
         # ================================================================================
@@ -286,7 +297,7 @@ def copy_remit(id):
         newRemit.save()
 
         return Response(
-            json.dumps({"message": "Η αρμοδιότητα αντιγράφηκε με επιτυχία"}),
+            json.dumps({"message": "Η αρμοδιότητα αντιγράφηκε με επιτυχία", "remitID":str(newRemit.id)}),
             mimetype="application/json",
             status=201,
         )
