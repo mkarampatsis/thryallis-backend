@@ -234,37 +234,95 @@ def retrieve_remit_by_code(code):
         status=200,
     )
 
+@remit.route("/copy/<string:id>", methods=["GET"])
+@jwt_required()
+def copy_remit(id):
+    try:
+        remit = Remit.objects(id=ObjectId(id)).first()
+        debug_print("COPY REMIT BY ID", remit.to_json())
+
+        organizationalUnitCode = remit.organizationalUnitCode
+        remitText = remit.remitText
+        remitType = remit.remitType
+        cofog = remit.cofog
+        legalProvisions = remit.legalProvisions
+
+        newRemit = Remit(
+            organizationalUnitCode=organizationalUnitCode,
+            remitText=remitText,
+            remitType=remitType,
+            cofog=cofog,
+        ).save()
+
+        newRemitID = newRemit.id
+        regulatedObject = RegulatedObject(
+            regulatedObjectType="remit",
+            regulatedObjectId=newRemitID,
+        )
+
+        legal_provisions_changes_inserts = []
+
+        legal_provisions_docs = LegalProvision.save_new_legal_provisions(legalProvisions, regulatedObject)
+        legal_provisions_changes_inserts = [provision.to_mongo() for provision in legal_provisions_docs]
+
+        # ================================================================================
+        # POST REMIT
+        # ================================================================================
+        # organizationalUnitCode: 750289
+        # remitText: <p>nea armodiotita</p><p><strong>Το κείμενο θα ενημερώνεται αυτόματα όσο προσθέτετε διατάξεις</strong></p>
+        # remitType: ΕΠΙΤΕΛΙΚΗ
+        # cofog: {'cofog1': '2', 'cofog2': '2.1', 'cofog3': '2.1.1'}
+        # legalProvisions: [{'legalProvisionSpecs': {'meros': 'a', 'arthro': 'a', 'paragrafos': 'a', 'edafio': 'a', 'pararthma': 'a'}, 'legalActKey': 'ΠΡΟΕΔΡΙΚΟ ΔΙΑΤΑΓΜΑ 141/2017 ΦΕΚ 180/Α/23-11-2017', 'legalProvisionText': '<p>nea armodiotita</p>', 'isNew': True}]
+
+        curr_change["legalProvisions"] = {
+            "inserts": legal_provisions_changes_inserts,
+        }
+
+        who = get_jwt_identity()
+        what = {"entity": "remit", "key": {"organizationalUnitCode": organizationalUnitCode}}
+        Change(action="create", who=who, what=what, change=curr_change).save()
+
+        newRemit.legalProvisionRefs = legal_provisions_docs
+        newRemit.save()
+
+        return Response(
+            json.dumps({"message": "Η αρμοδιότητα αντιγράφηκε με επιτυχία"}),
+            mimetype="application/json",
+            status=201,
+        )
+
+    except Exception as e:
+        print(e)
+        return Response(
+            json.dumps({"message": f"<strong>Αποτυχία δημιουργίας αρμοδιότητας:</strong> {e}"}),
+            mimetype="application/json",
+            status=500,
+    )
+
 @remit.route("/<string:id>", methods=["DELETE"])
 @jwt_required()
 def delete_remit_by_code(id):
-    print("1>",id)
     
     try: 
         remit_to_delete = Remit.objects(id=ObjectId(id))
-        print("2>",remit_to_delete.to_json())
         
-        # print("3>",remit_to_delete.organizationalUnitCode)
         # Delete referenced legal provisions
         for remit in remit_to_delete:
-            print("3>>", remit.organizationalUnitCode)
             for item in remit.legalProvisionRefs:
-                print("4>>",item.to_json())
-                print("4>>",item["_id"]["$oid"])
-        #     legal_provision = LegalProvision.objects(id=ref_id.id).first()
-        #     if legal_provision:
-        #         print (legal_provision.to_json())
-                # legal_provision.delete()
+                legal_provision = LegalProvision.objects(id=item["id"]).first()
+                if legal_provision:
+                    # print (legal_provision.to_json())
+                    legal_provision.delete()
         # Delete the main document
-        # remit_to_delete.delete()
+        remit_to_delete.delete()
     
     except DoesNotExist:
         return Response(json.dumps({"message": "Η διάταξη δεν υπάρχει"}), mimetype="application/json", status=404)
     except Exception as e:
         return Response(json.dumps({"message": f"<strong>Error:</strong> {str(e)}"}), mimetype="application/json", status=500)
     
-    # who = get_jwt_identity()
-    # what = {"entity": "Remits", "key": {"RemitID": id}}
-    # change = remit_to_delete.to_mongo().to_dict()
-    # Change(action="delete", who=who, what=what, change=change).save()
+    who = get_jwt_identity()
+    what = {"entity": "remit", "key": {"RemitID": id}}
+    # print(remit_to_delete.to_json())
+    Change(action="delete", who=who, what=what, change={"remit":remit_to_delete.to_json()}).save()
     return Response(json.dumps({"message": "<strong>H Αρμοδιότητα διαγράφηκε</strong>"}), mimetype="application/json", status=201)
-    # print(remitsToReurn)
