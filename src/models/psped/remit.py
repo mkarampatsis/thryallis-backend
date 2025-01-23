@@ -27,3 +27,14 @@ class Remit(me.Document):
     cofog = me.EmbeddedDocumentField(COFOG, required=True)
     status = me.StringField(choices=["ΕΝΕΡΓΗ", "ΑΝΕΝΕΡΓΗ"], default="ΕΝΕΡΓΗ")
     legalProvisionRefs = me.ListField(me.ReferenceField(LegalProvision))
+    
+    # def to_dict(self):
+    #     return {
+    #         "_id": str(self.id),
+    #         "organizationalUnitCode": self.organizationalUnitCode,
+    #         "remitText": self.remitText,
+    #         "remitType": self.remitType,
+    #         "cofog": self.cofog.to_mongo(),
+    #         "status": self.status,
+    #         "legalProvisionRefs": [str(ref.id) for ref in self.legalProvisionRefs],
+    #     }

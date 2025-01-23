@@ -276,15 +276,30 @@ def copy_remit(id):
         legal_provisions_docs = LegalProvision.save_new_legal_provisions(newLegalProvisions, regulatedObject)
         legal_provisions_changes_inserts = [provision.to_mongo() for provision in legal_provisions_docs]
 
-        # ================================================================================
-        # POST REMIT
-        # ================================================================================
-        # organizationalUnitCode: 750289
-        # remitText: <p>nea armodiotita</p><p><strong>Το κείμενο θα ενημερώνεται αυτόματα όσο προσθέτετε διατάξεις</strong></p>
-        # remitType: ΕΠΙΤΕΛΙΚΗ
-        # cofog: {'cofog1': '2', 'cofog2': '2.1', 'cofog3': '2.1.1'}
-        # legalProvisions: [{'legalProvisionSpecs': {'meros': 'a', 'arthro': 'a', 'paragrafos': 'a', 'edafio': 'a', 'pararthma': 'a'}, 'legalActKey': 'ΠΡΟΕΔΡΙΚΟ ΔΙΑΤΑΓΜΑ 141/2017 ΦΕΚ 180/Α/23-11-2017', 'legalProvisionText': '<p>nea armodiotita</p>', 'isNew': True}]
+        newRemit.legalProvisionRefs = legal_provisions_docs
+        newRemit.save()
 
+        data = {
+            "_id": str(newRemit.id),
+            "organizationalUnitCode": newRemit.organizationalUnitCode,
+            "remitText": newRemit.remitText,
+            "remitType": newRemit.remitType,
+            "cofog": newRemit.cofog.to_mongo().to_dict(),
+            "status": newRemit.status,
+            "legalProvisions": []
+        }
+        
+        for provision in legal_provisions_docs:
+            legalActKey = LegalAct.objects(id=ObjectId(str(provision.legalAct.id))).only('legalActKey').exclude('id').first()
+            data["legalProvisions"].append(
+                    {
+                        "_id": str(provision.id),
+                        "legalActKey": legalActKey.legalActKey,
+                        "legalProvisionSpecs": provision["legalProvisionSpecs"].to_mongo().to_dict(),
+                        "legalProvisionText": provision["legalProvisionText"]
+                    }
+                )
+        
         curr_change["legalProvisions"] = {
             "inserts": legal_provisions_changes_inserts,
         }
@@ -293,11 +308,9 @@ def copy_remit(id):
         what = {"entity": "remit", "key": {"organizationalUnitCode": organizationalUnitCode}}
         Change(action="create", who=who, what=what, change=curr_change).save()
 
-        newRemit.legalProvisionRefs = legal_provisions_docs
-        newRemit.save()
-
         return Response(
-            json.dumps({"message": "Η αρμοδιότητα αντιγράφηκε με επιτυχία", "remitID":str(newRemit.id)}),
+            # json.dumps({"message": "Η αρμοδιότητα αντιγράφηκε με επιτυχία", "remit":newRemit.to_dict()}),
+            json.dumps({"message": "Η αρμοδιότητα αντιγράφηκε με επιτυχία", "remit":data}),
             mimetype="application/json",
             status=201,
         )

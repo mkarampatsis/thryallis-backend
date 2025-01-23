@@ -19,6 +19,7 @@ class Abolition(me.EmbeddedDocument):
 
 class LegalProvisionSpecs(me.EmbeddedDocument):
     meros = me.StringField()
+    kefalaio = me.StringField()
     arthro = me.StringField()
     paragrafos = me.StringField()
     edafio = me.StringField()
@@ -26,7 +27,7 @@ class LegalProvisionSpecs(me.EmbeddedDocument):
 
     def validate(self, clean=True):
         super(LegalProvisionSpecs, self).validate(clean)
-        fields = [self.meros, self.arthro, self.paragrafos, self.edafio, self.pararthma]
+        fields = [self.meros, self.kefalaio, self.arthro, self.paragrafos, self.edafio, self.pararthma]
         if not any(fields):
             raise me.ValidationError("Κάποιο πεδίο της Διάταξης πρέπει να συμπληρωθεί")
 
@@ -39,7 +40,7 @@ class LegalProvision(me.Document):
             { "fields": [
                             "regulatedObject.regulatedObjectType", "regulatedObject.regulatedObjectId", 
                             "legalAct",
-                            "legalProvisionSpecs.meros", "legalProvisionSpecs.arthro", "legalProvisionSpecs.paragrafos", "legalProvisionSpecs.edafio", "legalProvisionSpecs.pararthma"
+                            "legalProvisionSpecs.meros", "legalProvisionSpecs.kefalaio", "legalProvisionSpecs.arthro", "legalProvisionSpecs.paragrafos", "legalProvisionSpecs.edafio", "legalProvisionSpecs.pararthma"
                         ], "unique": True, "name":"regulatedObject_legalAct_legalProvisionSpecs" }
         ],
     }
