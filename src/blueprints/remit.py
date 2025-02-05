@@ -248,20 +248,20 @@ def copy_remit(id):
         remitType = remit.remitType
         cofog = remit.cofog
         legalProvisions = remit.legalProvisionRefs
-
+        print("Copy Remit 1>>>")
         newRemit = Remit(
             organizationalUnitCode=organizationalUnitCode,
             remitText=remitText,
             remitType=remitType,
             cofog=cofog,
         ).save()
-
+        print("Copy Remit 2>>>")
         newRemitID = newRemit.id
         regulatedObject = RegulatedObject(
             regulatedObjectType="remit",
             regulatedObjectId=newRemitID,
         )
-        
+        print("Copy Remit 3>>>")
         for legalProvision in legalProvisions:
 
             newLegalProvisions.append({
@@ -270,15 +270,15 @@ def copy_remit(id):
                 "legalProvisionText" : legalProvision.legalProvisionText,
                 'isNew': True
             })
-
+        print("Copy Remit 4>>>")
         legal_provisions_changes_inserts = []
 
         legal_provisions_docs = LegalProvision.save_new_legal_provisions(newLegalProvisions, regulatedObject)
         legal_provisions_changes_inserts = [provision.to_mongo() for provision in legal_provisions_docs]
-
+        print("Copy Remit 5>>>")
         newRemit.legalProvisionRefs = legal_provisions_docs
         newRemit.save()
-
+        print("Copy Remit 6>>>")
         data = {
             "_id": str(newRemit.id),
             "organizationalUnitCode": newRemit.organizationalUnitCode,
@@ -288,7 +288,7 @@ def copy_remit(id):
             "status": newRemit.status,
             "legalProvisions": []
         }
-        
+        print("Copy Remit 7>>>")
         for provision in legal_provisions_docs:
             legalActKey = LegalAct.objects(id=ObjectId(str(provision.legalAct.id))).only('legalActKey').exclude('id').first()
             data["legalProvisions"].append(
@@ -299,15 +299,15 @@ def copy_remit(id):
                         "legalProvisionText": provision["legalProvisionText"]
                     }
                 )
-        
+        print("Copy Remit 8>>>")
         curr_change["legalProvisions"] = {
             "inserts": legal_provisions_changes_inserts,
         }
-
+        print("Copy Remit 9>>>")
         who = get_jwt_identity()
         what = {"entity": "remit", "key": {"organizationalUnitCode": organizationalUnitCode}}
         Change(action="create", who=who, what=what, change=curr_change).save()
-
+        print("Copy Remit 10>>>")
         return Response(
             # json.dumps({"message": "Η αρμοδιότητα αντιγράφηκε με επιτυχία", "remit":newRemit.to_dict()}),
             json.dumps({"message": "Η αρμοδιότητα αντιγράφηκε με επιτυχία", "remit":data}),
