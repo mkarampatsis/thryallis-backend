@@ -81,17 +81,22 @@ def gsis_login(code: str):
         response = requests.post(TOKEN_URL, data=payload)
         
         if response.status_code == 200:
-            token_data = response.json()
-            print ("1>>",token_data)
-            print("2>>", token_data['access_token'])
+            access_token = response.json()
+            print ("1>>",access_token)
+            print("2>>", access_token['access_token'])
+            
+            # Ensure token is correctly formatted as "Bearer <token>"
+            if not access_token.startswith("Bearer "):
+                access_token_bearer = f"Bearer {access_token['access_token']}"
+            
             headers = {
-                "Authorization": token_data  # Should be in format "Bearer <token>"
+                "Authorization": "Bearer " + access_token_bearer  # Should be in format "Bearer <token>"
             }
 
             userRequest = requests.get(USER_INFO_URL, headers=headers)
             
             if userRequest.status_code == 200:
-                return Response(json.dumps({"accessToken": token_data, "user": userRequest }), status=200)
+                return Response(json.dumps({"accessToken": access_token, "user": userRequest }), status=200)
             else:
                 return Response(json.dumps({"message": "Πρόβλημα στη εξαγωγή του χρήστη", "details": userRequest.text }), status=userRequest.status_code)
         else:
