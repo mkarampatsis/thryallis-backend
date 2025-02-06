@@ -7,6 +7,7 @@ from src.models.user import User
 import json
 from src.models.psped.log import PspedSystemLog as Log
 import requests
+import xml.etree.ElementTree as ET
 
 
 auth = Blueprint("auth", __name__)
@@ -93,11 +94,10 @@ def gsis_login(code: str):
             }
 
             userRequest = requests.get(USER_INFO_URL, headers=headers)
-            print(access_token)
-            print(userRequest.text) 
-            print(userRequest.to_json()) 
+            json_user = xml_to_json(userRequest.text)
+            
             if userRequest.status_code == 200:
-                return Response(json.dumps({"accessToken": access_token, "user": userRequest }), status=200)
+                return Response(json.dumps({"accessToken": access_token, "user": json_user }), status=200)
             else:
                 return Response(json.dumps({"message": "Πρόβλημα στη εξαγωγή του χρήστη", "details": userRequest.text }), status=userRequest.status_code)
         else:
@@ -110,6 +110,24 @@ def gsis_login(code: str):
             mimetype="application/json",
             status=404,
         )
+
+def xml_to_json(xml_str):
+    """Convert XML string to JSON."""
+    root = ET.fromstring(xml_str)
+    user_info = root.find("userinfo")  # Find the <userinfo> element
+
+    if user_info is None:
+        return {"error": "Invalid XML format"}
+
+    return {
+        "userid": user_info.get("userid", "").strip(),
+        "taxid": user_info.get("taxid", "").strip(),
+        "lastname": user_info.get("lastname", "").strip(),
+        "firstname": user_info.get("firstname", "").strip(),
+        "fathername": user_info.get("fathername", "").strip(),
+        "mothername": user_info.get("mothername", "").strip(),
+        "birthyear": user_info.get("birthyear", "").strip()
+    }
 
 # @auth.route("/profile", methods=["PATCH"])
 # @jwt_required()
