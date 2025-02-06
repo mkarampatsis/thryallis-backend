@@ -83,8 +83,6 @@ def gsis_login(code: str):
         
         if response.status_code == 200:
             access_token = response.json()
-            print ("1>>",access_token)
-            print("2>>", access_token['access_token'])
             
             # Ensure token is correctly formatted as "Bearer <token>"
             access_token_bearer = f"Bearer {access_token['access_token']}"
