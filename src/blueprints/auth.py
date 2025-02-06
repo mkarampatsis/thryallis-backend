@@ -93,7 +93,8 @@ def gsis_login(code: str):
             }
 
             userRequest = requests.get(USER_INFO_URL, headers=headers)
-            
+            print(access_token)
+            print(userRequest) 
             if userRequest.status_code == 200:
                 return Response(json.dumps({"accessToken": access_token, "user": userRequest }), status=200)
             else:
