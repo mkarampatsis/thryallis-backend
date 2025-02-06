@@ -40,9 +40,10 @@ class LegalProvision(me.Document):
             { "fields": [
                             "regulatedObject.regulatedObjectType", "regulatedObject.regulatedObjectId", 
                             "legalAct",
-                            "legalProvisionSpecs.meros", "legalProvisionSpecs.kefalaio", "legalProvisionSpecs.arthro", "legalProvisionSpecs.paragrafos", "legalProvisionSpecs.edafio", "legalProvisionSpecs.pararthma"
+                            "legalProvisionSpecs.meros", "legalProvisionSpecs.arthro", "legalProvisionSpecs.paragrafos", "legalProvisionSpecs.edafio", "legalProvisionSpecs.pararthma"
                         ], "unique": True, "name":"regulatedObject_legalAct_legalProvisionSpecs" }
         ],
+        # From index I have removed legalProvisionSpecs.kefalaio
     }
 
     # regulatedObject = me.EmbeddedDocumentField(RegulatedObject, required=True, unique_with=["legalAct", "legalProvisionSpecs"])
