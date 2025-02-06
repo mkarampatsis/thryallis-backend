@@ -2,10 +2,11 @@ from flask import Blueprint, request, Response
 from google.oauth2 import id_token
 from google.auth.transport import requests
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
-from src.config import GOOGLE_AUDIENCE
+from src.config import GOOGLE_AUDIENCE, CLIENT_ID, CLIENT_PWD
 from src.models.user import User
 import json
 from src.models.psped.log import PspedSystemLog as Log
+import requests
 
 
 auth = Blueprint("auth", __name__)
@@ -48,6 +49,58 @@ def google_auth():
 
     return Response(json.dumps({"accessToken": access_token, "user": user}), status=200)
 
+
+@auth.route("/gsisUser/<string:code>", methods=["GET"])
+def gsis_login(code: str):
+    
+    try: 
+        clientId = CLIENT_ID,
+        clientSecret = CLIENT_PWD,
+        redirectUri = 'https://ypes.ddns.net',
+        scope = 'openid profile email offline_access roles',
+        TOKEN_URL = 'https://test.gsis.gr/oauth2servergov/oauth/token'
+        USER_INFO_URL = "https://test.gsis.gr/oauth2servergov/userinfo?format=xml"
+
+        # URL of the login, logout, and silent refresh endpoints
+        loginUrl = 'https://test.gsis.gr/oauth2servergov/oauth/authorize',
+        logoutUrl = 'https://test.gsis.gr/oauth2servergov/logout',
+        tokenEndpoint = 'https://test.gsis.gr/oauth2servergov/oauth/token',
+        userinfoEndpoint = 'https://test.gsis.gr/oauth2servergov/userinfo?format=xml',
+        
+        payload = {
+            "grant_type": "authorization_code",
+            "client_id": clientId,
+            "client_secret": clientSecret,
+            "redirect_uri": redirectUri,
+            "code": code,
+            "scope":"read"
+        }
+
+
+        # Send request to GSIS token endpoint
+        response = requests.post(TOKEN_URL, data=payload)
+        
+        if response.status_code == 200:
+            token_data = response.json()
+            headers = {
+                "Authorization": access_token  # Should be in format "Bearer <token>"
+            }
+
+            userRequest = requests.get(USER_INFO_URL, headers=headers)
+            if userRequest.status_code == 200:
+                return Response(json.dumps({"accessToken": token_data, "user": userRequest }), status=200)
+            else:
+                return Response(json.dumps({"message": "Πρόβλημα στη εξαγωγή του χρήστη", "details": userRequest.text }), status=userRequest.status_code)
+        else:
+            return Response(json.dumps({"message": "Πρόβλημα στη εξαγωγή του token", "details": response.text }), status=response.status_code) 
+            
+    except Exception as err:
+        print(err)
+        return Response(
+            json.dumps({"message": "Πρόβλημα στην εξαγωγή του code, προσπαθήστε ξανά.", "details":err}),
+            mimetype="application/json",
+            status=404,
+        )
 
 # @auth.route("/profile", methods=["PATCH"])
 # @jwt_required()
