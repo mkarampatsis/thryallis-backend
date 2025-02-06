@@ -86,11 +86,10 @@ def gsis_login(code: str):
             print("2>>", access_token['access_token'])
             
             # Ensure token is correctly formatted as "Bearer <token>"
-            if not access_token.startswith("Bearer "):
-                access_token_bearer = f"Bearer {access_token['access_token']}"
+            access_token_bearer = f"Bearer {access_token['access_token']}"
             
             headers = {
-                "Authorization": "Bearer " + access_token_bearer  # Should be in format "Bearer <token>"
+                "Authorization": access_token_bearer  # Should be in format "Bearer <token>"
             }
 
             userRequest = requests.get(USER_INFO_URL, headers=headers)
