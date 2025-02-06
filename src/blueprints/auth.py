@@ -82,11 +82,13 @@ def gsis_login(code: str):
         
         if response.status_code == 200:
             token_data = response.json()
+            
             headers = {
-                "Authorization": access_token  # Should be in format "Bearer <token>"
+                "Authorization": token_data  # Should be in format "Bearer <token>"
             }
 
             userRequest = requests.get(USER_INFO_URL, headers=headers)
+            
             if userRequest.status_code == 200:
                 return Response(json.dumps({"accessToken": token_data, "user": userRequest }), status=200)
             else:
