@@ -6,7 +6,7 @@ from src.config import GOOGLE_AUDIENCE, CLIENT_ID, CLIENT_PWD
 from src.models.user import User
 import json
 from src.models.psped.log import PspedSystemLog as Log
-import requests
+import requests as gsisRequest
 import xml.etree.ElementTree as ET
 
 
@@ -16,6 +16,7 @@ auth = Blueprint("auth", __name__)
 @auth.route("/google-auth", methods=["POST"])
 def google_auth():
     idToken = request.json["idToken"]
+
     try:
         id_info = id_token.verify_oauth2_token(idToken, requests.Request(), GOOGLE_AUDIENCE)
     except Exception as e:
@@ -79,7 +80,7 @@ def gsis_login(code: str):
 
 
         # Send request to GSIS token endpoint
-        response = requests.post(TOKEN_URL, data=payload)
+        response = gsisRequest.post(TOKEN_URL, data=payload)
         
         if response.status_code == 200:
             access_token = response.json()
@@ -91,7 +92,7 @@ def gsis_login(code: str):
                 "Authorization": access_token_bearer  # Should be in format "Bearer <token>"
             }
 
-            userRequest = requests.get(USER_INFO_URL, headers=headers)
+            userRequest = gsisRequest.get(USER_INFO_URL, headers=headers)
             json_user = xml_to_json(userRequest.text)
             
             if userRequest.status_code == 200:

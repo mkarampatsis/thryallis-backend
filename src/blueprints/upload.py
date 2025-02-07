@@ -59,7 +59,7 @@ def get_file():
     )
 
 @upload.route("<docid>", methods=["GET"])
-@jwt_required()
+# @jwt_required()
 def uploaded_file(docid):
     file_upload = FileUpload.objects(id=ObjectId(docid)).first()
     if file_upload is None:

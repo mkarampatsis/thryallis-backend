@@ -105,7 +105,7 @@ def update_legalact(id):
 
 
 @legal_act.route("", methods=["GET"])
-@jwt_required()
+# @jwt_required()
 def list_all_nomikes_praxeis():
     nomikes_praxeis = LegalAct.objects()
     return Response(nomikes_praxeis.to_json(), mimetype="application/json", status=200)
@@ -132,7 +132,7 @@ def get_nomiki_praxi_by_id(id: str):
         )
 
 @legal_act.route("/by-act-key/<path:act_id>", methods=["GET"])
-@jwt_required()
+# @jwt_required()
 def get_nomiki_praxi_act_key(act_id):
     print(act_id)
     try:

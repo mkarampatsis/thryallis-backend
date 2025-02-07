@@ -17,7 +17,7 @@ legal_provision = Blueprint("legal_provision", __name__)
 
 
 @legal_provision.route("/by_regulated_organization/<string:code>", methods=["GET"])
-@jwt_required()
+# @jwt_required()
 def get_legal_provisions_by_regulated_organization(code: str):
     organization = Foreas.objects.get(code=code)
     # debug_print("LEGAL PROVISIONS BY ORGANIZATION CODE", organization.to_mongo().to_dict())
