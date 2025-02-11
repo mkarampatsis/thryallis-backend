@@ -18,6 +18,7 @@ class Question(me.EmbeddedDocument):
 class Helpbox(me.Document):
     meta = {"collection": "helpbox", "db_alias": "psped"}
 
+    key = me.StringField(required=True)
     email = me.EmailField(required=True)
     firstName = me.StringField(required=True)
     lastName = me.StringField(required=True)

@@ -10,6 +10,8 @@ from src.models.user import User
 from src.blueprints.utils import debug_print, dict2string
 from src.blueprints.decorators import can_edit, can_update_delete, can_finalize_remits
 from datetime import datetime
+import string
+import random
 
 helpbox = Blueprint("helpbox", __name__)
 
@@ -148,7 +150,11 @@ def create_question():
         questionTitle = data["questionTitle"]
         question = [data["question"]]
 
+        length = 6
+        random_string = ''.join(random.choices(string.digits, k=length))
+
         newHelpbox = Helpbox(
+            key = random_string,
             email=email,
             lastName=lastName,
             firstName=firstName,
