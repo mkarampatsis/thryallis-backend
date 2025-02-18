@@ -2,7 +2,7 @@ from flask import Blueprint, Response, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from src.models.user import User, UserRole
 from src.models.psped.change import Change
-from src.blueprints.decorators import has_helpdesk_role
+from src.blueprints.decorators import has_admin_role
 import json
 
 
@@ -24,20 +24,24 @@ def get_my_organizations():
 
 @user.route("/all")
 @jwt_required()
-@has_helpdesk_role
+@has_admin_role
 def get_all_users():
     users = User.objects()
     return Response(users.to_json(), status=200)
 
 @user.route("/<string:email>", methods=["PUT"])
 @jwt_required()
-@has_helpdesk_role
+@has_admin_role
 def set_user_accesses(email: str):
 
     data = request.get_json()
 
     orgarganizationCodes = data["organizationCodes"]
     organizationalUnitCodes = data["organizationalUnitCodes"]
+
+    print("1>>",orgarganizationCodes)
+    print("2>>",organizationalUnitCodes)
+    print("3>>",email)
 
     user = User.objects.get(email=email)
 
@@ -48,9 +52,11 @@ def set_user_accesses(email: str):
             break
 
     if editor_role:
+        print("YES")
         editor_role.foreas = orgarganizationCodes
         editor_role.monades = organizationalUnitCodes
     else:
+        print("NO")
         new_role = UserRole(role='EDITOR', foreas=orgarganizationCodes, monades=organizationalUnitCodes)
         user.roles.append(new_role)
     

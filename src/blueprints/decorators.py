@@ -146,3 +146,22 @@ def has_helpdesk_role(f):
         return f(*args, **kwargs)
 
     return decorated_function
+
+def has_admin_role(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        claims = get_jwt()
+        user_roles = claims["roles"]
+        roles = [x for x in user_roles]
+        # check if user has helpdesk role
+        admin_roles = [x for x in roles if x["role"] == "ADMIN"]
+
+        if not admin_roles:
+            return Response(
+                json.dumps({"message": "<strong>Δεν έχετε τέτοιο δικαίωμα</strong>"}),
+                mimetype="application/json",
+                status=403,
+            )
+        return f(*args, **kwargs)
+
+    return decorated_function
