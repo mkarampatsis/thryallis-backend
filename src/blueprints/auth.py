@@ -63,11 +63,11 @@ def gsis_login(code: str):
         TOKEN_URL = 'https://test.gsis.gr/oauth2servergov/oauth/token'
         USER_INFO_URL = "https://test.gsis.gr/oauth2servergov/userinfo?format=xml"
 
-        # URL of the login, logout, and silent refresh endpoints
-        loginUrl = 'https://test.gsis.gr/oauth2servergov/oauth/authorize',
-        logoutUrl = 'https://test.gsis.gr/oauth2servergov/logout',
-        tokenEndpoint = 'https://test.gsis.gr/oauth2servergov/oauth/token',
-        userinfoEndpoint = 'https://test.gsis.gr/oauth2servergov/userinfo?format=xml',
+        # # URL of the login, logout, and silent refresh endpoints
+        # loginUrl = 'https://test.gsis.gr/oauth2servergov/oauth/authorize',
+        # logoutUrl = 'https://test.gsis.gr/oauth2servergov/logout',
+        # tokenEndpoint = 'https://test.gsis.gr/oauth2servergov/oauth/token',
+        # userinfoEndpoint = 'https://test.gsis.gr/oauth2servergov/userinfo?format=xml',
         
         payload = {
             "grant_type": "authorization_code",
