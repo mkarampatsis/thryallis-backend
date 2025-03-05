@@ -54,7 +54,7 @@ def google_auth():
 
 @auth.route("/gsisUser/<string:code>", methods=["GET"])
 def gsis_login(code: str):
-    
+    print("GSIS")
     try: 
         clientId = CLIENT_ID,
         clientSecret = CLIENT_PWD,
@@ -93,7 +93,7 @@ def gsis_login(code: str):
             }
 
             userRequest = gsisRequest.get(USER_INFO_URL, headers=headers)
-            print("2>>", userRequest)
+            print("2>>", userRequest.text)
             json_user = xml_to_json(userRequest.text)
             
             if userRequest.status_code == 200:
