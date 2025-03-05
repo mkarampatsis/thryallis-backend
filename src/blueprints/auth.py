@@ -78,9 +78,9 @@ def gsis_login(code: str):
             "scope":"read"
         }
 
-
         # Send request to GSIS token endpoint
         response = gsisRequest.post(TOKEN_URL, data=payload)
+        print("1>>", response.json())
         
         if response.status_code == 200:
             access_token = response.json()
@@ -93,6 +93,7 @@ def gsis_login(code: str):
             }
 
             userRequest = gsisRequest.get(USER_INFO_URL, headers=headers)
+            print("2>>", userRequest)
             json_user = xml_to_json(userRequest.text)
             
             if userRequest.status_code == 200:
