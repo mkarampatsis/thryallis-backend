@@ -2,13 +2,13 @@ from flask import Blueprint, request, Response
 from google.oauth2 import id_token
 from google.auth.transport import requests
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
-from src.config import GOOGLE_AUDIENCE, CLIENT_ID, CLIENT_PWD
+from src.config import GOOGLE_AUDIENCE, CLIENT_ID, CLIENT_PWD, HORIZONTAL_ID, HOSRIZONTAL_PWD
 from src.models.user import User
 import json
 from src.models.psped.log import PspedSystemLog as Log
 import requests as gsisRequest
 import xml.etree.ElementTree as ET
-
+import base64
 
 auth = Blueprint("auth", __name__)
 
@@ -63,12 +63,8 @@ def gsis_login(code: str):
         TOKEN_URL = 'https://test.gsis.gr/oauth2servergov/oauth/token'
         USER_INFO_URL = "https://test.gsis.gr/oauth2servergov/userinfo?format=xml"
 
-        # # URL of the login, logout, and silent refresh endpoints
-        # loginUrl = 'https://test.gsis.gr/oauth2servergov/oauth/authorize',
-        # logoutUrl = 'https://test.gsis.gr/oauth2servergov/logout',
-        # tokenEndpoint = 'https://test.gsis.gr/oauth2servergov/oauth/token',
-        # userinfoEndpoint = 'https://test.gsis.gr/oauth2servergov/userinfo?format=xml',
-        
+        HORIZONTAL_SYSTEM_INFO = "https://test.gsis.gr/esbpilot/pubAuthDocManagementRestService/padInfoSystemAll"
+
         payload = {
             "grant_type": "authorization_code",
             "client_id": clientId,
@@ -97,6 +93,31 @@ def gsis_login(code: str):
             json_user = xml_to_json(userRequest.text)
             
             if userRequest.status_code == 200:
+                ip_addr = request.remote_addr
+                data = b"{}:{}".format(HORIZONTAL_ID, HOSRIZONTAL_PWD)
+                encoded_data = base64.b64encode(data)
+
+                horizontal_header = f"Basic {}".format(data)
+            
+                headers = { "Authorization": horizontal_header }
+
+                horizontal_payload = {
+                  "auditRecord": {
+                      "auditTransactionId": "1",
+                      "auditTransactionDate": "2025-03-10T13:15:02Z",
+                      "auditUnit": "GSIS",
+                      "auditProtocol": "1",
+                      "auditUserId": "markos.karampatsis",
+                      "auditUserIp": "46.176.138.218"
+                  },
+                  "padInfoSystemAllInputRecord": {
+                      "lang": "el"        
+                  }
+                }
+
+                system_info = gsisRequest.post(HORIZONTAL_SYSTEM_INFO, headers=horizontal_header, data=horizontal_payload)
+                print("1>>", system_info.json())
+
                 return Response(json.dumps({"accessToken": access_token, "user": json_user }), status=200)
             else:
                 return Response(json.dumps({"message": "Πρόβλημα στη εξαγωγή του χρήστη", "details": userRequest.text }), status=userRequest.status_code)
