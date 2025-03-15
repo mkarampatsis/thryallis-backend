@@ -97,7 +97,7 @@ def gsis_login(code: str):
                 data = b"{}:{}".format(HORIZONTAL_ID, HOSRIZONTAL_PWD)
                 encoded_data = base64.b64encode(data)
 
-                horizontal_header = f"Basic {}".format(data)
+                horizontal_header = f"Basic {data}"
             
                 headers = { "Authorization": horizontal_header }
 
