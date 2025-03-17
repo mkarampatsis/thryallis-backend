@@ -24,6 +24,7 @@ class Helpbox(me.Document):
     lastName = me.StringField(required=True)
     organizations = me.ListField(me.StringField(), default=[])
     questionTitle = me.StringField(required=True)
+    questionCategory = me.StringField(required=True)
     questions = me.EmbeddedDocumentListField(Question, required=True)
     toWhom = me.StringField()
     finalized = me.BooleanField(default=False)  

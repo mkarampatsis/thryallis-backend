@@ -148,6 +148,7 @@ def create_question():
         firstName = data["firstName"]
         organizations = data["organizations"]
         questionTitle = data["questionTitle"]
+        questionCategory = data["questionCategory"]
         question = [data["question"]]
 
         length = 6
@@ -160,6 +161,7 @@ def create_question():
             firstName=firstName,
             organizations=organizations,
             questionTitle = questionTitle,
+            questionCategory = questionCategory,
             questions = question,
             toWhom=email_with_lowest_count['email']            
         ).save()
