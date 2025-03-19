@@ -164,7 +164,9 @@ def gsis_horizontal():
         HORIZONTAL_SYSTEM_EMP_COUNT = "https://test.gsis.gr/esbpilot/pubAuthDocManagementRestService/padEmplListCount"
         HORIZONTAL_SYSTEM_EMP_LIST = "https://test.gsis.gr/esbpilot/pubAuthDocManagementRestService/padEmplList"
 
-        ip_addr = request.remote_addr
+        # ip_addr = request.remote_addr
+        ip_addr = request.headers.get('X-Forwarded-For', request.remote_addr)
+        print(ip_addr)
       
         data = f"{HORIZONTAL_ID}:{HORIZONTAL_PWD}".encode('utf-8')
         encoded_data = base64.b64encode(data).decode('utf-8')
