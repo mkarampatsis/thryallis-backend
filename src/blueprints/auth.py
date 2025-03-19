@@ -2,7 +2,7 @@ from flask import Blueprint, request, Response
 from google.oauth2 import id_token
 from google.auth.transport import requests
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
-from src.config import GOOGLE_AUDIENCE, CLIENT_ID, CLIENT_PWD, HORIZONTAL_ID, HOSRIZONTAL_PWD
+from src.config import GOOGLE_AUDIENCE, CLIENT_ID, CLIENT_PWD, HORIZONTAL_ID, HORIZONTAL_PWD
 from src.models.user import User
 import json
 from src.models.psped.log import PspedSystemLog as Log
@@ -96,8 +96,8 @@ def gsis_login(code: str):
             
             if userRequest.status_code == 200:
                 ip_addr = request.remote_addr
-                data = b"{}:{}".format(HORIZONTAL_ID, HOSRIZONTAL_PWD)
-                encoded_data = base64.b64encode(data)
+                data = f"{HORIZONTAL_ID}:{HOSRIZONTAL_PWD}".encode('utf-8')
+                encoded_data = base64.b64encode(data).decode('utf-8')
 
                 horizontal_header = f"Basic {data}"
             
@@ -152,6 +152,81 @@ def gsis_login(code: str):
         print(err)
         return Response(
             json.dumps({"message": "Πρόβλημα στην εξαγωγή του code, προσπαθήστε ξανά.", "details":err}),
+            mimetype="application/json",
+            status=404,
+        )
+@auth.route("/gsisHorizontal", methods=["GET"])
+def gsis_horizontal():
+    print("GSIS Horizontal")
+    try: 
+        
+        HORIZONTAL_SYSTEM_INFO = "https://test.gsis.gr/esbpilot/pubAuthDocManagementRestService/padInfoSystemAll"
+        HORIZONTAL_SYSTEM_EMP_COUNT = "https://test.gsis.gr/esbpilot/pubAuthDocManagementRestService/padEmplListCount"
+        HORIZONTAL_SYSTEM_EMP_LIST = "https://test.gsis.gr/esbpilot/pubAuthDocManagementRestService/padEmplList"
+
+        ip_addr = request.remote_addr
+      
+        data = f"{HORIZONTAL_ID}:{HORIZONTAL_PWD}".encode('utf-8')
+        encoded_data = base64.b64encode(data).decode('utf-8')
+      
+        basic_auth = f"Basic { encoded_data }"
+            
+        header = {
+            "Authorization": basic_auth,
+            "Content-Type": "application/json"
+        }
+
+        horizontal_system_info_payload = {
+            "auditRecord": {
+            "auditTransactionId": "1",
+            "auditTransactionDate": "2022-09-05T12:09:10Z",
+            "auditUnit": "GSIS",
+            "auditProtocol": "1",
+            "auditUserId": "user",
+            "auditUserIp": ip_addr
+            },
+            "padInfoSystemAllInputRecord": {
+                "lang": "el"
+            }
+        }
+
+        horizontal_emp_list_payload = {
+            "auditRecord": {
+            "auditTransactionId": "1",
+            "auditTransactionDate": "2022-09-05T12:09:10Z",
+            "auditUnit": "GSIS",
+            "auditProtocol": "1",
+            "auditUserId": "user",
+            "auditUserIp": "0.0.0.0"
+            },
+            "padEmplListInputRecord": {
+                "page": "1",
+                "size": "15",
+                "lang": "el",
+                "source": {
+                    "employee": {}
+                }
+            }
+        }
+
+        system_info = gsisRequest.post(HORIZONTAL_SYSTEM_INFO, headers=header, json=horizontal_system_info_payload)
+        # if system_info.status_code == 200:
+        #     print("Response 1:", system_info.json())
+        # else:
+        #     print(f"Error 1: {system_info.status_code}: {system_info.text}")
+        
+        emp_list = gsisRequest.post(HORIZONTAL_SYSTEM_EMP_LIST, headers=header, json=horizontal_emp_list_payload)
+        # if emp_list.status_code == 200:
+        #     print("Response 2:", emp_list.json())
+        # else:
+        #     print(f"Error 2: {emp_list.status_code}: {emp_list.text}")
+
+        return Response(json.dumps({"system_info": system_info.json(), "emp_list": emp_list.json(), "ip":ip_addr }), status=200)
+            
+    except Exception as err:
+        print(err)
+        return Response(
+            json.dumps({"message": "Πρόβλημα στην εξαγωγή στοιχείων για το οριζόντιο ΠΣ.", "details":err}),
             mimetype="application/json",
             status=404,
         )
