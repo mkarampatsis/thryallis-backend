@@ -64,6 +64,8 @@ def gsis_login(code: str):
         USER_INFO_URL = "https://test.gsis.gr/oauth2servergov/userinfo?format=xml"
 
         HORIZONTAL_SYSTEM_INFO = "https://test.gsis.gr/esbpilot/pubAuthDocManagementRestService/padInfoSystemAll"
+        HORIZONTAL_SYSTEM_EMP_COUNT = "https://test.gsis.gr/esbpilot/pubAuthDocManagementRestService/padEmplListCount"
+        HORIZONTAL_SYSTEM_EMP_LIST = "https://test.gsis.gr/esbpilot/pubAuthDocManagementRestService/padEmplList"
 
         payload = {
             "grant_type": "authorization_code",
@@ -101,22 +103,44 @@ def gsis_login(code: str):
             
                 headers = { "Authorization": horizontal_header }
 
-                horizontal_payload = {
-                  "auditRecord": {
-                      "auditTransactionId": "1",
-                      "auditTransactionDate": "2025-03-10T13:15:02Z",
-                      "auditUnit": "GSIS",
-                      "auditProtocol": "1",
-                      "auditUserId": "markos.karampatsis",
-                      "auditUserIp": "46.176.138.218"
-                  },
-                  "padInfoSystemAllInputRecord": {
-                      "lang": "el"        
-                  }
+                horizontal_system_info_payload = {
+                    "auditRecord": {
+                    "auditTransactionId": "1",
+                    "auditTransactionDate": "2022-09-05T12:09:10Z",
+                    "auditUnit": "GSIS",
+                    "auditProtocol": "1",
+                    "auditUserId": "user",
+                    "auditUserIp": "0.0.0.0"
+                    },
+                    "padInfoSystemAllInputRecord": {
+                        "lang": "el"
+                    }
                 }
 
-                system_info = gsisRequest.post(HORIZONTAL_SYSTEM_INFO, headers=horizontal_header, data=horizontal_payload)
-                print("1>>", system_info.json())
+                horizontal_emp_list_payload = {
+                    "auditRecord": {
+                    "auditTransactionId": "1",
+                    "auditTransactionDate": "2022-09-05T12:09:10Z",
+                    "auditUnit": "GSIS",
+                    "auditProtocol": "1",
+                    "auditUserId": "user",
+                    "auditUserIp": "0.0.0.0"
+                    },
+                    "padEmplListInputRecord": {
+                        "page": "1",
+                        "size": "15",
+                        "lang": "el",
+                        "source": {
+                            "employee": {}
+                        }
+                    }
+                }
+
+                system_info = gsisRequest.post(HORIZONTAL_SYSTEM_INFO, headers=horizontal_header, data=horizontal_system_info_payload)
+                print("3>>", system_info.json())
+                
+                emp_list = gsisRequest.post(HORIZONTAL_SYSTEM_EMP_LIST, headers=horizontal_header, data=horizontal_emp_list_payload)
+                print("4>>", emp_list.json())
 
                 return Response(json.dumps({"accessToken": access_token, "user": json_user }), status=200)
             else:
