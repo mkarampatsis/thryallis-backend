@@ -9,6 +9,9 @@ from src.models.psped.log import PspedSystemLog as Log
 import requests as gsisRequest
 import xml.etree.ElementTree as ET
 import base64
+import string
+import random
+import datetime
 
 auth = Blueprint("auth", __name__)
 
@@ -165,9 +168,10 @@ def gsis_horizontal():
         HORIZONTAL_SYSTEM_EMP_LIST = "https://test.gsis.gr/esbpilot/pubAuthDocManagementRestService/padEmplList"
 
         # ip_addr = request.remote_addr
-        ip_addr = request.headers.get('X-Forwarded-For', request.remote_addr)
-        print(ip_addr)
-      
+        client_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+        host_ip = request.host
+        print(client_ip, host_ip, randomString())
+             
         data = f"{HORIZONTAL_ID}:{HORIZONTAL_PWD}".encode('utf-8')
         encoded_data = base64.b64encode(data).decode('utf-8')
       
@@ -180,12 +184,12 @@ def gsis_horizontal():
 
         horizontal_system_info_payload = {
             "auditRecord": {
-            "auditTransactionId": "1",
-            "auditTransactionDate": "2022-09-05T12:09:10Z",
-            "auditUnit": "GSIS",
+            "auditTransactionId": randomString(),
+            "auditTransactionDate": datetime.datetime.now().isoformat(),
+            "auditUnit": "ΥΠΟΥΡΓΕΙΟ ΕΣΩΤΕΡΙΚΩΝ",
             "auditProtocol": "1",
             "auditUserId": "user",
-            "auditUserIp": ip_addr
+            "auditUserIp": client_ip
             },
             "padInfoSystemAllInputRecord": {
                 "lang": "el"
@@ -194,12 +198,12 @@ def gsis_horizontal():
 
         horizontal_emp_list_payload = {
             "auditRecord": {
-            "auditTransactionId": "1",
-            "auditTransactionDate": "2022-09-05T12:09:10Z",
-            "auditUnit": "GSIS",
+            "auditTransactionId": randomString(),
+            "auditTransactionDate": datetime.datetime.now().isoformat(),
+            "auditUnit": "ΥΠΟΥΡΓΕΙΟ ΕΣΩΤΕΡΙΚΩΝ",
             "auditProtocol": "1",
             "auditUserId": "user",
-            "auditUserIp": "0.0.0.0"
+            "auditUserIp": client_ip
             },
             "padEmplListInputRecord": {
                 "page": "1",
@@ -211,19 +215,47 @@ def gsis_horizontal():
             }
         }
 
+        horizontal_emp_count_payload = {
+          "auditRecord": {
+            "auditTransactionId": randomString(),
+            "auditTransactionDate": datetime.datetime.now().isoformat(),
+            "auditUnit": "ΥΠΟΥΡΓΕΙΟ ΕΣΩΤΕΡΙΚΩΝ",
+            "auditProtocol": "1",
+            "auditUserId": "user",
+            "auditUserIp": client_ip
+            },
+            "padEmplListCountInputRecord": {
+              "lang": "el",
+              "source": {
+                  "employee": {}
+              }
+            }
+        }
+
+        print(horizontal_system_info_payload, horizontal_emp_list_payload, horizontal_emp_count_payload)
+
         system_info = gsisRequest.post(HORIZONTAL_SYSTEM_INFO, headers=header, json=horizontal_system_info_payload)
         # if system_info.status_code == 200:
         #     print("Response 1:", system_info.json())
         # else:
         #     print(f"Error 1: {system_info.status_code}: {system_info.text}")
-        
         emp_list = gsisRequest.post(HORIZONTAL_SYSTEM_EMP_LIST, headers=header, json=horizontal_emp_list_payload)
-        # if emp_list.status_code == 200:
-        #     print("Response 2:", emp_list.json())
-        # else:
-        #     print(f"Error 2: {emp_list.status_code}: {emp_list.text}")
+        emp_count = gsisRequest.post(HORIZONTAL_SYSTEM_EMP_COUNT, headers=header, json=horizontal_emp_count_payload)
+      
 
-        return Response(json.dumps({"system_info": system_info.json(), "emp_list": emp_list.json(), "ip":ip_addr }), status=200)
+        return Response(json.dumps({
+            "system_info": system_info.json(),
+            "emp_list": emp_list.json(), 
+            "emp_count": emp_count.json(), 
+            "ip_address":{
+              "client": client_ip, 
+              "host":host_ip, 
+              "timestamp": datetime.datetime.now().isoformat(),
+              "horizontal_system_info_payload": horizontal_system_info_payload,
+              "horizontal_emp_list_payload": horizontal_emp_list_payload,
+              "horizontal_emp_count_payload": horizontal_emp_count_payload
+            } 
+          }), status=200)
             
     except Exception as err:
         print(err)
@@ -250,6 +282,11 @@ def xml_to_json(xml_str):
         "mothername": user_info.get("mothername", "").strip(),
         "birthyear": user_info.get("birthyear", "").strip()
     }
+
+def randomString():
+  length = 6
+  random_string = ''.join(random.choices(string.digits, k=length))
+  return random_string
 
 # @auth.route("/profile", methods=["PATCH"])
 # @jwt_required()
