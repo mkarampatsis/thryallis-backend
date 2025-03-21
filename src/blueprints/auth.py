@@ -302,7 +302,8 @@ def gsis_horizontal():
               "horizontal_system_info_payload": horizontal_system_info_payload,
               "horizontal_emp_list_payload": horizontal_emp_list_payload,
               "horizontal_emp_2525_payload": horizontal_emp_2525_payload,
-              "horizontal_emp_count_payload": horizontal_emp_count_payload
+              "horizontal_emp_count_payload": horizontal_emp_count_payload,
+              "horizontal_role_payload": horizontal_role_payload
             } 
           }), status=200)
             
