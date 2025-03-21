@@ -67,8 +67,9 @@ def gsis_login(code: str):
         USER_INFO_URL = "https://test.gsis.gr/oauth2servergov/userinfo?format=xml"
 
         HORIZONTAL_SYSTEM_INFO = "https://test.gsis.gr/esbpilot/pubAuthDocManagementRestService/padInfoSystemAll"
-        HORIZONTAL_SYSTEM_EMP_COUNT = "https://test.gsis.gr/esbpilot/pubAuthDocManagementRestService/padEmplListCount"
-        HORIZONTAL_SYSTEM_EMP_LIST = "https://test.gsis.gr/esbpilot/pubAuthDocManagementRestService/padEmplList"
+        HORIZONTAL_EMP_COUNT = "https://test.gsis.gr/esbpilot/pubAuthDocManagementRestService/padEmplListCount"
+        HORIZONTAL_EMP_LIST = "https://test.gsis.gr/esbpilot/pubAuthDocManagementRestService/padEmplList"
+        HORIZONTAL_ROLE = "https://test.gsis.gr/esbpilot/pubAuthDocManagementRestService/padRoleManagement"
 
         payload = {
             "grant_type": "authorization_code",
@@ -164,9 +165,10 @@ def gsis_horizontal():
     try: 
         
         HORIZONTAL_SYSTEM_INFO = "https://test.gsis.gr/esbpilot/pubAuthDocManagementRestService/padInfoSystemAll"
-        HORIZONTAL_SYSTEM_EMP_COUNT = "https://test.gsis.gr/esbpilot/pubAuthDocManagementRestService/padEmplListCount"
-        HORIZONTAL_SYSTEM_EMP_LIST = "https://test.gsis.gr/esbpilot/pubAuthDocManagementRestService/padEmplList"
-
+        HORIZONTAL_EMP_COUNT = "https://test.gsis.gr/esbpilot/pubAuthDocManagementRestService/padEmplListCount"
+        HORIZONTAL_EMP_LIST = "https://test.gsis.gr/esbpilot/pubAuthDocManagementRestService/padEmplList"
+        HORIZONTAL_ROLE = "https://test.gsis.gr/esbpilot/pubAuthDocManagementRestService/padRoleManagement"
+        
         # ip_addr = request.remote_addr
         client_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
         host_ip = request.host
@@ -215,7 +217,7 @@ def gsis_horizontal():
             }
         }
 
-        horizontal_emp_list_payload = {
+        horizontal_emp_2525_payload = {
             "auditRecord": {
             "auditTransactionId": randomString(),
             "auditTransactionDate": datetime.datetime.now().isoformat(),
@@ -274,21 +276,25 @@ def gsis_horizontal():
             }
         }
 
-        print(horizontal_system_info_payload, horizontal_emp_list_payload, horizontal_emp_count_payload)
+        # print(horizontal_system_info_payload, horizontal_emp_list_payload, horizontal_emp_count_payload)
 
         system_info = gsisRequest.post(HORIZONTAL_SYSTEM_INFO, headers=header, json=horizontal_system_info_payload)
         # if system_info.status_code == 200:
         #     print("Response 1:", system_info.json())
         # else:
         #     print(f"Error 1: {system_info.status_code}: {system_info.text}")
-        emp_list = gsisRequest.post(HORIZONTAL_SYSTEM_EMP_LIST, headers=header, json=horizontal_emp_list_payload)
-        emp_count = gsisRequest.post(HORIZONTAL_SYSTEM_EMP_COUNT, headers=header, json=horizontal_emp_count_payload)
+        emp_list = gsisRequest.post(HORIZONTAL_EMP_LIST, headers=header, json=horizontal_emp_list_payload)
+        emp_2525 = gsisRequest.post(HORIZONTAL_EMP_LIST, headers=header, json=horizontal_emp_2525_payload)
+        emp_count = gsisRequest.post(HORIZONTAL_EMP_COUNT, headers=header, json=horizontal_emp_count_payload)
+        emp_role = gsisRequest.post(HORIZONTAL_ROLE, headers=header, json=horizontal_role_payload)
       
 
         return Response(json.dumps({
             "system_info": system_info.json(),
             "emp_list": emp_list.json(), 
+            "emp_2525": emp_2525.json(), 
             "emp_count": emp_count.json(), 
+            "emp_role": emp_role.json(), 
             "ip_address":{
               "client": client_ip, 
               "host":host_ip, 
