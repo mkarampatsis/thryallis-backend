@@ -301,6 +301,7 @@ def gsis_horizontal():
               "timestamp": datetime.datetime.now().isoformat(),
               "horizontal_system_info_payload": horizontal_system_info_payload,
               "horizontal_emp_list_payload": horizontal_emp_list_payload,
+              "horizontal_emp_2525_payload": horizontal_emp_2525_payload,
               "horizontal_emp_count_payload": horizontal_emp_count_payload
             } 
           }), status=200)
