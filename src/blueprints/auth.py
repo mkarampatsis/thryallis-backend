@@ -187,8 +187,8 @@ def gsis_horizontal():
             "auditTransactionId": randomString(),
             "auditTransactionDate": datetime.datetime.now().isoformat(),
             "auditUnit": "ΥΠΟΥΡΓΕΙΟ ΕΣΩΤΕΡΙΚΩΝ",
-            "auditProtocol": "1",
-            "auditUserId": "user",
+            "auditProtocol": randomString(),
+            "auditUserId": "markos.karampatsis",
             "auditUserIp": client_ip
             },
             "padInfoSystemAllInputRecord": {
@@ -201,8 +201,8 @@ def gsis_horizontal():
             "auditTransactionId": randomString(),
             "auditTransactionDate": datetime.datetime.now().isoformat(),
             "auditUnit": "ΥΠΟΥΡΓΕΙΟ ΕΣΩΤΕΡΙΚΩΝ",
-            "auditProtocol": "1",
-            "auditUserId": "user",
+            "auditProtocol": randomString(),
+            "auditUserId": "markos.karampatsis",
             "auditUserIp": client_ip
             },
             "padEmplListInputRecord": {
@@ -215,13 +215,32 @@ def gsis_horizontal():
             }
         }
 
+        horizontal_emp_list_payload = {
+            "auditRecord": {
+            "auditTransactionId": randomString(),
+            "auditTransactionDate": datetime.datetime.now().isoformat(),
+            "auditUnit": "ΥΠΟΥΡΓΕΙΟ ΕΣΩΤΕΡΙΚΩΝ",
+            "auditProtocol": randomString(),
+            "auditUserId": "2525",
+            "auditUserIp": client_ip
+            },
+            "padEmplListInputRecord": {
+                "page": "1",
+                "size": "15",
+                "lang": "el",
+                "source": {
+                    "employee": {"employeeVatNo": "037450866"}
+                }
+            }
+        }
+
         horizontal_emp_count_payload = {
           "auditRecord": {
             "auditTransactionId": randomString(),
             "auditTransactionDate": datetime.datetime.now().isoformat(),
             "auditUnit": "ΥΠΟΥΡΓΕΙΟ ΕΣΩΤΕΡΙΚΩΝ",
-            "auditProtocol": "1",
-            "auditUserId": "user",
+            "auditProtocol": randomString(),
+            "auditUserId": "markos.karampatsis",
             "auditUserIp": client_ip
             },
             "padEmplListCountInputRecord": {
@@ -229,6 +248,29 @@ def gsis_horizontal():
               "source": {
                   "employee": {}
               }
+            }
+        }
+
+        horizontal_role_payload = {
+            "auditRecord": {
+            "auditTransactionId": randomString(),
+            "auditTransactionDate": datetime.datetime.now().isoformat(),
+            "auditUnit": "ΥΠΟΥΡΓΕΙΟ ΕΣΩΤΕΡΙΚΩΝ",
+            "auditProtocol": randomString(),
+            "auditUserId": "markos.karampatsis",
+            "auditUserIp": client_ip
+            },
+            "padRoleManagementInputRecord": {
+                "lang": "el",
+                "source": {
+                    "roles": [
+                        {
+                            "roleId": 2320,
+                            "roleName": "Help Desk",
+                            "hid": 2268
+                        }
+                    ]
+                }
             }
         }
 
