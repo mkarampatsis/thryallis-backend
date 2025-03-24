@@ -223,7 +223,7 @@ def gsis_horizontal():
             "auditTransactionDate": datetime.datetime.now().isoformat(),
             "auditUnit": "ΥΠΟΥΡΓΕΙΟ ΕΣΩΤΕΡΙΚΩΝ",
             "auditProtocol": randomString(),
-            "auditUserId": "2525",
+            "auditUserId": "2529",
             "auditUserIp": client_ip
             },
             "padEmplListInputRecord": {
