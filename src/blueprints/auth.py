@@ -162,7 +162,7 @@ def gsis_login(code: str):
 @auth.route("/gsisHorizontal", methods=["GET"])
 def gsis_horizontal():
     print("GSIS Horizontal")
-    try: 
+    try:
         
         HORIZONTAL_SYSTEM_INFO = "https://test.gsis.gr/esbpilot/pubAuthDocManagementRestService/padInfoSystemAll"
         HORIZONTAL_EMP_COUNT = "https://test.gsis.gr/esbpilot/pubAuthDocManagementRestService/padEmplListCount"
@@ -184,99 +184,6 @@ def gsis_horizontal():
             "Content-Type": "application/json"
         }
 
-        horizontal_system_info_payload = {
-            "auditRecord": {
-            "auditTransactionId": randomString(),
-            "auditTransactionDate": datetime.datetime.now().isoformat(),
-            "auditUnit": "ΥΠΟΥΡΓΕΙΟ ΕΣΩΤΕΡΙΚΩΝ",
-            "auditProtocol": randomString(),
-            "auditUserId": "markos.karampatsis",
-            "auditUserIp": client_ip
-            },
-            "padInfoSystemAllInputRecord": {
-                "lang": "el"
-            }
-        }
-
-        horizontal_emp_list_payload = {
-            "auditRecord": {
-            "auditTransactionId": randomString(),
-            "auditTransactionDate": datetime.datetime.now().isoformat(),
-            "auditUnit": "ΥΠΟΥΡΓΕΙΟ ΕΣΩΤΕΡΙΚΩΝ",
-            "auditProtocol": randomString(),
-            "auditUserId": "markos.karampatsis",
-            "auditUserIp": client_ip
-            },
-            "padEmplListInputRecord": {
-                "page": "1",
-                "size": "15",
-                "lang": "el",
-                "source": {
-                    "employee": {}
-                }
-            }
-        }
-
-        # horizontal_emp_2525_payload = {
-        #     "auditRecord": {
-        #     "auditTransactionId": randomString(),
-        #     "auditTransactionDate": datetime.datetime.now().isoformat(),
-        #     "auditUnit": "ΥΠΟΥΡΓΕΙΟ ΕΣΩΤΕΡΙΚΩΝ",
-        #     "auditProtocol": randomString(),
-        #     "auditUserId": "2525",
-        #     "auditUserIp": client_ip
-        #     },
-        #     "padEmplListInputRecord": {
-        #         "page": "1",
-        #         "size": "15",
-        #         "lang": "el",
-        #         "source": {
-        #             "employee": {"employeeVatNo": "037450866"}
-        #         }
-        #     }
-        # }
-
-        horizontal_emp_count_payload = {
-          "auditRecord": {
-            "auditTransactionId": randomString(),
-            "auditTransactionDate": datetime.datetime.now().isoformat(),
-            "auditUnit": "ΥΠΟΥΡΓΕΙΟ ΕΣΩΤΕΡΙΚΩΝ",
-            "auditProtocol": randomString(),
-            "auditUserId": "markos.karampatsis",
-            "auditUserIp": client_ip
-            },
-            "padEmplListCountInputRecord": {
-              "lang": "el",
-              "source": {
-                  "employee": {}
-              }
-            }
-        }
-
-        horizontal_role_payload = {
-            "auditRecord": {
-            "auditTransactionId": randomString(),
-            "auditTransactionDate": datetime.datetime.now().isoformat(),
-            "auditUnit": "ΥΠΟΥΡΓΕΙΟ ΕΣΩΤΕΡΙΚΩΝ",
-            "auditProtocol": randomString(),
-            "auditUserId": "markos.karampatsis",
-            "auditUserIp": client_ip
-            },
-            "padRoleManagementInputRecord": {
-                "lang": "el",
-                "source": {
-                    "roles": [
-                        {
-                            "roleId": 2320,
-                            "roleName": "Help Desk",
-                            "hid": 2268
-                        }
-                    ]
-                }
-            }
-        }
-
-        # print(horizontal_system_info_payload, horizontal_emp_list_payload, horizontal_emp_count_payload)
         users = [
           ["2525","037450866"],
           ["2526","056177410"],
@@ -287,45 +194,119 @@ def gsis_horizontal():
 
         result = []
         for i in users: 
-          horizontal_emp_2525_payload = {
+            horizontal_system_info_payload = {
+                "auditRecord": {
+                "auditTransactionId": randomString(),
+                "auditTransactionDate": datetime.datetime.now().isoformat(),
+                "auditUnit": "ΥΠΟΥΡΓΕΙΟ ΕΣΩΤΕΡΙΚΩΝ",
+                "auditProtocol": randomString(),
+                "auditUserId": "markos.karampatsis",
+                "auditUserIp": client_ip
+                },
+                "padInfoSystemAllInputRecord": {
+                    "lang": "el"
+                }
+            }
+
+            horizontal_emp_list_payload = {
+                "auditRecord": {
+                "auditTransactionId": randomString(),
+                "auditTransactionDate": datetime.datetime.now().isoformat(),
+                "auditUnit": "ΥΠΟΥΡΓΕΙΟ ΕΣΩΤΕΡΙΚΩΝ",
+                "auditProtocol": randomString(),
+                "auditUserId": "markos.karampatsis",
+                "auditUserIp": client_ip
+                },
+                "padEmplListInputRecord": {
+                    "page": "1",
+                    "size": "15",
+                    "lang": "el",
+                    "source": {
+                        "employee": {}
+                    }
+                }
+            }
+
+            horizontal_emp_count_payload = {
             "auditRecord": {
                 "auditTransactionId": randomString(),
                 "auditTransactionDate": datetime.datetime.now().isoformat(),
                 "auditUnit": "ΥΠΟΥΡΓΕΙΟ ΕΣΩΤΕΡΙΚΩΝ",
                 "auditProtocol": randomString(),
-                "auditUserId": i[0],  # Insert user ID
+                "auditUserId": "markos.karampatsis",
                 "auditUserIp": client_ip
-            },
-            "padEmplListInputRecord": {
-                "page": "1",
-                "size": "15",
+                },
+                "padEmplListCountInputRecord": {
                 "lang": "el",
                 "source": {
-                    "employee": {"employeeVatNo": i[1]}  # Insert VAT number
+                    "employee": {}
+                }
                 }
             }
-          }
-          print (i[0], i[1], horizontal_emp_2525_payload)
-          system_info = gsisRequest.post(HORIZONTAL_SYSTEM_INFO, headers=header, json=horizontal_system_info_payload)
-          # if system_info.status_code == 200:
-          #     print("Response 1:", system_info.json())
-          # else:
-          #     print(f"Error 1: {system_info.status_code}: {system_info.text}")
-          emp_list = gsisRequest.post(HORIZONTAL_EMP_LIST, headers=header, json=horizontal_emp_list_payload)
-          emp_2525 = gsisRequest.post(HORIZONTAL_EMP_LIST, headers=header, json=horizontal_emp_2525_payload)
-          emp_count = gsisRequest.post(HORIZONTAL_EMP_COUNT, headers=header, json=horizontal_emp_count_payload)
-          emp_role = gsisRequest.post(HORIZONTAL_ROLE, headers=header, json=horizontal_role_payload)
 
-          result.append({
-              "client": client_ip, 
-              "host":host_ip, 
-              "timestamp": datetime.datetime.now().isoformat(),
-              "horizontal_system_info_payload": horizontal_system_info_payload,
-              "horizontal_emp_list_payload": horizontal_emp_list_payload,
-              "horizontal_emp_2525_payload": horizontal_emp_2525_payload,
-              "horizontal_emp_count_payload": horizontal_emp_count_payload,
-              "horizontal_role_payload": horizontal_role_payload
-            })
+            horizontal_role_payload = {
+                "auditRecord": {
+                "auditTransactionId": randomString(),
+                "auditTransactionDate": datetime.datetime.now().isoformat(),
+                "auditUnit": "ΥΠΟΥΡΓΕΙΟ ΕΣΩΤΕΡΙΚΩΝ",
+                "auditProtocol": randomString(),
+                "auditUserId": "markos.karampatsis",
+                "auditUserIp": client_ip
+                },
+                "padRoleManagementInputRecord": {
+                    "lang": "el",
+                    "source": {
+                        "roles": [
+                            {
+                                "roleId": 2320,
+                                "roleName": "Help Desk",
+                                "hid": 2268
+                            }
+                        ]
+                    }
+                }
+            }
+
+            horizontal_emp_2525_payload = {
+                "auditRecord": {
+                    "auditTransactionId": randomString(),
+                    "auditTransactionDate": datetime.datetime.now().isoformat(),
+                    "auditUnit": "ΥΠΟΥΡΓΕΙΟ ΕΣΩΤΕΡΙΚΩΝ",
+                    "auditProtocol": randomString(),
+                    "auditUserId": i[0],  # Insert user ID
+                    "auditUserIp": client_ip
+                },
+                "padEmplListInputRecord": {
+                    "page": "1",
+                    "size": "15",
+                    "lang": "el",
+                    "source": {
+                        "employee": {"employeeVatNo": i[1]}  # Insert VAT number
+                    }
+                }
+            }
+            
+            print (i[0], i[1], horizontal_emp_2525_payload)
+            system_info = gsisRequest.post(HORIZONTAL_SYSTEM_INFO, headers=header, json=horizontal_system_info_payload)
+            # if system_info.status_code == 200:
+            #     print("Response 1:", system_info.json())
+            # else:
+            #     print(f"Error 1: {system_info.status_code}: {system_info.text}")
+            emp_list = gsisRequest.post(HORIZONTAL_EMP_LIST, headers=header, json=horizontal_emp_list_payload)
+            emp_2525 = gsisRequest.post(HORIZONTAL_EMP_LIST, headers=header, json=horizontal_emp_2525_payload)
+            emp_count = gsisRequest.post(HORIZONTAL_EMP_COUNT, headers=header, json=horizontal_emp_count_payload)
+            emp_role = gsisRequest.post(HORIZONTAL_ROLE, headers=header, json=horizontal_role_payload)
+
+            result.append({
+                "client": client_ip, 
+                "host":host_ip, 
+                "timestamp": datetime.datetime.now().isoformat(),
+                "horizontal_system_info_payload": horizontal_system_info_payload,
+                "horizontal_emp_list_payload": horizontal_emp_list_payload,
+                "horizontal_emp_2525_payload": horizontal_emp_2525_payload,
+                "horizontal_emp_count_payload": horizontal_emp_count_payload,
+                "horizontal_role_payload": horizontal_role_payload
+                })
         
         # print(result[0])
         
