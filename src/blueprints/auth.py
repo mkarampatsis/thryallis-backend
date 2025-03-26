@@ -296,7 +296,7 @@ def gsis_horizontal():
             emp_2525 = gsisRequest.post(HORIZONTAL_EMP_LIST, headers=header, json=horizontal_emp_2525_payload)
             emp_count = gsisRequest.post(HORIZONTAL_EMP_COUNT, headers=header, json=horizontal_emp_count_payload)
             emp_role = gsisRequest.post(HORIZONTAL_ROLE, headers=header, json=horizontal_role_payload)
-
+            
             result.append({
                 "client": client_ip, 
                 "host":host_ip, 
