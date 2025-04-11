@@ -368,7 +368,8 @@ def create_general_info():
         title = data["title"]
         text = data["text"]
         file = data["file"]
-        tags = data["tags"]
+        # tags = data["tags"]
+        category = data["category"]
 
         newInfo = GeneralInfo(
             email=email,
@@ -377,7 +378,8 @@ def create_general_info():
             title = title,
             text = text,
             file = file,
-            tags = tags
+            # tags = tags
+            category = category
         ).save()
 
         return Response(
