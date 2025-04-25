@@ -3,7 +3,7 @@ from bson import ObjectId
 from flask import Blueprint, Response, request, jsonify
 from flask_jwt_extended import get_jwt_identity, jwt_required, get_jwt
 
-from src.models.psped.helpbox import Helpbox, Question
+from src.models.psped.helpbox import Helpbox, Question, Whom
 from src.models.psped.general_info import GeneralInfo
 # from src.models.psped.change import Change
 from src.models.user import User
@@ -111,7 +111,7 @@ def create_question():
     pipeline = [
         {
             "$group":{
-                "_id": {"email":"$toWhom"},
+                "_id": {"email":"$toWhom.email"},
                 "countNumberOfDocuments": {"$count": {}}
             }
         },
@@ -136,6 +136,7 @@ def create_question():
 
     # Find the email with the lowest countNumberOfDocuments
     email_with_lowest_count = min(all_counts, key=lambda x: x['countNumberOfDocuments'])
+    helpdeskUser = User.objects.get(email=email_with_lowest_count['email'])
 
     # print("Email with lowest countNumberOfDocuments:", email_with_lowest_count['email'])
 
@@ -150,6 +151,11 @@ def create_question():
         questionTitle = data["questionTitle"]
         questionCategory = data["questionCategory"]
         question = [data["question"]]
+        toWhom = {
+          "email" : helpdeskUser["email"],
+          "firstName" : helpdeskUser["firstName"],
+          "lastName" : helpdeskUser["lastName"]
+        }
 
         length = 6
         random_string = ''.join(random.choices(string.digits, k=length))
@@ -163,7 +169,7 @@ def create_question():
             questionTitle = questionTitle,
             questionCategory = questionCategory,
             questions = question,
-            toWhom=email_with_lowest_count['email']            
+            toWhom = toWhom         
         ).save()
 
         return Response(
@@ -234,7 +240,7 @@ def answer_question():
         fromWhom = data["fromWhom"]
 
         helpbox = Helpbox.objects.get(id=ObjectId(helpboxId))
-        print (helpbox.to_json())
+
         if helpbox:
             # Locate the specific Question in the questions list
             question_to_update = next((q for q in helpbox.questions if str(q.id) == questionId), None)
@@ -245,7 +251,7 @@ def answer_question():
                 question_to_update.whenAnswered = datetime.now()
                 question_to_update.answerText = answerText
                 question_to_update.answerFile = ObjectId(answerFile) 
-                question_to_update.fromWhom = fromWhom
+                question_to_update.fromWhom = Whom(**fromWhom)
                 
                 # Save the document to persist changes
                 helpbox.save()
