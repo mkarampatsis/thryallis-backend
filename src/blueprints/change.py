@@ -3,6 +3,8 @@ from flask import Blueprint, Response, jsonify, request
 from flask_jwt_extended import get_jwt_identity, jwt_required
 
 from src.models.psped.change import Change
+from src.models.user import User
+from bson import json_util  # handles ObjectId, datetime
 import json
 
 from .utils import debug_print
@@ -97,16 +99,33 @@ def getOrganizations():
 @change.route("/<string:code>", methods=["GET"])
 @jwt_required()
 def retrieve_change_by_code(code):
-    print(code)
+    # print(code)
     changes = Change.objects(__raw__={"$or":[
         {"what.key.code":code},
         {"what.key.organizationalUnitCode":code}
     ]}).order_by("when")
 
+    result = []
+    for row in changes:
+        try: 
+            user = User.objects.get(email=row.who)
+            who_data = {
+                "firstName" : user.firstName,
+                "lastName" :user.lastName,
+                "email" : user.email
+            }
+        except User.DoesNotExist:
+            who_data = {"email": row.who, "firstName": "", "lastName": ""}
+        
+        row_dict = row.to_mongo().to_dict()
+        row_dict["who"] = who_data  # override string with full object
+        result.append(row_dict)
+    
     # debug_print("GET CHANGES BY CODE", changes.to_json())
 
     return Response(
-        changes.to_json(),
+        # changes.to_json(),
+        json.dumps(result, default=json_util.default),
         mimetype="application/json",
         status=200,
     )
