@@ -1,5 +1,5 @@
 import json
-from bson import ObjectId
+from bson import ObjectId,json_util
 from flask import Blueprint, Response, request, jsonify
 from flask_jwt_extended import get_jwt_identity, jwt_required, get_jwt
 
@@ -345,10 +345,21 @@ def finalize_question():
 @jwt_required()
 def retrieve_all_general_info():
     try:
-        infos = GeneralInfo.objects().order_by('-when')
-        # print(infos.to_json())
+        infos = GeneralInfo.objects.order_by('-when')
+        output = []
+        
+        for info in infos:
+            data = info.to_mongo().to_dict()
+            
+            # Manually replace the 'file' field with the actual file document(s)
+            data['file'] = [
+                f.to_mongo().to_dict() for f in info.file if f is not None
+            ]
+
+            output.append(data)
+
         return Response(
-            infos.to_json(),
+            json_util.dumps(output),  # Handles ObjectId and datetime serialization
             mimetype="application/json",
             status=200,
         )

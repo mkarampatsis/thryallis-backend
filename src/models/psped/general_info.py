@@ -11,6 +11,5 @@ class GeneralInfo(me.Document):
     title = me.StringField(required=True)
     text = me.StringField(required=True)
     when = me.DateTimeField(default=datetime.now)
-    file = me.ReferenceField(FileUpload)
-    # tags = me.ListField(required=True)
+    file = me.ListField(me.ReferenceField(FileUpload))
     category = me.StringField(required=True)
