@@ -5,7 +5,16 @@ from datetime import datetime
 
 class What(me.EmbeddedDocument):
     entity = me.StringField(
-        required=True, choices=["user", "organization", "organizationalUnit", "remit", "legalAct", "legalProvision"]
+        required=True, choices=[
+          "user", 
+          "organization", 
+          "organizationalUnit", 
+          "remit", 
+          "legalAct", 
+          "legalProvision", 
+          "helpbox",
+          "generalInfo"  
+        ]
     )
     key = me.DictField(required=True)
 

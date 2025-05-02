@@ -1,11 +1,13 @@
 import json
+import os
 from bson import ObjectId,json_util
 from flask import Blueprint, Response, request, jsonify
 from flask_jwt_extended import get_jwt_identity, jwt_required, get_jwt
 
 from src.models.psped.helpbox import Helpbox, Question, Whom
 from src.models.psped.general_info import GeneralInfo
-# from src.models.psped.change import Change
+from src.models.upload import FileUpload 
+from src.models.psped.change import Change
 from src.models.user import User
 from src.blueprints.utils import debug_print, dict2string
 from src.blueprints.decorators import can_edit, can_update_delete, can_finalize_remits
@@ -413,7 +415,55 @@ def create_general_info():
             status=500,
         )
 
+@helpbox.route("/general-info/<string:id>", methods=["DELETE"])
+@jwt_required()
+def delete_general_info_by_id(id):
+
+    try: 
+        general_info_to_delete = GeneralInfo.objects(id=ObjectId(id))
+        
+        # Delete referenced files
+        for general_info in general_info_to_delete:
+            for item in general_info.file:
+                file_doc = FileUpload.objects(id=item["id"]).first()
+                if file_doc:
+                    # print (file_doc.to_json())
+                    delete_uploaded_file(file_doc)
+                    file_doc.delete()
+        # Delete the main document
+        general_info_to_delete.delete()
+    
+    except DoesNotExist:
+        return Response(json.dumps({"message": "Η πληροφορία δεν υπάρχει"}), mimetype="application/json", status=404)
+    except Exception as e:
+        return Response(json.dumps({"message": f"<strong>Error:</strong> {str(e)}"}), mimetype="application/json", status=500)
+    
+    who = get_jwt_identity()
+    what = {"entity": "generalInfo", "key": {"GeneralInfo": id}}
+    # print(general_info_to_delete)
+    Change(action="delete", who=who, what=what, change={"general_info":general_info_to_delete.to_json()}).save()
+    return Response(json.dumps({"message": "<strong>H πληροφορία διαγράφηκε</strong>"}), mimetype="application/json", status=201)
+
+
 def custom_serializer(obj):
     if isinstance(obj, datetime):
         return obj.isoformat()  # Convert datetime to ISO 8601 format
     raise TypeError("Type not serializable")
+
+def delete_uploaded_file(file_doc):
+  try:
+    # Combine path and filename
+    file_path = os.path.join(file_doc["file_location"], file_doc["file_id"])
+
+    # Check if file exists
+    if os.path.exists(file_path):
+      os.remove(file_path)
+      print(f"Deleted: {file_path}")
+      return True
+    else:
+      print(f"File not found: {file_path}")
+      return False
+
+  except Exception as e:
+    print(f"Error deleting file: {e}")
+    return False
