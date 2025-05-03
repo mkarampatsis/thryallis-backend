@@ -444,6 +444,31 @@ def delete_general_info_by_id(id):
     Change(action="delete", who=who, what=what, change={"general_info":general_info_to_delete.to_json()}).save()
     return Response(json.dumps({"message": "<strong>H πληροφορία διαγράφηκε</strong>"}), mimetype="application/json", status=201)
 
+@helpbox.route("/general-info/<string:infoId>/file/<string:fileId>", methods=["DELETE"])
+@jwt_required()
+def delete_file_from_general_info(infoId,fileId):
+
+    try: 
+        general_info_to_delete = GeneralInfo.objects(id=ObjectId(infoId))
+        
+        file_doc = FileUpload.objects.get(id=ObjectId(fileId))
+          if file_doc:
+              print (file_doc.to_json())
+              # delete_uploaded_file(file_doc)
+              # file_doc.delete()
+        # Delete the main document
+        # general_info_to_delete.delete()
+    
+    except DoesNotExist:
+        return Response(json.dumps({"message": "Η πληροφορία δεν υπάρχει"}), mimetype="application/json", status=404)
+    except Exception as e:
+        return Response(json.dumps({"message": f"<strong>Error:</strong> {str(e)}"}), mimetype="application/json", status=500)
+    
+    who = get_jwt_identity()
+    what = {"entity": "generalInfo", "key": {"GeneralInfo": id}}
+    # print(general_info_to_delete)
+    Change(action="delete", who=who, what=what, change={"general_info":general_info_to_delete.to_json()}).save()
+    return Response(json.dumps({"message": "<strong>Το αρχείο διαγράφηκε/strong>"}), mimetype="application/json", status=201)
 
 def custom_serializer(obj):
     if isinstance(obj, datetime):
