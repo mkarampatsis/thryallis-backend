@@ -452,12 +452,12 @@ def delete_file_from_general_info(infoId,fileId):
         general_info_to_delete = GeneralInfo.objects(id=ObjectId(infoId))
         
         file_doc = FileUpload.objects.get(id=ObjectId(fileId))
-          if file_doc:
-              print (file_doc.to_json())
-              # delete_uploaded_file(file_doc)
-              # file_doc.delete()
-        # Delete the main document
-        # general_info_to_delete.delete()
+        if file_doc:
+          print (file_doc.to_json())
+          delete_uploaded_file(file_doc)
+          file_doc.delete()
+          # Remove the file ObjectId from the `file` list
+          general_info_to_delete.update(pull__file=ObjectId(fileId))
     
     except DoesNotExist:
         return Response(json.dumps({"message": "Η πληροφορία δεν υπάρχει"}), mimetype="application/json", status=404)
@@ -465,10 +465,10 @@ def delete_file_from_general_info(infoId,fileId):
         return Response(json.dumps({"message": f"<strong>Error:</strong> {str(e)}"}), mimetype="application/json", status=500)
     
     who = get_jwt_identity()
-    what = {"entity": "generalInfo", "key": {"GeneralInfo": id}}
+    what = {"entity": "generalInfo", "key": {"GeneralInfo": infoId}}
     # print(general_info_to_delete)
-    Change(action="delete", who=who, what=what, change={"general_info":general_info_to_delete.to_json()}).save()
-    return Response(json.dumps({"message": "<strong>Το αρχείο διαγράφηκε/strong>"}), mimetype="application/json", status=201)
+    Change(action="delete", who=who, what=what, change={"general_info":file_doc.to_json()}).save()
+    return Response(json.dumps({"message": "<strong>Το αρχείο διαγράφηκε</strong>"}), mimetype="application/json", status=201)
 
 def custom_serializer(obj):
     if isinstance(obj, datetime):
