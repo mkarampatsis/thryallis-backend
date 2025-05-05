@@ -387,7 +387,6 @@ def create_general_info():
         title = data["title"]
         text = data["text"]
         file = data["file"]
-        # tags = data["tags"]
         category = data["category"]
 
         newInfo = GeneralInfo(
@@ -397,7 +396,6 @@ def create_general_info():
             title = title,
             text = text,
             file = file,
-            # tags = tags
             category = category
         ).save()
 
@@ -414,6 +412,72 @@ def create_general_info():
             mimetype="application/json",
             status=500,
         )
+@helpbox.route("/general-info/<string:generalInfoId>", methods=["PUT"])
+@jwt_required()
+def update_general_info(generalInfoId):
+
+    try:
+        data = request.get_json()
+        debug_print("PUT GENERAL INFO", data)
+
+        email = data["email"]
+        lastName = data["lastName"]
+        firstName = data["firstName"]
+        title = data["title"]
+        text = data["text"]
+        file = data["file"]
+        category = data["category"]
+
+        generalInfo = GeneralInfo.objects.get(id=ObjectId(generalInfoId))
+
+        generalInfo.update(
+          email = email,
+          lastName = lastaname,
+          firstName = firstname,
+          title = title,
+          text = text,
+          file = file,
+          category = category,
+        )
+
+        curr_change = {
+          "old": {
+            "email": generalInfo.email,
+            "lastName": generalInfo.lastName,
+            "firstName": generalInfo.firstName,
+            "title": generalInfo.title,
+            "text": generalInfo.text,
+            "file": generalInfo.file,
+            "category": generalInfo.category,
+          },
+          "new": {
+            "email": email,
+            "lastName": lastName,
+            "firstName": firstName,
+            "title": title,
+            "text": text,
+            "file": file,
+            "category": category,
+          },
+        }
+        who = get_jwt_identity()
+        what = {"entity": "generalInfo", "key": {"generalInfoId": generalInfoId}}
+        Change(action="update", who=who, what=what, change=curr_change).save()
+
+        return Response(
+            json.dumps({"message": "Η πληροφορία ενημερώθηκε με επιτυχία"}),
+            mimetype="application/json",
+            status=201,
+        )
+
+    except Exception as e:
+        print("UPDATE GENERAL INFO EXCEPTION", e)
+        return Response(
+            json.dumps({"message": f"<strong>Αποτυχία ενημέρωσης πληροφορίας:</strong> {e}"}),
+            mimetype="application/json",
+            status=500,
+        )
+
 
 @helpbox.route("/general-info/<string:id>", methods=["DELETE"])
 @jwt_required()
