@@ -428,15 +428,19 @@ def update_general_info(generalInfoId):
         file = data["file"]
         category = data["category"]
 
+        # Convert to ObjectId instances
+        fileObjectIDs = [ObjectId(id_str) for id_str in file]
+        print(fileObjectIDs)
+        
         generalInfo = GeneralInfo.objects.get(id=ObjectId(generalInfoId))
 
         generalInfo.update(
           email = email,
-          lastName = lastaname,
-          firstName = firstname,
+          lastName = lastName,
+          firstName = firstName,
           title = title,
           text = text,
-          file = file,
+          file = fileObjectIDs,
           category = category,
         )
 
