@@ -453,12 +453,11 @@ def delete_file_from_general_info(infoId,fileId):
         
         file_doc = FileUpload.objects.get(id=ObjectId(fileId))
         if file_doc:
-          print (file_doc.to_json())
           delete_uploaded_file(file_doc)
           file_doc.delete()
           # Remove the file ObjectId from the `file` list
           general_info_to_delete.update(pull__file=ObjectId(fileId))
-    
+
     except DoesNotExist:
         return Response(json.dumps({"message": "Η πληροφορία δεν υπάρχει"}), mimetype="application/json", status=404)
     except Exception as e:
@@ -468,7 +467,7 @@ def delete_file_from_general_info(infoId,fileId):
     what = {"entity": "generalInfo", "key": {"GeneralInfo": infoId}}
     # print(general_info_to_delete)
     Change(action="delete", who=who, what=what, change={"general_info":file_doc.to_json()}).save()
-    return Response(json.dumps({"message": "<strong>Το αρχείο διαγράφηκε</strong>"}), mimetype="application/json", status=201)
+    return Response(json.dumps({"message": "<strong>Το αρχείο διαγράφηκε</strong>", "data":general_info_to_delete.to_json()}), mimetype="application/json", status=201)
 
 def custom_serializer(obj):
     if isinstance(obj, datetime):
