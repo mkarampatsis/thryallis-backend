@@ -517,7 +517,7 @@ def delete_general_info_by_id(id):
 def delete_file_from_general_info(infoId,fileId):
 
     try: 
-        general_info_to_delete = GeneralInfo.objects(id=ObjectId(infoId))
+        general_info_to_delete = GeneralInfo.objects.get(id=ObjectId(infoId))
         
         file_doc = FileUpload.objects.get(id=ObjectId(fileId))
         if file_doc:
@@ -525,17 +525,35 @@ def delete_file_from_general_info(infoId,fileId):
           file_doc.delete()
           # Remove the file ObjectId from the `file` list
           general_info_to_delete.update(pull__file=ObjectId(fileId))
+          
+          # Refresh the instance so it has the updated file list
+          general_info_to_delete.reload()
+          
+          data = general_info_to_delete.to_mongo().to_dict()
+          # Manually replace the 'file' field with the actual file document(s)
+          data['file'] = [
+            f.to_mongo().to_dict() for f in general_info_to_delete.file if f is not None
+          ]
+          print("3>>>")
+          print(data)            
 
-    except DoesNotExist:
+
+    except FileUpload.DoesNotExist:
         return Response(json.dumps({"message": "Η πληροφορία δεν υπάρχει"}), mimetype="application/json", status=404)
     except Exception as e:
         return Response(json.dumps({"message": f"<strong>Error:</strong> {str(e)}"}), mimetype="application/json", status=500)
     
     who = get_jwt_identity()
     what = {"entity": "generalInfo", "key": {"GeneralInfo": infoId}}
-    # print(general_info_to_delete)
+    
     Change(action="delete", who=who, what=what, change={"general_info":file_doc.to_json()}).save()
-    return Response(json.dumps({"message": "<strong>Το αρχείο διαγράφηκε</strong>", "data":general_info_to_delete.to_json()}), mimetype="application/json", status=201)
+    return Response(json_util.dumps({
+      "message": "<strong>Το αρχείο διαγράφηκε</strong>", 
+      "data":data
+      }), 
+      mimetype="application/json", 
+      status=201
+    )
 
 def custom_serializer(obj):
     if isinstance(obj, datetime):
