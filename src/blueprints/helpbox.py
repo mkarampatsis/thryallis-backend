@@ -534,9 +534,6 @@ def delete_file_from_general_info(infoId,fileId):
           data['file'] = [
             f.to_mongo().to_dict() for f in general_info_to_delete.file if f is not None
           ]
-          print("3>>>")
-          print(data)            
-
 
     except FileUpload.DoesNotExist:
         return Response(json.dumps({"message": "Η πληροφορία δεν υπάρχει"}), mimetype="application/json", status=404)
