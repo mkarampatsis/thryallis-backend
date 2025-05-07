@@ -40,10 +40,31 @@ def retrieve_all_questions():
 @jwt_required()
 def retrieve_question_by_id(id):
     try:
-        questions = Helpbox.objects(id=id)
+        question = Helpbox.objects.get(id=id)
+        
+        data = question.to_mongo().to_dict()
+        questionsField = []
+        
+        for q in data["questions"]:
+            print(q)
+            
+            # Manually replace the 'file' field with the actual file document(s)
+            q['questionFile'] = [
+                f.to_mongo().to_dict() for f in q['questionFile'] if f is not None
+            ]
 
+            questionsField.append(q)
+        
+        print(">>", questionsField)
+
+        # return Response(
+        #     json_util.dumps(output),  # Handles ObjectId and datetime serialization
+        #     mimetype="application/json",
+        #     status=200,
+        # )
+        
         return Response(
-            questions.to_json(),
+            question.to_json(),
             mimetype="application/json",
             status=200,
         )
@@ -146,13 +167,22 @@ def create_question():
         data = request.get_json()
         debug_print("POST HELPBOX", data)
 
+        files = data["question"]['questionFile']
+        
+        if files:
+            # Convert to ObjectId instances
+            fileObjectIDs = [ObjectId(id_str) for id_str in files]
+        
         email = data["email"]
         lastName = data["lastName"]
         firstName = data["firstName"]
         organizations = data["organizations"]
         questionTitle = data["questionTitle"]
         questionCategory = data["questionCategory"]
-        question = [data["question"]]
+        question = [{
+            "questionText": data["question"]['questionText'],
+            "questionFile": fileObjectIDs
+        }]
         toWhom = {
           "email" : helpdeskUser["email"],
           "firstName" : helpdeskUser["firstName"],
@@ -322,7 +352,6 @@ def finalize_question():
         finalized = data["finalized"]
 
         helpbox = Helpbox.objects.get(id=ObjectId(helpboxId))
-        print (helpbox.to_json())
         
         helpbox.update(finalized=finalized)
 
@@ -430,7 +459,7 @@ def update_general_info(generalInfoId):
 
         # Convert to ObjectId instances
         fileObjectIDs = [ObjectId(id_str) for id_str in file]
-        print(fileObjectIDs)
+        # print(fileObjectIDs)
         
         generalInfo = GeneralInfo.objects.get(id=ObjectId(generalInfoId))
 

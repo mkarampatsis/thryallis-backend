@@ -20,6 +20,7 @@ def upload_file():
     current_user = get_jwt_identity()
     file = request.files["file"]
     google_id = current_user
+    
     if file and allowed_file(file.filename):
         original_filename = file.filename
         file_id = str(uuid.uuid4())
