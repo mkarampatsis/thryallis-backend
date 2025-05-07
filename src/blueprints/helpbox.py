@@ -40,31 +40,46 @@ def retrieve_all_questions():
 @jwt_required()
 def retrieve_question_by_id(id):
     try:
-        question = Helpbox.objects.get(id=id)
-        
-        data = question.to_mongo().to_dict()
-        questionsField = []
-        
-        for q in data["questions"]:
-            print(q)
-            
-            # Manually replace the 'file' field with the actual file document(s)
-            q['questionFile'] = [
-                f.to_mongo().to_dict() for f in q['questionFile'] if f is not None
+        # Step 1: Fetch Helpbox
+        helpbox = Helpbox.objects.get(id=ObjectId(id))
+
+        # Step 2: Convert Helpbox to dict and format fields
+        helpbox_dict = helpbox.to_mongo().to_dict()
+        helpbox_dict['id'] = str(helpbox_dict.pop('_id'))
+       
+       # Convert and process each question
+        enriched_questions = []
+        for question in helpbox_dict.get('questions', []):
+            question_id = str(question['id'])
+            file_ids = [oid for oid in question.get('questionFile', [])]
+
+            # Get all file documents for the question
+            files = FileUpload.objects(id__in=file_ids)
+            question['questionFile'] = [
+                {
+                    "id": str(file.id),
+                    "file_name": file.file_name,
+                    "file_type": file.file_type,
+                    "file_size": file.file_size,
+                    "file_location": file.file_location
+                }
+                for file in files
             ]
 
-            questionsField.append(q)
-        
-        print(">>", questionsField)
+            # Format ObjectIds and datetime
+            question['id'] = str(question['id'])
+            if 'whenAsked' in question:
+                question['whenAsked'] = question['whenAsked'].isoformat()
+            if 'whenAnswered' in question:
+                question['whenAnswered'] = question['whenAnswered'].isoformat()
 
-        # return Response(
-        #     json_util.dumps(output),  # Handles ObjectId and datetime serialization
-        #     mimetype="application/json",
-        #     status=200,
-        # )
+            enriched_questions.append(question)
+
+        # Replace questions with enriched versions
+        helpbox_dict['questions'] = enriched_questions
         
         return Response(
-            question.to_json(),
+            json.dumps(helpbox_dict),
             mimetype="application/json",
             status=200,
         )
