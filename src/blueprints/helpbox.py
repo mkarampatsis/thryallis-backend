@@ -236,41 +236,45 @@ def create_question():
 @helpbox.route("/<string:id>", methods=["PUT"])
 @jwt_required()
 def update_question(id):
-    try:
-        data = request.get_json()
-        debug_print("INSERT NEW QUESTION TO HELPBOX", data)
+  try:
+    data = request.get_json()
+    
+    debug_print("INSERT NEW QUESTION TO HELPBOX", data)
 
-        helpboxID = id
-        questionText = data["question"]["questionText"]
-        questionFile = data["question"]['questionFile']
+    helpboxID = id
+    questionText = data["question"]["questionText"]
+    questionFile = data["question"]['questionFile']
 
-        helpbox = Helpbox.objects.get(id=ObjectId(helpboxID))
-        # print (helpbox.to_json())
-  
-        new_question = Question(
-            questionText = questionText,
-            questionFile = questionFile
-        )
-        
-        # Add the new question to the 'questions' field
-        helpbox.questions.append(new_question)
-        
-        # Save the updated Helpbox document
-        helpbox.save()
+    helpbox = Helpbox.objects.get(id=ObjectId(helpboxID))
+    
+    if questionFile:
+      # Convert to ObjectId instances
+      fileObjectIDs = [ObjectId(id_str) for id_str in questionFile]
+    
+    new_question = Question(
+      questionText = questionText,
+      questionFile = fileObjectIDs
+    )
 
-        return Response(
-            json.dumps({"message": "Η απάντηση σας καταχωρήθηκε με επιτυχία"}),
-            mimetype="application/json",
-            status=201,
-        )
+    # Add the new question to the 'questions' field
+    helpbox.questions.append(new_question)
 
-    except Exception as e:
-        print(e)
-        return Response(
-            json.dumps({"message": f"<strong>Αποτυχία καταχώρησης απάντησης:</strong> {e}"}),
-            mimetype="application/json",
-            status=500,
-        )
+    # Save the updated Helpbox document
+    helpbox.save()
+
+    return Response(
+      json.dumps({"message": "Η απάντηση σας καταχωρήθηκε με επιτυχία"}),
+      mimetype="application/json",
+      status=201,
+    )
+
+  except Exception as e:
+      print(e)
+      return Response(
+          json.dumps({"message": f"<strong>Αποτυχία καταχώρησης απάντησης:</strong> {e}"}),
+          mimetype="application/json",
+          status=500,
+      )
 
 
 @helpbox.route("", methods=["PUT"])
