@@ -53,9 +53,24 @@ def retrieve_question_by_id(id):
             question_id = str(question['id'])
             file_ids = [oid for oid in question.get('questionFile', [])]
 
-            # Get all file documents for the question
+            # Get all file documents for the question for questionFile
             files = FileUpload.objects(id__in=file_ids)
             question['questionFile'] = [
+                {
+                    "id": str(file.id),
+                    "file_name": file.file_name,
+                    "file_type": file.file_type,
+                    "file_size": file.file_size,
+                    "file_location": file.file_location
+                }
+                for file in files
+            ]
+
+            file_ids = [oid for oid in question.get('answerFile', [])]
+
+            # Get all file documents for the question for answerFile
+            files = FileUpload.objects(id__in=file_ids)
+            question['answerFile'] = [
                 {
                     "id": str(file.id),
                     "file_name": file.file_name,
@@ -280,46 +295,49 @@ def update_question(id):
 @helpbox.route("", methods=["PUT"])
 @jwt_required()
 def answer_question():
-    try:
-        data = request.get_json()
-        debug_print("ANSWER HELPBOX", data)
+  try:
+    data = request.get_json()
+    debug_print("ANSWER HELPBOX", data)
 
-        helpboxId = data["helpBoxId"]
-        questionId = data["questionId"]
-        answerText = data["answerText"]
-        answerFile = data["answerFile"]
-        fromWhom = data["fromWhom"]
+    helpboxId = data["helpBoxId"]
+    questionId = data["questionId"]
+    answerText = data["answerText"]
+    answerFile = data["answerFile"]
+    fromWhom = data["fromWhom"]
 
-        helpbox = Helpbox.objects.get(id=ObjectId(helpboxId))
+    helpbox = Helpbox.objects.get(id=ObjectId(helpboxId))
 
-        if helpbox:
-            # Locate the specific Question in the questions list
-            question_to_update = next((q for q in helpbox.questions if str(q.id) == questionId), None)
-            
-            if question_to_update:
-                # Update the `answered` field
-                question_to_update.answered = True
-                question_to_update.whenAnswered = datetime.now()
-                question_to_update.answerText = answerText
-                question_to_update.answerFile = ObjectId(answerFile) 
-                question_to_update.fromWhom = Whom(**fromWhom)
-                
-                # Save the document to persist changes
-                helpbox.save()
+    if helpbox:
+      # Locate the specific Question in the questions list
+      question_to_update = next((q for q in helpbox.questions if str(q.id) == questionId), None)
+      
+      if question_to_update:
+        # Convert to ObjectId instances
+        fileObjectIDs = [ObjectId(id_str) for id_str in answerFile]
+        
+        # Update the `answered` field
+        question_to_update.answered = True
+        question_to_update.whenAnswered = datetime.now()
+        question_to_update.answerText = answerText
+        question_to_update.answerFile = fileObjectIDs 
+        question_to_update.fromWhom = Whom(**fromWhom)
+        
+        # Save the document to persist changes
+        helpbox.save()
 
-        return Response(
-            json.dumps({"message": "Η απάντηση σας καταχωρήθηκε με επιτυχία"}),
-            mimetype="application/json",
-            status=201,
-        )
+    return Response(
+      json.dumps({"message": "Η απάντηση σας καταχωρήθηκε με επιτυχία"}),
+      mimetype="application/json",
+      status=201,
+    )
 
-    except Exception as e:
-        print(e)
-        return Response(
-            json.dumps({"message": f"<strong>Αποτυχία καταχώρησης απάντησης:</strong> {e}"}),
-            mimetype="application/json",
-            status=500,
-        )
+  except Exception as e:
+    print(e)
+    return Response(
+      json.dumps({"message": f"<strong>Αποτυχία καταχώρησης απάντησης:</strong> {e}"}),
+      mimetype="application/json",
+      status=500,
+    )
 
 @helpbox.route("/publish", methods=["PUT"])
 @jwt_required()
