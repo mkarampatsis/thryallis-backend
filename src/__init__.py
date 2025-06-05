@@ -30,6 +30,7 @@ from src.config import (
     MONGO_PORT,
     MONGO_APOGRAFI_DB,
     MONGO_PSPED_DB,
+    MONGO_RESOURCES_DB,
     MONGO_USERNAME,
     MONGO_PASSWORD,
     MONGO_AUTHENTICATION_SOURCE,
@@ -74,6 +75,17 @@ connect(
     # authentication_source=MONGO_AUTHENTICATION_SOURCE,
     db=MONGO_PSPED_DB,
     alias=MONGO_PSPED_DB,
+)
+
+connect(
+    host=MONGO_URI,
+    #host=MONGO_URI_ATLAS,
+    # port=MONGO_PORT,
+    # username=MONGO_USERNAME,
+    # password=MONGO_PASSWORD,
+    # authentication_source=MONGO_AUTHENTICATION_SOURCE,
+    db=MONGO_RESOURCES_DB,
+    alias=MONGO_RESOURCES_DB,
 )
 
 # CORS configuration

@@ -31,11 +31,9 @@ def get_all_facilities():
 def get_facility_by_id(id):
   try:
     facility = Facility.objects.get(id=ObjectId(id))
-
-    facility_dict = facility.to_mongo().to_dict()
         
     return Response(
-      json.dumps(facility_dict),
+      facility.to_json(),
       mimetype="application/json",
       status=200,
     )
@@ -50,12 +48,10 @@ def get_facility_by_id(id):
 @facility.route("/organization/<string:code>", methods=["GET"])
 def get_facilities_by_organization_code(code):
   try:
-    facility = Facility.objects.get(organizationCode=code)
+    facilities = Facility.objects(organizationCode=code)
 
-    facility_dict = facility.to_mongo().to_dict()
-        
     return Response(
-      json.dumps(facility_dict),
+      facilities.to_json(),
       mimetype="application/json",
       status=200,
     )
@@ -75,8 +71,6 @@ def create_facility():
     data = request.get_json()
     debug_print("POST FACILITY", data)
 
-    print (">>>",data["finalized"])
-
     newFacility = Facility(
       organization = data["organization"],
       organizationCode = data["organizationCode"],
@@ -91,7 +85,7 @@ def create_facility():
       floorsOrLevels = data["floorsOrLevels"],
       floorPlans = data["floorPlans"],
       addressOfFacility = data["addressOfFacility"],
-      # finalized = data["finalized"],
+      finalized = True if data["finalized"]=='true' else False 
     ).save()
 
     return Response(

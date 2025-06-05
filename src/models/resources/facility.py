@@ -1,10 +1,11 @@
 import mongoengine as me
 from datetime import datetime
 from src.models.upload import FileUpload
+from src.models.timestamp import TimeStampedModel
 
 class FloorPlans(me.EmbeddedDocument):
   level = me.StringField(required=True)
-  num = me.IntField(required=True)
+  num = me.StringField(required=True)
   floorArea = me.StringField(required=True)
   floorPlan= me.ListField(me.ReferenceField(FileUpload))
 
@@ -17,7 +18,7 @@ class Address(me.EmbeddedDocument):
   geographicRegion = me.StringField(required=True)
   country = me.StringField(required=True)
 
-class Facility(me.Document):
+class Facility(TimeStampedModel):
   meta = {
     "collection": "facilities", 
     "db_alias": "resources",
@@ -60,5 +61,5 @@ class Facility(me.Document):
   floorsOrLevels = me.IntField(required=True)
   floorPlans = me.ListField(me.EmbeddedDocumentField(FloorPlans)) 
   addressOfFacility = me.EmbeddedDocumentField(Address)
-  finalized = me.BooleanField(default=False),
+  finalized = me.BooleanField()
   elasticSync = me.BooleanField(default=False)
