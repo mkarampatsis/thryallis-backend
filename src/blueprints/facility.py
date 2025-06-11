@@ -129,8 +129,31 @@ def get_spaces_by_facility_id(id):
   try:
     spaces = Space.objects(facilityId=ObjectId(id))
 
+    serialized_spaces = []
+    for space in spaces:
+      serialized_space = {
+        "id": str(space.id),
+        "facilityId": {
+          "id": str(space.facilityId.id),
+          "organization": space.facilityId.organization,
+          "organizationCode": space.facilityId.organizationCode,
+        },
+        "spaceName": space.spaceName,
+        "spaceUse": space.spaceUse.to_mongo() if space.spaceUse else None,
+        "spaceArea": space.spaceArea,
+        "spaceLength": space.spaceLength,
+        "spaceWidth": space.spaceWidth,
+        "entrances": space.entrances,
+        "windows": space.windows,
+        "floorPlans": space.floorPlans.to_mongo() if space.floorPlans else None,
+        "elasticSync": space.elasticSync,
+        "createdAt": space.created_at.isoformat() if hasattr(space, "created_at") else None,
+        "updatedAt": space.updated_at.isoformat() if hasattr(space, "updated_at") else None,
+      }
+      serialized_spaces.append(serialized_space)
+
     return Response(
-      spaces.to_json(),
+      json_util.dumps(serialized_spaces),
       mimetype="application/json",
       status=200,
     )
