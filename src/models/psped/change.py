@@ -13,7 +13,9 @@ class What(me.EmbeddedDocument):
           "legalAct", 
           "legalProvision", 
           "helpbox",
-          "generalInfo"  
+          "generalInfo",
+          "facility",
+          "space"
         ]
     )
     key = me.DictField(required=True)

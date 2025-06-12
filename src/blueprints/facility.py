@@ -7,8 +7,10 @@ from flask_jwt_extended import get_jwt_identity, jwt_required, get_jwt
 from src.blueprints.utils import debug_print, dict2string
 from src.models.resources.facility import Facility
 from src.models.resources.space import Space
+from src.models.psped.change import Change
+from src.models.upload import FileUpload 
 
-facility = Blueprint("facilty", __name__)
+facility = Blueprint("facility", __name__)
 
 @facility.route("", methods=["GET"])
 def get_all_facilities():
@@ -103,8 +105,43 @@ def create_facility():
       status=500,
     )
 
+@facility.route("/<string:id>", methods=["DELETE"])
+@jwt_required()
+def delete_facility_by_id(id):
+  try: 
+    facility = Facility.objects.get(id=ObjectId(id))
 
+    # Delete referenced files of facility
+    for floorPlan in facility.floorPlans:
+      for item in floorPlan.floorPlan:
+        file_doc = FileUpload.objects(id=item["id"]).first()
+        if file_doc:
+          delete_uploaded_file(file_doc)
+          file_doc.delete()
+    
+    # Delete all spaces of facility
+    spaces = Space.objects(facilityId=ObjectId(id))
+    for space in spaces:
+      space.delete()
+    
+    # Delete the main document
+    facility.delete()
+  
+  except DoesNotExist:
+    return Response(json.dumps({"message": "Το ακίνητο δεν υπάρχει"}), mimetype="application/json", status=404)
+  except Exception as e:
+    return Response(json.dumps({"message": f"<strong>Error:</strong> {str(e)}"}), mimetype="application/json", status=500)
+  
+  who = get_jwt_identity()
+  what = {"entity": "facility", "key": {"Facility": id}}
+  
+  Change(action="delete", who=who, what=what, change={"facility":facility.to_json()}).save()
+  return Response(json.dumps({"message": "<strong>Το ακίνητο διαγράφηκε</strong>"}), mimetype="application/json", status=201)
+
+
+#####################
 # Space Methods
+#####################
 
 @facility.route("/<string:id>", methods=["GET"])
 def get_space_by_id(id):
@@ -198,3 +235,41 @@ def create_space(id):
       mimetype="application/json",
       status=500,
     )
+
+@facility.route("/space/<string:id>", methods=["DELETE"])
+@jwt_required()
+def delete_space_by_id(id):
+  try: 
+    space = Space.objects(id=ObjectId(id))
+    space.delete()
+  
+  except DoesNotExist:
+    return Response(json.dumps({"message": "Ο χώρος δεν υπάρχει"}), mimetype="application/json", status=404)
+  except Exception as e:
+    return Response(json.dumps({"message": f"<strong>Error:</strong> {str(e)}"}), mimetype="application/json", status=500)
+  
+  who = get_jwt_identity()
+  what = {"entity": "space", "key": {"Space": id}}
+  # print(general_info_to_delete)
+  Change(action="delete", who=who, what=what, change={"space":space.to_json()}).save()
+  return Response(json.dumps({"message": "<strong>Ο χώρος διαγράφηκε</strong>"}), mimetype="application/json", status=201)
+
+
+# Function that deletes all referenced files
+def delete_uploaded_file(file_doc):
+  try:
+    # Combine path and filename
+    file_path = os.path.join(file_doc["file_location"], file_doc["file_id"])
+
+    # Check if file exists
+    if os.path.exists(file_path):
+      os.remove(file_path)
+      print(f"Deleted: {file_path}")
+      return True
+    else:
+      print(f"File not found: {file_path}")
+      return False
+
+  except Exception as e:
+    print(f"Error deleting file: {e}")
+    return False  
