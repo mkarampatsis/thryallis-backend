@@ -204,6 +204,58 @@ def get_spaces_by_facility_id(id):
       status=500,
     )
 
+@facility.route("/organization/<string:code>/spaces", methods=["GET"])
+def get_all_spaces_by_organization_code(code):
+  try:
+    pipeline = [
+      {
+        "$match": {
+          "organizationCode": code
+        }
+      },
+      {
+        "$lookup": {
+          "from": "space",
+          "localField": "_id",
+          "foreignField": "facilityId",
+          "as": "spaces"
+        }
+      },
+      { "$unwind": "$spaces" },
+      {
+        "$project": {
+          "_id": 0,
+          "createdAt": 0,
+          "updatedAt": 0,
+          "kaek": 0,
+          "belongsTo": 0,
+          "uniqueUserOfFacility": 0,
+          "coveredPremisesArea": 0,
+          "floorPlans": 0,
+          "floorsOrLevels": 0,
+          "addressOfFacility": 0,
+          "finalized": 0,
+          "elasticSync": 0,
+        }
+      }
+    ]
+
+    spaces = Facility.objects.aggregate(pipeline)
+    spaces_list = list(spaces)
+
+    return Response(
+      json_util.dumps({"data": spaces_list}),
+      mimetype="application/json",
+      status=200,
+    )
+  except Exception as e:
+    print(e)
+    return Response(
+      json.dumps({"message": f"<strong>Αποτυχία εμφάνισης χώρων ακινήτου:</strong> {e}"}),
+      mimetype="application/json",
+      status=500,
+    )
+
 @facility.route("/<string:id>/space", methods=["POST"])
 @jwt_required()
 def create_space(id):
