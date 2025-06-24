@@ -174,6 +174,8 @@ def get_spaces_by_facility_id(id):
           "id": str(space.facilityId.id),
           "organization": space.facilityId.organization,
           "organizationCode": space.facilityId.organizationCode,
+          "organizationalUnit" : space.facilityId.organizationalUnit,
+          "organizationalUnitCode" : space.facilityId.organizationalUnitCode
         },
         "spaceName": space.spaceName,
         "spaceUse": space.spaceUse.to_mongo() if space.spaceUse else None,
