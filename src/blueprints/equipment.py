@@ -31,6 +31,41 @@ def get_equipment_config():
       status=500,
     )
 
+@equipment.route("/organization/<string:code>", methods=["GET"])
+def get_equipments_by_organization_code(code):
+  try:
+
+    pipeline = [
+      {
+        "$match": {
+          "organizationCode":code
+        }
+      },
+      {
+        "$lookup": {
+          "from": "space",
+          "localField": "spaceId",
+          "foreignField": "_id", 
+          "as": "spaces"
+        }
+      }
+    ]
+    equipments = Equipment.objects.aggregate(pipeline)
+    equipment_list = list(equipments)
+
+    return Response(
+      json_util.dumps({"data": equipment_list}),
+      mimetype="application/json",
+      status=200,
+    )
+  except Exception as e:
+    print(e)
+    return Response(
+      json.dumps({"message": f"<strong>Αποτυχία εμφάνισης config εξοπλισμού:</strong> {e}"}),
+      mimetype="application/json",
+      status=500,
+    )
+
 @equipment.route("", methods=["POST"])
 @jwt_required()
 def create_equipment():
