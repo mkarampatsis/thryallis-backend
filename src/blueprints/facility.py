@@ -161,7 +161,7 @@ def get_space_by_id(id):
       status=500,
     )
 
-@facility.route("/<string:id>/space", methods=["GET"])
+@facility.route("/<string:id>/spaces", methods=["GET"])
 def get_spaces_by_facility_id(id):
   try:
     spaces = Space.objects(facilityId=ObjectId(id))
