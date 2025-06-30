@@ -15,7 +15,8 @@ class What(me.EmbeddedDocument):
           "helpbox",
           "generalInfo",
           "facility",
-          "space"
+          "space",
+          "equipment"
         ]
     )
     key = me.DictField(required=True)

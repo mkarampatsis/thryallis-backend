@@ -78,8 +78,6 @@ def create_equipment():
     spaceObjectIDs = [ObjectId(id_str) for id_str in data['spaceWithinFacility']]
 
     acquisitionDate = datetime.strptime(data['acquisitionDate'], "%Y-%m-%d")
-    # final = acquisitionDate.strftime('%d-%m-%Y')
-    # print(final)
     
     newEquipment = Equipment(
       organization = data['organization'],
@@ -107,3 +105,22 @@ def create_equipment():
       mimetype="application/json",
       status=500,
     )
+
+@equipment.route("/<string:id>", methods=["DELETE"])
+@jwt_required()
+def delete_equipment_by_id(id):
+  try: 
+    print(id)
+    equipment = Equipment.objects(id=ObjectId(id))
+    equipment.delete()
+  
+  except DoesNotExist:
+    return Response(json.dumps({"message": "Ο εξοπλισμός δεν υπάρχει"}), mimetype="application/json", status=404)
+  except Exception as e:
+    return Response(json.dumps({"message": f"<strong>Error:</strong> {str(e)}"}), mimetype="application/json", status=500)
+  
+  who = get_jwt_identity()
+  what = {"entity": "equipment", "key": {"Equipment": id}}
+  # print(general_info_to_delete)
+  Change(action="delete", who=who, what=what, change={"equipment":equipment.to_json()}).save()
+  return Response(json.dumps({"message": "<strong>Ο εξοπλισμός διαγράφηκε</strong>"}), mimetype="application/json", status=201)
