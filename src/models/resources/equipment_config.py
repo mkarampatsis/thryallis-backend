@@ -2,14 +2,13 @@ import mongoengine as me
 from datetime import datetime
 from src.models.timestamp import TimeStampedModel
 
-class Values(me.EmbeddedDocument):
-  category = me.StringField(required=True)
-  values = me.ListField()
+class Types(me.EmbeddedDocument):
+  name = me.StringField(required=True)
+  itemDescription = me.ListField()
 
 class Kind(me.EmbeddedDocument):
-  type = me.StringField(required=True)
-  category = me.ListField(required=True)
-  values = me.ListField(me.EmbeddedDocumentField(Values))
+  name = me.StringField(required=True)
+  type = me.ListField(me.EmbeddedDocumentField(Types))
 
 class EquipmentConfig(TimeStampedModel):
   meta = {
@@ -17,5 +16,5 @@ class EquipmentConfig(TimeStampedModel):
     "db_alias": "resources",
   }
 
-  type = me.StringField(required=True)
+  resourceSubcategory = me.StringField(required=True)
   kind = me.ListField(me.EmbeddedDocumentField(Kind)) 

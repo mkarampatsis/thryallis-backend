@@ -5,9 +5,10 @@ from flask import Blueprint, Response, request, jsonify
 from flask_jwt_extended import get_jwt_identity, jwt_required, get_jwt
 
 from src.blueprints.utils import debug_print, dict2string
+from datetime import datetime
+
 from src.models.resources.equipment_config import EquipmentConfig
 from src.models.resources.equipment import Equipment
-
 from src.models.psped.change import Change
 from src.models.upload import FileUpload 
 
@@ -44,7 +45,7 @@ def get_equipments_by_organization_code(code):
       {
         "$lookup": {
           "from": "space",
-          "localField": "spaceId",
+          "localField": "spaceWithinFacility",
           "foreignField": "_id", 
           "as": "spaces"
         }
@@ -74,16 +75,23 @@ def create_equipment():
     data = request.get_json()
     debug_print("POST EQUIPMENT", data)
     
-    spaceObjectIDs = [ObjectId(id_str) for id_str in data['spaceId']]
+    spaceObjectIDs = [ObjectId(id_str) for id_str in data['spaceWithinFacility']]
+
+    acquisitionDate = datetime.strptime(data['acquisitionDate'], "%Y-%m-%d")
+    # final = acquisitionDate.strftime('%d-%m-%Y')
+    # print(final)
     
     newEquipment = Equipment(
       organization = data['organization'],
       organizationCode = data['organizationCode'],
-      spaceId = spaceObjectIDs,
-      type = data['type'],
+      spaceWithinFacility = spaceObjectIDs,
+      resourceCategory = data['resourceCategory'],
+      resourceSubcategory = data['resourceSubcategory'],
       kind = data['kind'],
-      category = data['category'],
-      values = data['values'],
+      type = data['type'],
+      itemDescription = data['itemDescription'],
+      acquisitionDate= acquisitionDate,
+      status = data['status'],
     ).save()
 
     return Response(
