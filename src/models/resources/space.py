@@ -4,10 +4,13 @@ from src.models.resources.facility import Facility
 from src.models.upload import FileUpload
 from src.models.timestamp import TimeStampedModel
 
+class OrganizationalUnit(me.EmbeddedDocument):
+  organizationalUnit = me.StringField(required=True)
+  organizationalUnitCode = me.StringField(required=True)
 
 class FloorPlans(me.EmbeddedDocument):
   level = me.StringField(required=True)
-  num = me.StringField(required=True)
+  num = me.IntField(required=True)
 
 class SpaceUse(me.EmbeddedDocument):
   type = me.StringField(required=True)
@@ -21,6 +24,7 @@ class Space(TimeStampedModel):
   }
 
   facilityId = me.ReferenceField(Facility)
+  organizationalUnit = me.ListField(me.EmbeddedDocumentField(OrganizationalUnit))
   spaceName = me.StringField(required=True)
   spaceUse = me.EmbeddedDocumentField(SpaceUse)
   spaceArea = me.StringField(required=False)

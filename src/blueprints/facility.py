@@ -261,6 +261,7 @@ def create_space(id):
 
     newSpace = Space(
       facilityId = ObjectId(data["facilityId"]),
+      organizationalUnit = data["organizationalUnit"],
       spaceName = data["spaceName"],
       spaceUse = data["spaceUse"],
       spaceArea = data["spaceArea"],
