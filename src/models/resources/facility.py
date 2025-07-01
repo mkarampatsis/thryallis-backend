@@ -29,8 +29,6 @@ class Facility(TimeStampedModel):
 
   organization = me.StringField(required=True)
   organizationCode = me.StringField(required=True)
-  organizationalUnit = me.StringField(required=False)
-  organizationalUnitCode = me.StringField(required=False)
   kaek = me.StringField(required=True)
   belongsTo = me.StringField(required=True)
   distinctiveNameOfFacility = me.StringField(required=True)
