@@ -130,3 +130,49 @@ def delete_equipment_by_id(id):
   # print(general_info_to_delete)
   Change(action="delete", who=who, what=what, change={"equipment":equipment.to_json()}).save()
   return Response(json.dumps({"message": "<strong>Ο εξοπλισμός διαγράφηκε</strong>"}), mimetype="application/json", status=201)
+
+@equipment.route("", methods=["PUT"])
+@jwt_required()
+def update_equipment():
+
+  try:
+    data = request.get_json()
+    debug_print("UPDATE EQUIPMENT", data)
+    
+    spaceObjectIDs = [ObjectId(id_str) for id_str in data['spaceWithinFacility']]
+    acquisitionDate = datetime.strptime(data['acquisitionDate'], "%Y-%m-%d")
+    
+    itemQuantities = []
+    for item in data['itemQuantity']:
+      itemQuantity = item
+      itemQuantity['spaceId'] = ObjectId(item['spaceId'])
+      itemQuantities.append(itemQuantity)
+        
+    updateEquipment = {
+      "organization": data['organization'],
+      "organizationCode" : data['organizationCode'],
+      "spaceWithinFacility" : spaceObjectIDs,
+      "resourceCategory" : data['resourceCategory'],
+      "resourceSubcategory" : data['resourceSubcategory'],
+      "kind" : data['kind'],
+      "type" : data['type'],
+      "itemDescription" : data['itemDescription'],
+      "itemQuantity" : itemQuantities,
+      "acquisitionDat" : acquisitionDate,
+      "status" : data['status'],
+    }
+
+    print(updateEquipment.to_json())
+    return Response(
+      json.dumps({"message": "Ο εξοπλισμός καταχωρήθηκε με επιτυχία"}),
+      mimetype="application/json",
+      status=201,
+    )
+
+  except Exception as e:
+    print(e)
+    return Response(
+      json.dumps({"message": f"<strong>Αποτυχία καταχώρησης εξοπλισμου:</strong> {e}"}),
+      mimetype="application/json",
+      status=500,
+    )
