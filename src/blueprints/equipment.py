@@ -116,7 +116,6 @@ def create_equipment():
 @jwt_required()
 def delete_equipment_by_id(id):
   try: 
-    print(id)
     equipment = Equipment.objects(id=ObjectId(id))
     equipment.delete()
   
@@ -139,6 +138,9 @@ def update_equipment():
     data = request.get_json()
     debug_print("UPDATE EQUIPMENT", data)
     
+    id = data["_id"]
+    equipment = Equipment.objects.get(id=ObjectId(id))
+
     spaceObjectIDs = [ObjectId(id_str) for id_str in data['spaceWithinFacility']]
     acquisitionDate = datetime.strptime(data['acquisitionDate'], "%Y-%m-%d")
     
@@ -147,24 +149,28 @@ def update_equipment():
       itemQuantity = item
       itemQuantity['spaceId'] = ObjectId(item['spaceId'])
       itemQuantities.append(itemQuantity)
-        
-    updateEquipment = {
-      "organization": data['organization'],
-      "organizationCode" : data['organizationCode'],
-      "spaceWithinFacility" : spaceObjectIDs,
-      "resourceCategory" : data['resourceCategory'],
-      "resourceSubcategory" : data['resourceSubcategory'],
-      "kind" : data['kind'],
-      "type" : data['type'],
-      "itemDescription" : data['itemDescription'],
-      "itemQuantity" : itemQuantities,
-      "acquisitionDat" : acquisitionDate,
-      "status" : data['status'],
-    }
 
-    print(updateEquipment.to_json())
+    equipment.update(
+      organization = data['organization'],
+      organizationCode = data['organizationCode'],
+      spaceWithinFacility = spaceObjectIDs,
+      resourceCategory = data['resourceCategory'],
+      resourceSubcategory = data['resourceSubcategory'],
+      kind = data['kind'],
+      type = data['type'],
+      itemDescription = data['itemDescription'],
+      itemQuantity = itemQuantities,
+      acquisitionDat = acquisitionDate,
+      status = data['status'],
+    ) 
+    
+    who = get_jwt_identity()
+    what = {"entity": "equipment", "key": {"Equipment": id}}
+    
+    Change(action="update", who=who, what=what, change={"equipment":data.to_json()}).save()
+
     return Response(
-      json.dumps({"message": "Ο εξοπλισμός καταχωρήθηκε με επιτυχία"}),
+      json.dumps({"message": "Ο εξοπλισμός τροποποιήθηκε με επιτυχία"}),
       mimetype="application/json",
       status=201,
     )
