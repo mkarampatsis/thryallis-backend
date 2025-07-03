@@ -172,7 +172,12 @@ def get_spaces_by_facility_id(id):
           "id": str(space.facilityId.id),
           "organization": space.facilityId.organization,
           "organizationCode": space.facilityId.organizationCode,
+          "distinctiveNameOfFacility":space.facilityId.distinctiveNameOfFacility
         },
+        'organizationalUnit': [{
+            "organizationalUnit": ou.organizationalUnit,
+            "organizationalUnitCode": ou.organizationalUnitCode
+          } for ou in space.organizationalUnit],
         "spaceName": space.spaceName,
         "spaceUse": space.spaceUse.to_mongo() if space.spaceUse else None,
         "spaceArea": space.spaceArea,
@@ -283,6 +288,49 @@ def create_space(id):
     print(e)
     return Response(
       json.dumps({"message": f"<strong>Αποτυχία καταχώρησης χώρου:</strong> {e}"}),
+      mimetype="application/json",
+      status=500,
+    )
+
+@facility.route("/<string:id>/space", methods=["PUT"])
+@jwt_required()
+def update_space(id):
+
+  try:
+    data = request.get_json()
+    debug_print("UPDATE SPACE", data)
+
+    id = data["id"]
+    space = Space.objects.get(id=ObjectId(id))
+
+    space.update(
+      facilityId = ObjectId(data["facilityId"]),
+      organizationalUnit = data["organizationalUnit"],
+      spaceName = data["spaceName"],
+      spaceUse = data["spaceUse"],
+      spaceArea = data["spaceArea"],
+      spaceLength = data["spaceLength"],
+      spaceWidth = data["spaceWidth"],
+      entrances = str(data["entrances"]),
+      windows = str(data["windows"]),
+      floorPlans = data["floorPlans"]
+    )
+
+    who = get_jwt_identity()
+    what = {"entity": "space", "key": {"Space": id}}
+    
+    Change(action="update", who=who, what=what, change={"space":data}).save()
+
+    return Response(
+      json.dumps({"message": "Ο χώρος τροποποιήθηκε με επιτυχία"}),
+      mimetype="application/json",
+      status=201,
+    )
+
+  except Exception as e:
+    print(e)
+    return Response(
+      json.dumps({"message": f"<strong>Αποτυχία τροποποίησης χώρου:</strong> {e}"}),
       mimetype="application/json",
       status=500,
     )

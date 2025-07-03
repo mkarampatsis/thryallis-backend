@@ -149,7 +149,7 @@ def update_equipment():
       itemQuantity = item
       itemQuantity['spaceId'] = ObjectId(item['spaceId'])
       itemQuantities.append(itemQuantity)
-
+    
     equipment.update(
       organization = data['organization'],
       organizationCode = data['organizationCode'],
@@ -160,14 +160,14 @@ def update_equipment():
       type = data['type'],
       itemDescription = data['itemDescription'],
       itemQuantity = itemQuantities,
-      acquisitionDat = acquisitionDate,
-      status = data['status'],
+      acquisitionDate = acquisitionDate,
+      status = data['status']
     ) 
     
     who = get_jwt_identity()
     what = {"entity": "equipment", "key": {"Equipment": id}}
     
-    Change(action="update", who=who, what=what, change={"equipment":data.to_json()}).save()
+    Change(action="update", who=who, what=what, change={"equipment":data}).save()
 
     return Response(
       json.dumps({"message": "Ο εξοπλισμός τροποποιήθηκε με επιτυχία"}),

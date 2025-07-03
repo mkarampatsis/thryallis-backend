@@ -23,7 +23,7 @@ class Equipment(TimeStampedModel):
 
   organization = me.StringField(required=True)
   organizationCode = me.StringField(required=True)
-  spaceWithinFacility =  me.ReferenceField(Space)
+  spaceWithinFacility =  me.ListField(me.ReferenceField(Space))
   resourceCategory = me.StringField(required=True)
   resourceSubcategory = me.StringField(required=True)
   kind = me.StringField(required=True)
