@@ -76,9 +76,14 @@ def create_equipment():
     debug_print("POST EQUIPMENT", data)
     
     spaceObjectIDs = [ObjectId(id_str) for id_str in data['spaceWithinFacility']]
-
     acquisitionDate = datetime.strptime(data['acquisitionDate'], "%Y-%m-%d")
     
+    itemQuantities = []
+    for item in data['itemQuantity']:
+      itemQuantity = item
+      itemQuantity['spaceId'] = ObjectId(item['spaceId'])
+      itemQuantities.append(itemQuantity)
+        
     newEquipment = Equipment(
       organization = data['organization'],
       organizationCode = data['organizationCode'],
@@ -88,6 +93,7 @@ def create_equipment():
       kind = data['kind'],
       type = data['type'],
       itemDescription = data['itemDescription'],
+      itemQuantity = itemQuantities,
       acquisitionDate= acquisitionDate,
       status = data['status'],
     ).save()
