@@ -200,6 +200,7 @@ def get_spaces_by_facility_id(id):
       status=500,
     )
 
+# Get Space
 @facility.route("/organization/<string:code>/spaces", methods=["GET"])
 def get_all_spaces_by_organization_code(code):
   try:
