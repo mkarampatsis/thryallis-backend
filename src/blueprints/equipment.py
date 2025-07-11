@@ -78,25 +78,43 @@ def create_equipment():
     spaceObjectIDs = [ObjectId(id_str) for id_str in data['spaceWithinFacility']]
     acquisitionDate = datetime.strptime(data['acquisitionDate'], "%Y-%m-%d")
     
-    itemQuantities = []
     for item in data['itemQuantity']:
-      itemQuantity = item
-      itemQuantity['spaceId'] = ObjectId(item['spaceId'])
-      itemQuantities.append(itemQuantity)
+      codes = item['codes'].split('$')
+      for code in codes:
+        equipmentDoc = {
+          'organization': data['organization'],
+          'organizationCode': data['organizationCode'],
+          'spaceWithinFacility': spaceObjectIDs,
+          'resourceCategory': data['resourceCategory'],
+          'resourceSubcategory': data['resourceSubcategory'],
+          'kind': data['kind'],
+          'type': data['type'],
+          'itemDescription': data['itemDescription'],
+          'itemQuantity': {
+            'spaceName': item['spaceName'],
+            'spaceId': ObjectId(item['spaceId']),
+            'quantity':item['quantity'],
+            'codes': code,
+          },
+          'acquisitionDate': acquisitionDate,
+          'status': data['status'],
+        }
+        print(">>", newEquipment)
+        newEquipment = Equipment(equipmentDoc).save()
         
-    newEquipment = Equipment(
-      organization = data['organization'],
-      organizationCode = data['organizationCode'],
-      spaceWithinFacility = spaceObjectIDs,
-      resourceCategory = data['resourceCategory'],
-      resourceSubcategory = data['resourceSubcategory'],
-      kind = data['kind'],
-      type = data['type'],
-      itemDescription = data['itemDescription'],
-      itemQuantity = itemQuantities,
-      acquisitionDate= acquisitionDate,
-      status = data['status'],
-    ).save()
+    # newEquipment = Equipment(
+    #   organization = data['organization'],
+    #   organizationCode = data['organizationCode'],
+    #   spaceWithinFacility = spaceObjectIDs,
+    #   resourceCategory = data['resourceCategory'],
+    #   resourceSubcategory = data['resourceSubcategory'],
+    #   kind = data['kind'],
+    #   type = data['type'],
+    #   itemDescription = data['itemDescription'],
+    #   itemQuantity = itemQuantities,
+    #   acquisitionDate= acquisitionDate,
+    #   status = data['status'],
+    # ).save()
 
     return Response(
       json.dumps({"message": "Ο εξοπλισμός καταχωρήθηκε με επιτυχία"}),

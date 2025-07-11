@@ -29,7 +29,7 @@ class Equipment(TimeStampedModel):
   kind = me.StringField(required=True)
   type = me.StringField(required=True)
   itemDescription = me.ListField(me.EmbeddedDocumentField(itemDescription))
-  itemQuantity =  me.ListField(me.EmbeddedDocumentField(itemQuantity))
+  itemQuantity =  me.EmbeddedDocumentField(itemQuantity)
   acquisitionDate = me.DateTimeField(required=True)
   depreciationDate = me.DateTimeField()
   status = me.StringField(required=True)
