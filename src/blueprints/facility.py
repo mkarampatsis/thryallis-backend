@@ -89,6 +89,11 @@ def create_facility():
       finalized = True if data["finalized"]=='true' else False 
     ).save()
 
+    who = get_jwt_identity()
+    what = {"entity": "facility"}
+    
+    Change(action="insert", who=who, what=what, change={"facility":data}).save()
+
     return Response(
       json.dumps({"message": "Το ακίνητο σας καταχωρήθηκε με επιτυχία"}),
       mimetype="application/json",
@@ -278,6 +283,11 @@ def create_space(id):
       floorPlans = data["floorPlans"]
     ).save()
 
+    who = get_jwt_identity()
+    what = {"entity": "space"}
+    
+    Change(action="insert", who=who, what=what, change={"space":data}).save()
+
     return Response(
       json.dumps({"message": "Ο χώρος καταχωρήθηκε με επιτυχία"}),
       mimetype="application/json",
@@ -319,7 +329,7 @@ def update_space(id):
     who = get_jwt_identity()
     what = {"entity": "space", "key": {"Space": id}}
     
-    Change(action="update", who=who, what=what, change={"space":data}).save()
+    Change(action="update", who=who, what=what, change={"old":space, "new":data}).save()
 
     return Response(
       json.dumps({"message": "Ο χώρος τροποποιήθηκε με επιτυχία"}),
@@ -349,7 +359,7 @@ def delete_space_by_id(id):
   
   who = get_jwt_identity()
   what = {"entity": "space", "key": {"Space": id}}
-  # print(general_info_to_delete)
+
   Change(action="delete", who=who, what=what, change={"space":space.to_json()}).save()
   return Response(json.dumps({"message": "<strong>Ο χώρος διαγράφηκε</strong>"}), mimetype="application/json", status=201)
 
