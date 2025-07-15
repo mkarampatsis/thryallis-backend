@@ -75,52 +75,40 @@ def create_equipment():
     data = request.get_json()
     debug_print("POST EQUIPMENT", data)
     
-    spaceObjectIDs = [ObjectId(id_str) for id_str in data['spaceWithinFacility']]
-    acquisitionDate = datetime.strptime(data['acquisitionDate'], "%Y-%m-%d")
-    
-    for item in data['itemQuantity']:
-      codes = item['codes'].split('$')
-      for code in codes:
-        equipmentDoc = {
-          'organization': data['organization'],
-          'organizationCode': data['organizationCode'],
-          'spaceWithinFacility': spaceObjectIDs,
-          'resourceCategory': data['resourceCategory'],
-          'resourceSubcategory': data['resourceSubcategory'],
-          'kind': data['kind'],
-          'type': data['type'],
-          'itemDescription': data['itemDescription'],
-          'itemQuantity': {
-            'spaceName': item['spaceName'],
-            'spaceId': ObjectId(item['spaceId']),
-            'quantity':item['quantity'],
-            'codes': code,
-          },
-          'acquisitionDate': acquisitionDate,
-          'status': data['status'],
-        }
-        print(">>", newEquipment)
-        newEquipment = Equipment(equipmentDoc).save()
+    for item in data:
+      facilityObjectID = ObjectId(item['hostingFacility'])
+      spaceObjectID = ObjectId(item['spaceWithinFacility'])
+      acquisitionDate = datetime.strptime(item['acquisitionDate'], "%Y-%m-%d")
+            
+      equipmentDoc = {
+        'organization': item['organization'],
+        'organizationCode': item['organizationCode'],
+        'hostingFacility': facilityObjectID,
+        'spaceWithinFacility': spaceObjectID,
+        'resourceCategory': item['resourceCategory'],
+        'resourceSubcategory': item['resourceSubcategory'],
+        'kind': item['kind'],
+        'type': item['type'],
+        'itemDescription': item['itemDescription'],
+        'itemQuantity': [{
+          'distinctiveNameOfFacility': item["itemQuantity"][0]['distinctiveNameOfFacility'],
+          'facilityId': ObjectId(item["itemQuantity"][0]['facilityId']),
+          'spaceName': item["itemQuantity"][0]['spaceName'],
+          'spaceId': ObjectId(item["itemQuantity"][0]['spaceId']),
+          'quantity':item["itemQuantity"][0]['quantity'],
+          'codes': item["itemQuantity"][0]["codes"],
+        }],
+        'acquisitionDate': acquisitionDate,
+        'status': item['status'],
+      }
+      print(">>", equipmentDoc)
+      newEquipment = Equipment(**equipmentDoc).save()
         
-    # newEquipment = Equipment(
-    #   organization = data['organization'],
-    #   organizationCode = data['organizationCode'],
-    #   spaceWithinFacility = spaceObjectIDs,
-    #   resourceCategory = data['resourceCategory'],
-    #   resourceSubcategory = data['resourceSubcategory'],
-    #   kind = data['kind'],
-    #   type = data['type'],
-    #   itemDescription = data['itemDescription'],
-    #   itemQuantity = itemQuantities,
-    #   acquisitionDate= acquisitionDate,
-    #   status = data['status'],
-    # ).save()
-
     return Response(
       json.dumps({"message": "Ο εξοπλισμός καταχωρήθηκε με επιτυχία"}),
       mimetype="application/json",
       status=201,
-    )
+      )
 
   except Exception as e:
     print(e)

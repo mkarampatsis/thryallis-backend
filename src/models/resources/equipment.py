@@ -1,5 +1,6 @@
 import mongoengine as me
 from datetime import datetime
+from src.models.resources.facility import Facility
 from src.models.resources.space import Space
 from src.models.upload import FileUpload
 from src.models.timestamp import TimeStampedModel
@@ -10,6 +11,8 @@ class itemDescription(me.EmbeddedDocument):
   info = me.StringField(required=True)
 
 class itemQuantity(me.EmbeddedDocument):
+  distinctiveNameOfFacility = me.StringField(required=True)
+  facilityId = me.ReferenceField(Facility)
   spaceName = me.StringField(required=True)
   spaceId = me.ReferenceField(Space)
   quantity = me.IntField(required=True)
@@ -23,13 +26,14 @@ class Equipment(TimeStampedModel):
 
   organization = me.StringField(required=True)
   organizationCode = me.StringField(required=True)
-  spaceWithinFacility =  me.ListField(me.ReferenceField(Space))
+  hostingFacility = me.ReferenceField(Facility)
+  spaceWithinFacility =  me.ReferenceField(Space)
   resourceCategory = me.StringField(required=True)
   resourceSubcategory = me.StringField(required=True)
   kind = me.StringField(required=True)
   type = me.StringField(required=True)
   itemDescription = me.ListField(me.EmbeddedDocumentField(itemDescription))
-  itemQuantity =  me.EmbeddedDocumentField(itemQuantity)
+  itemQuantity =  me.ListField(me.EmbeddedDocumentField(itemQuantity))
   acquisitionDate = me.DateTimeField(required=True)
   depreciationDate = me.DateTimeField()
   status = me.StringField(required=True)
