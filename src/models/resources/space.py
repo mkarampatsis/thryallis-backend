@@ -27,6 +27,7 @@ class Space(TimeStampedModel):
   organizationalUnit = me.ListField(me.EmbeddedDocumentField(OrganizationalUnit))
   spaceName = me.StringField(required=True)
   spaceUse = me.EmbeddedDocumentField(SpaceUse)
+  auxiliarySpace = me.BooleanField(default=False)
   spaceArea = me.StringField(required=False)
   spaceLength = me.StringField(required=False)
   spaceWidth = me.StringField(required=True)

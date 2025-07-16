@@ -103,7 +103,12 @@ def create_equipment():
       }
       print(">>", equipmentDoc)
       newEquipment = Equipment(**equipmentDoc).save()
-        
+
+    who = get_jwt_identity()
+    what = {"entity": "equipment"}
+    
+    Change(action="create", who=who, what=what, change={"eqiupment":data}).save()
+
     return Response(
       json.dumps({"message": "Ο εξοπλισμός καταχωρήθηκε με επιτυχία"}),
       mimetype="application/json",
@@ -132,7 +137,7 @@ def delete_equipment_by_id(id):
   
   who = get_jwt_identity()
   what = {"entity": "equipment", "key": {"Equipment": id}}
-  # print(general_info_to_delete)
+
   Change(action="delete", who=who, what=what, change={"equipment":equipment.to_json()}).save()
   return Response(json.dumps({"message": "<strong>Ο εξοπλισμός διαγράφηκε</strong>"}), mimetype="application/json", status=201)
 
@@ -147,19 +152,22 @@ def update_equipment():
     id = data["_id"]
     equipment = Equipment.objects.get(id=ObjectId(id))
 
-    spaceObjectIDs = [ObjectId(id_str) for id_str in data['spaceWithinFacility']]
+    hostingFacility = ObjectId(data['hostingFacility'])
+    spaceWithinFacility = ObjectId(data['spaceWithinFacility'])
     acquisitionDate = datetime.strptime(data['acquisitionDate'], "%Y-%m-%d")
     
     itemQuantities = []
     for item in data['itemQuantity']:
       itemQuantity = item
+      itemQuantity['facilityId'] = ObjectId(item['facilityId'])
       itemQuantity['spaceId'] = ObjectId(item['spaceId'])
       itemQuantities.append(itemQuantity)
     
     equipment.update(
       organization = data['organization'],
       organizationCode = data['organizationCode'],
-      spaceWithinFacility = spaceObjectIDs,
+      hostingFacility = hostingFacility,
+      spaceWithinFacility = spaceWithinFacility,
       resourceCategory = data['resourceCategory'],
       resourceSubcategory = data['resourceSubcategory'],
       kind = data['kind'],
@@ -167,7 +175,8 @@ def update_equipment():
       itemDescription = data['itemDescription'],
       itemQuantity = itemQuantities,
       acquisitionDate = acquisitionDate,
-      status = data['status']
+      status = data['status'],
+      elasticSync = False
     ) 
     
     who = get_jwt_identity()

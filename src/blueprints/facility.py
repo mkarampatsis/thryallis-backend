@@ -90,9 +90,9 @@ def create_facility():
     ).save()
 
     who = get_jwt_identity()
-    what = {"entity": "facility"}
+    what = {"entity": "facility", "key": {"distinctiveNameOfFacility": data["distinctiveNameOfFacility"]}}
     
-    Change(action="insert", who=who, what=what, change={"facility":data}).save()
+    Change(action="create", who=who, what=what, change={"facility":data}).save()
 
     return Response(
       json.dumps({"message": "Το ακίνητο σας καταχωρήθηκε με επιτυχία"}),
@@ -185,6 +185,7 @@ def get_spaces_by_facility_id(id):
           } for ou in space.organizationalUnit],
         "spaceName": space.spaceName,
         "spaceUse": space.spaceUse.to_mongo() if space.spaceUse else None,
+        "auxiliarySpace":space.auxiliarySpace,
         "spaceArea": space.spaceArea,
         "spaceLength": space.spaceLength,
         "spaceWidth": space.spaceWidth,
@@ -275,6 +276,7 @@ def create_space(id):
       organizationalUnit = data["organizationalUnit"],
       spaceName = data["spaceName"],
       spaceUse = data["spaceUse"],
+      auxiliarySpace = data["auxiliarySpace"],
       spaceArea = data["spaceArea"],
       spaceLength = data["spaceLength"],
       spaceWidth = data["spaceWidth"],
@@ -284,9 +286,9 @@ def create_space(id):
     ).save()
 
     who = get_jwt_identity()
-    what = {"entity": "space"}
+    what = {"entity": "space", "key": {"spaceName": data["spaceName"]}  }
     
-    Change(action="insert", who=who, what=what, change={"space":data}).save()
+    Change(action="create", who=who, what=what, change={"space":data}).save()
 
     return Response(
       json.dumps({"message": "Ο χώρος καταχωρήθηκε με επιτυχία"}),
@@ -318,12 +320,14 @@ def update_space(id):
       organizationalUnit = data["organizationalUnit"],
       spaceName = data["spaceName"],
       spaceUse = data["spaceUse"],
+      auxiliarySpace = data["auxiliarySpace"],
       spaceArea = data["spaceArea"],
       spaceLength = data["spaceLength"],
       spaceWidth = data["spaceWidth"],
       entrances = str(data["entrances"]),
       windows = str(data["windows"]),
-      floorPlans = data["floorPlans"]
+      floorPlans = data["floorPlans"],
+      elasticSync = False
     )
 
     who = get_jwt_identity()
