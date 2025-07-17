@@ -101,13 +101,12 @@ def create_equipment():
         'acquisitionDate': acquisitionDate,
         'status': item['status'],
       }
-      print(">>", equipmentDoc)
       newEquipment = Equipment(**equipmentDoc).save()
 
     who = get_jwt_identity()
-    what = {"entity": "equipment"}
+    what = {"entity": "equipment", "key": {"newEquipment": True}}
     
-    Change(action="create", who=who, what=what, change={"eqiupment":data}).save()
+    Change(action="create", who=who, what=what, change={"equipment":data}).save()
 
     return Response(
       json.dumps({"message": "Ο εξοπλισμός καταχωρήθηκε με επιτυχία"}),
@@ -182,7 +181,7 @@ def update_equipment():
     who = get_jwt_identity()
     what = {"entity": "equipment", "key": {"Equipment": id}}
     
-    Change(action="update", who=who, what=what, change={"equipment":data}).save()
+    Change(action="update", who=who, what=what, change={"old":equipment, "new":data}).save()
 
     return Response(
       json.dumps({"message": "Ο εξοπλισμός τροποποιήθηκε με επιτυχία"}),
