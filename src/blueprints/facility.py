@@ -81,12 +81,13 @@ def create_facility():
       belongsTo = data["belongsTo"],
       distinctiveNameOfFacility = data["distinctiveNameOfFacility"],
       useOfFacility =data["useOfFacility"],
-      uniqueUserOfFacility = data["uniqueUseOfFacility"],
+      uniqueUseOfFacility = data["uniqueUseOfFacility"],
       coveredPremisesArea = data["coveredPremisesArea"],
       floorsOrLevels = data["floorsOrLevels"],
       floorPlans = data["floorPlans"],
       addressOfFacility = data["addressOfFacility"],
-      finalized = True if data["finalized"]=='true' else False 
+      # finalized = True if data["finalized"]=='true' else False 
+      finalized = data["finalized"]
     ).save()
 
     who = get_jwt_identity()
@@ -236,7 +237,7 @@ def get_all_spaces_by_organization_code(code):
           "updatedAt": 0,
           "kaek": 0,
           "belongsTo": 0,
-          "uniqueUserOfFacility": 0,
+          "uniqueUseOfFacility": 0,
           "coveredPremisesArea": 0,
           "floorPlans": 0,
           "floorsOrLevels": 0,
