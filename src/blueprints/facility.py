@@ -74,6 +74,17 @@ def create_facility():
     data = request.get_json()
     debug_print("POST FACILITY", data)
 
+    serialized_floorPlans = []
+    for floor in data["floorPlans"]:
+      fileObjectIDs = [ObjectId(id_str) for id_str in floor["floorPlan"]]
+      serialized_floorPlan = {
+        "floorArea": floor["floorArea"],
+        "floorPlan": fileObjectIDs,
+        "level": floor["level"],
+        "num": floor["num"]
+      }
+      serialized_floorPlans.append(serialized_floorPlan)
+
     newFacility = Facility(
       organization = data["organization"],
       organizationCode = data["organizationCode"],
@@ -84,7 +95,7 @@ def create_facility():
       uniqueUseOfFacility = data["uniqueUseOfFacility"],
       coveredPremisesArea = data["coveredPremisesArea"],
       floorsOrLevels = data["floorsOrLevels"],
-      floorPlans = data["floorPlans"],
+      floorPlans = serialized_floorPlans,
       addressOfFacility = data["addressOfFacility"],
       # finalized = True if data["finalized"]=='true' else False 
       finalized = data["finalized"]
