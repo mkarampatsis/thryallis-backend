@@ -153,6 +153,48 @@ def delete_facility_by_id(id):
   Change(action="delete", who=who, what=what, change={"facility":facility.to_json()}).save()
   return Response(json.dumps({"message": "<strong>Το ακίνητο διαγράφηκε</strong>"}), mimetype="application/json", status=201)
 
+@facility.route("/file/<string:id>", methods=["DELETE"])
+@jwt_required()
+def delete_facility_file(id):
+  try: 
+    file_doc = FileUpload.objects.get(id=ObjectId(id))
+    if file_doc:
+      delete_uploaded_file(file_doc)
+      file_doc.delete()
+
+      Facility.objects(floorPlans__floorPlan=id).update(
+        __raw__={
+            '$pull': {
+                'floorPlans.$[].floorPlan': id
+            }
+        }
+      )
+
+      
+#       db.getCollection("facilities").updateOne(
+#     {"floorPlans.floorPlan":ObjectId("6885b06a50c06805fdc319a1")},
+#     {
+#         $pull: {
+#             "floorPlans.$[].floorPlan": ObjectId("6885b06a50c06805fdc319a1")
+#         }
+#     }
+# )
+      
+  except FileUpload.DoesNotExist:
+    return Response(json.dumps({"message": "Η πληροφορία δεν υπάρχει"}), mimetype="application/json", status=404)
+  except Exception as e:
+    return Response(json.dumps({"message": f"<strong>Error:</strong> {str(e)}"}), mimetype="application/json", status=500)
+  
+  who = get_jwt_identity()
+  what = {"entity": "facility", "key": {"file": id}}
+  
+  Change(action="delete", who=who, what=what, change={"file_uploads":file_doc.to_json()}).save()
+  return Response(json_util.dumps({
+    "message": "<strong>Το αρχείο διαγράφηκε</strong>"
+    }), 
+    mimetype="application/json", 
+    status=201
+  )
 
 #####################
 # Space Methods
@@ -398,3 +440,21 @@ def delete_uploaded_file(file_doc):
   except Exception as e:
     print(f"Error deleting file: {e}")
     return False  
+
+def delete_uploaded_file(file_doc):
+  try:
+    # Combine path and filename
+    file_path = os.path.join(file_doc["file_location"], file_doc["file_id"])
+
+    # Check if file exists
+    if os.path.exists(file_path):
+      os.remove(file_path)
+      print(f"Deleted: {file_path}")
+      return True
+    else:
+      print(f"File not found: {file_path}")
+      return False
+
+  except Exception as e:
+    print(f"Error deleting file: {e}")
+    return False
