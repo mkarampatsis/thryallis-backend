@@ -120,6 +120,63 @@ def create_facility():
       status=500,
     )
 
+@facility.route("/<string:id>", methods=["PUT"])
+@jwt_required()
+def update_facility(id):
+
+  try:
+    data = request.get_json()
+    debug_print("UPDATE FACILITY", data)
+    
+    print("ID>>", id)
+    facility = Facility.objects.get(id=ObjectId(id))
+
+    serialized_floorPlans = []
+    for floor in data["floorPlans"]:
+      fileObjectIDs = [ObjectId(id_str) for id_str in floor["floorPlan"]]
+      serialized_floorPlan = {
+        "floorArea": floor["floorArea"],
+        "floorPlan": fileObjectIDs,
+        "level": floor["level"],
+        "num": floor["num"]
+      }
+      serialized_floorPlans.append(serialized_floorPlan)
+
+    facility.update(
+      organization = data["organization"],
+      organizationCode = data["organizationCode"],
+      kaek = data["kaek"],
+      belongsTo = data["belongsTo"],
+      distinctiveNameOfFacility = data["distinctiveNameOfFacility"],
+      useOfFacility =data["useOfFacility"],
+      uniqueUseOfFacility = data["uniqueUseOfFacility"],
+      coveredPremisesArea = data["coveredPremisesArea"],
+      floorsOrLevels = data["floorsOrLevels"],
+      floorPlans = serialized_floorPlans,
+      addressOfFacility = data["addressOfFacility"],
+      # finalized = True if data["finalized"]=='true' else False 
+      finalized = data["finalized"]
+    )
+
+    who = get_jwt_identity()
+    what = {"entity": "facility", "key": {"faciltyId": id}}
+    
+    Change(action="update", who=who, what=what, change={"old":facility, "new":data}).save()
+
+    return Response(
+      json.dumps({"message": "Το ακίνητο σας τροποποιήθηκε με επιτυχία"}),
+      mimetype="application/json",
+      status=201,
+    )
+
+  except Exception as e:
+    print(e)
+    return Response(
+      json.dumps({"message": f"<strong>Αποτυχία τροποποίησης ακίνητου:</strong> {e}"}),
+      mimetype="application/json",
+      status=500,
+    )
+
 @facility.route("/<string:id>", methods=["DELETE"])
 @jwt_required()
 def delete_facility_by_id(id):
@@ -156,30 +213,21 @@ def delete_facility_by_id(id):
 @facility.route("/file/<string:id>", methods=["DELETE"])
 @jwt_required()
 def delete_facility_file(id):
+  print(id)
   try: 
     file_doc = FileUpload.objects.get(id=ObjectId(id))
     if file_doc:
       delete_uploaded_file(file_doc)
       file_doc.delete()
 
-      Facility.objects(floorPlans__floorPlan=id).update(
-        __raw__={
+      facility_file = Facility.objects(floorPlans__floorPlan=ObjectId(id)).update(
+          __raw__={
             '$pull': {
-                'floorPlans.$[].floorPlan': id
+              'floorPlans.$[].floorPlan': ObjectId(id)
             }
-        }
-      )
+          }
+        )
 
-      
-#       db.getCollection("facilities").updateOne(
-#     {"floorPlans.floorPlan":ObjectId("6885b06a50c06805fdc319a1")},
-#     {
-#         $pull: {
-#             "floorPlans.$[].floorPlan": ObjectId("6885b06a50c06805fdc319a1")
-#         }
-#     }
-# )
-      
   except FileUpload.DoesNotExist:
     return Response(json.dumps({"message": "Η πληροφορία δεν υπάρχει"}), mimetype="application/json", status=404)
   except Exception as e:
