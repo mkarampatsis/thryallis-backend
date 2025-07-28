@@ -8,9 +8,28 @@ from src.blueprints.utils import debug_print, dict2string
 from src.models.resources.facility import Facility
 from src.models.resources.space import Space
 from src.models.psped.change import Change
+from src.models.resources.facility_config import FacilityConfig
 from src.models.upload import FileUpload 
 
 facility = Blueprint("facility", __name__)
+
+@facility.route("/config", methods=["GET"])
+def get_facility_config():
+  try:
+    facility_config = FacilityConfig.objects()
+
+    return Response(
+      facility_config.to_json(),
+      mimetype="application/json",
+      status=200,
+    )
+  except Exception as e:
+    print(e)
+    return Response(
+      json.dumps({"message": f"<strong>Αποτυχία εμφάνισης config ακινήτων:</strong> {e}"}),
+      mimetype="application/json",
+      status=500,
+    )
 
 @facility.route("", methods=["GET"])
 def get_all_facilities():
@@ -93,6 +112,7 @@ def create_facility():
       distinctiveNameOfFacility = data["distinctiveNameOfFacility"],
       useOfFacility =data["useOfFacility"],
       uniqueUseOfFacility = data["uniqueUseOfFacility"],
+      private = data["private"],
       coveredPremisesArea = data["coveredPremisesArea"],
       floorsOrLevels = data["floorsOrLevels"],
       floorPlans = serialized_floorPlans,
@@ -128,7 +148,6 @@ def update_facility(id):
     data = request.get_json()
     debug_print("UPDATE FACILITY", data)
     
-    print("ID>>", id)
     facility = Facility.objects.get(id=ObjectId(id))
 
     serialized_floorPlans = []
@@ -150,6 +169,7 @@ def update_facility(id):
       distinctiveNameOfFacility = data["distinctiveNameOfFacility"],
       useOfFacility =data["useOfFacility"],
       uniqueUseOfFacility = data["uniqueUseOfFacility"],
+      private = data["private"],
       coveredPremisesArea = data["coveredPremisesArea"],
       floorsOrLevels = data["floorsOrLevels"],
       floorPlans = serialized_floorPlans,

@@ -55,6 +55,7 @@ class Facility(TimeStampedModel):
     ],
   )
   uniqueUseOfFacility = me.BooleanField(required=True)
+  private = me.BooleanField(required=True)
   coveredPremisesArea = me.StringField(required=True)
   floorsOrLevels = me.IntField(required=True)
   floorPlans = me.ListField(me.EmbeddedDocumentField(FloorPlans)) 
