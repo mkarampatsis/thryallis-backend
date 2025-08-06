@@ -13,6 +13,7 @@ from src.models.upload import FileUpload
 
 facility = Blueprint("facility", __name__)
 
+# Facility Config
 @facility.route("/config", methods=["GET"])
 def get_facility_config():
   try:
@@ -31,6 +32,62 @@ def get_facility_config():
       status=500,
     )
 
+@facility.route('/config', methods=['POST'])
+def create_facility_config():
+  data = request.get_json()
+
+  try:
+    for item in data:
+      FacilityType(**item).save()
+
+    who = get_jwt_identity()
+    what = {"entity": "facility", "key": {"facility_config": data}}
+    
+    Change(action="create", who=who, what=what, change={"facility_config":data}).save()
+    return Response(
+      json.dumps({"message": "Ο νέος χωρος ακινήτου καταχωρήθηκε με επιτυχία"}),
+      mimetype="application/json",
+      status=201,
+    )
+
+  except Exception as e:
+    print(e)
+    return Response(
+      json.dumps({"message": f"<strong>Αποτυχία καταχώρησης χώρου ακίνητου:</strong> {e}"}),
+      mimetype="application/json",
+      status=500,
+    )
+
+@facility.route('/config', methods=['PUT'])
+def update_facility(id):
+  data = request.get_json()
+  
+  for d in data:
+    print (d) 
+    
+    # try:
+    #   FacilityType.objects(id=id).update_one(**data)
+        
+    #   who = get_jwt_identity()
+    #   what = {"entity": "facility", "key": {"facility_config": d}}
+      
+    #   Change(action="update", who=who, what=what, change={"facility_config":d}).save()
+    #   return Response(
+    #     json.dumps({"message": "Ο χωρος ακινήτου τροποποιήθηκε με επιτυχία"}),
+    #     mimetype="application/json",
+    #     status=201,
+    #   )
+    # except Exception as e:
+    #   print(e)
+    #   return Response(
+    #     json.dumps({"message": f"<strong>Αποτυχία τροποποίησης χώρου ακίνητου:</strong> {e}"}),
+    #     mimetype="application/json",
+    #     status=500,
+    #   )
+    
+# #####################
+
+# Facility requests
 @facility.route("", methods=["GET"])
 def get_all_facilities():
   try:
