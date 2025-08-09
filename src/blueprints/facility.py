@@ -33,23 +33,38 @@ def get_facility_config():
     )
 
 @facility.route('/config', methods=['POST'])
+@jwt_required()
 def create_facility_config():
   data = request.get_json()
+  debug_print("CREATE FACILITY CONFIG", data)
 
   try:
-    for item in data:
-      FacilityType(**item).save()
+    for d in data:
+      if d['type'] and len(d["spaces"])>0:
+        print(d)
+        serialized_spaces = []
+        for space in d["spaces"]:
+          serialized_space = {
+            "type": space["type"],
+            "spaces": [item["value"] for item in space["spaces"]]
+          }
+          serialized_spaces.append(serialized_space)
+        
+        newFacilityConfig = FacilityConfig(
+          type = d["type"],
+          spaces = serialized_spaces
+        ).save()
 
-    who = get_jwt_identity()
-    what = {"entity": "facility", "key": {"facility_config": data}}
+        who = get_jwt_identity()
+        what = {"entity": "facility", "key": {"facility_config": newConfigDoc}}
+        
+        Change(action="create", who=who, what=what, change={"facility_config":newConfigDoc}).save()
     
-    Change(action="create", who=who, what=what, change={"facility_config":data}).save()
     return Response(
       json.dumps({"message": "Ο νέος χωρος ακινήτου καταχωρήθηκε με επιτυχία"}),
       mimetype="application/json",
       status=201,
     )
-
   except Exception as e:
     print(e)
     return Response(
@@ -59,31 +74,35 @@ def create_facility_config():
     )
 
 @facility.route('/config', methods=['PUT'])
-def update_facility(id):
+@jwt_required()
+def update_facility_config():
   data = request.get_json()
+  debug_print("UPDATE FACILITY CONFIG", data)
   
-  for d in data:
-    print (d) 
-    
-    # try:
+  try:
+    for d in data:
+      print("update>>",d)
+
     #   FacilityType.objects(id=id).update_one(**data)
         
     #   who = get_jwt_identity()
     #   what = {"entity": "facility", "key": {"facility_config": d}}
       
     #   Change(action="update", who=who, what=what, change={"facility_config":d}).save()
-    #   return Response(
-    #     json.dumps({"message": "Ο χωρος ακινήτου τροποποιήθηκε με επιτυχία"}),
-    #     mimetype="application/json",
-    #     status=201,
-    #   )
-    # except Exception as e:
-    #   print(e)
-    #   return Response(
-    #     json.dumps({"message": f"<strong>Αποτυχία τροποποίησης χώρου ακίνητου:</strong> {e}"}),
-    #     mimetype="application/json",
-    #     status=500,
-    #   )
+      
+    return Response(
+      json.dumps({"message": "Ο χωρος ακινήτου τροποποιήθηκε με επιτυχία"}),
+      mimetype="application/json",
+      status=201,
+    )
+
+  except Exception as e:
+    print(e)
+    return Response(
+      json.dumps({"message": f"<strong>Αποτυχία τροποποίησης χώρου ακίνητου:</strong> {e}"}),
+      mimetype="application/json",
+      status=500,
+    )
     
 # #####################
 
