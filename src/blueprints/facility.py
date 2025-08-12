@@ -10,6 +10,7 @@ from src.models.resources.space import Space
 from src.models.psped.change import Change
 from src.models.resources.facility_config import FacilityConfig
 from src.models.upload import FileUpload 
+from mongoengine.base import BaseDocument
 
 facility = Blueprint("facility", __name__)
 
@@ -56,9 +57,9 @@ def create_facility_config():
         ).save()
 
         who = get_jwt_identity()
-        what = {"entity": "facility", "key": {"facility_config": newConfigDoc}}
+        what = {"entity": "facility", "key": {"facility_config": newFacilityConfig}}
         
-        Change(action="create", who=who, what=what, change={"facility_config":newConfigDoc}).save()
+        Change(action="create", who=who, what=what, change={"facility_config":newFacilityConfig}).save()
     
     return Response(
       json.dumps({"message": "Ο νέος χωρος ακινήτου καταχωρήθηκε με επιτυχία"}),
@@ -81,15 +82,23 @@ def update_facility_config():
   
   try:
     for d in data:
-      print("update>>",d)
+      doc = clean_facility_data(d)
+      doc = flatten_spaces(doc)
 
-    #   FacilityType.objects(id=id).update_one(**data)
+      facilityConfig = FacilityConfig.objects.get(id=ObjectId(doc["_id"]))
+      
+      if doc["spaces"] !=  mongo_to_dict(facilityConfig.spaces):
         
-    #   who = get_jwt_identity()
-    #   what = {"entity": "facility", "key": {"facility_config": d}}
+        facilityConfig.update(
+          type = doc["type"],
+          spaces = doc["spaces"],
+        )
       
-    #   Change(action="update", who=who, what=what, change={"facility_config":d}).save()
-      
+        who = get_jwt_identity()
+        what = {"entity": "facility", "key": {"facility_config": doc}}
+          
+        Change(action="update", who=who, what=what, change={"old":facilityConfig, "new":doc}).save()
+        
     return Response(
       json.dumps({"message": "Ο χωρος ακινήτου τροποποιήθηκε με επιτυχία"}),
       mimetype="application/json",
@@ -602,3 +611,61 @@ def delete_uploaded_file(file_doc):
   except Exception as e:
     print(f"Error deleting file: {e}")
     return False
+
+def clean_facility_data(obj):
+  """
+  Recursively:
+  - Remove 'readonly' fields
+  - Remove empty/invalid space groups
+  """
+  if isinstance(obj, dict):
+    obj.pop('readonly', None)  # Remove readonly if present
+    
+    # Process children
+    for key, value in list(obj.items()):
+      obj[key] = clean_facility_data(value)
+
+    # Special handling for 'spaces' in a group
+    if 'spaces' in obj and isinstance(obj['spaces'], list):
+      obj['spaces'] = [
+        clean_facility_data(sg)
+        for sg in obj['spaces']
+        if not (
+          isinstance(sg, dict) and
+          isinstance(sg.get('spaces'), list) and
+          (
+            len(sg['spaces']) == 0 or  # empty list
+            all(isinstance(item, dict) and item.get('value', '').strip() == '' for item in sg['spaces'])  # only empty strings
+          )
+        )
+      ]
+  elif isinstance(obj, list):
+    return [clean_facility_data(item) for item in obj]
+
+  return obj
+
+def flatten_spaces(doc):
+  """
+  Convert 'spaces': [{'value': '...'}, ...] into
+  'spaces': ['...', ...] for all levels in the structure.
+  """
+  if "spaces" in doc and isinstance(doc["spaces"], list):
+    # Check if these are space objects (with "value") or subcategories
+    if doc["spaces"] and isinstance(doc["spaces"][0], dict) and "value" in doc["spaces"][0]:
+      # Flatten only the values
+      doc["spaces"] = [s["value"] for s in doc["spaces"] if s.get("value")]
+    else:
+      # Recursively process nested space groups
+      for sub in doc["spaces"]:
+        flatten_spaces(sub)
+  return doc
+
+
+def mongo_to_dict(obj):
+  """Convert MongoEngine Document or EmbeddedDocument to plain dict."""
+  if isinstance(obj, list):
+    return [mongo_to_dict(o) for o in obj]
+  elif isinstance(obj, BaseDocument):
+    return {k: mongo_to_dict(v) for k, v in obj._data.items()}
+  else:
+    return obj
