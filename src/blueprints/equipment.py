@@ -14,6 +14,7 @@ from src.models.upload import FileUpload
 
 equipment = Blueprint("equipment", __name__)
 
+# Equipment Config
 @equipment.route("/config", methods=["GET"])
 def get_equipment_config():
   try:
@@ -31,6 +32,79 @@ def get_equipment_config():
       mimetype="application/json",
       status=500,
     )
+
+@equipment.route('/config', methods=['POST'])
+@jwt_required()
+def create_equipment_config():
+  data = request.get_json()
+  debug_print("CREATE EQUIPMENT CONFIG", data)
+
+  try:
+    for d in data:
+      if d['resourceSubcategory'] and len(d["kind"])>0:
+        print(d)
+                
+        # newFacilityConfig = FacilityConfig(
+        #   type = d["type"],
+        #   spaces = serialized_spaces
+        # ).save()
+
+        # who = get_jwt_identity()
+        # what = {"entity": "equipment", "key": {"equipment_config": newFacilityConfig}}
+        
+        # Change(action="create", who=who, what=what, change={"equipment_config":newFacilityConfig}).save()
+    
+    return Response(
+      json.dumps({"message": "Ο νέος εξοπλισμός καταχωρήθηκε με επιτυχία"}),
+      mimetype="application/json",
+      status=201,
+    )
+  except Exception as e:
+    print(e)
+    return Response(
+      json.dumps({"message": f"<strong>Αποτυχία καταχώρησης χώρου ακίνητου:</strong> {e}"}),
+      mimetype="application/json",
+      status=500,
+    )
+
+@equipment.route('/config', methods=['PUT'])
+@jwt_required()
+def update_equipment_config():
+  data = request.get_json()
+  debug_print("UPDATE EQUIPMENT CONFIG", data)
+  
+  try:
+    for d in data:
+      print(d)
+      facilityConfig = FacilityConfig.objects.get(id=ObjectId(doc["_id"]))
+      
+      if doc["spaces"] !=  mongo_to_dict(facilityConfig.spaces):
+        
+        facilityConfig.update(
+          type = doc["type"],
+          spaces = doc["spaces"],
+        )
+      
+        who = get_jwt_identity()
+        what = {"entity": "equipment", "key": {"equipment_config": doc}}
+          
+        Change(action="update", who=who, what=what, change={"old":facilityConfig, "new":doc}).save()
+        
+    return Response(
+      json.dumps({"message": "Ο εξοπλισμός τροποποιήθηκε με επιτυχία"}),
+      mimetype="application/json",
+      status=201,
+    )
+
+  except Exception as e:
+    print(e)
+    return Response(
+      json.dumps({"message": f"<strong>Αποτυχία τροποποίησης χώρου ακίνητου:</strong> {e}"}),
+      mimetype="application/json",
+      status=500,
+    )
+    
+# #####################
 
 @equipment.route("/organization/<string:code>", methods=["GET"])
 def get_equipments_by_organization_code(code):
@@ -196,3 +270,12 @@ def update_equipment():
       mimetype="application/json",
       status=500,
     )
+
+def mongo_to_dict(obj):
+  """Convert MongoEngine Document or EmbeddedDocument to plain dict."""
+  if isinstance(obj, list):
+    return [mongo_to_dict(o) for o in obj]
+  elif isinstance(obj, BaseDocument):
+    return {k: mongo_to_dict(v) for k, v in obj._data.items()}
+  else:
+    return obj
