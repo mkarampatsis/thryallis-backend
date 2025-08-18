@@ -8,7 +8,7 @@ from src.models.timestamp import TimeStampedModel
 class itemDescription(me.EmbeddedDocument):
   value = me.StringField(required=True)
   description = me.StringField(required=True)
-  info = me.StringField(required=True)
+  info = me.StringField()
 
 class itemQuantity(me.EmbeddedDocument):
   distinctiveNameOfFacility = me.StringField(required=True)

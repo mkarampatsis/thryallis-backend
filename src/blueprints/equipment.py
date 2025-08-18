@@ -11,6 +11,7 @@ from src.models.resources.equipment_config import EquipmentConfig
 from src.models.resources.equipment import Equipment
 from src.models.psped.change import Change
 from src.models.upload import FileUpload 
+from mongoengine.base import BaseDocument
 
 equipment = Blueprint("equipment", __name__)
 
@@ -44,15 +45,15 @@ def create_equipment_config():
       if d['resourceSubcategory'] and len(d["kind"])>0:
         print(d)
                 
-        # newFacilityConfig = FacilityConfig(
-        #   type = d["type"],
-        #   spaces = serialized_spaces
-        # ).save()
+        newConfig = EquipmentConfig(
+          resourceSubcategory = d["resourceSubcategory"],
+          kind = d["kind"]
+        ).save()
 
-        # who = get_jwt_identity()
-        # what = {"entity": "equipment", "key": {"equipment_config": newFacilityConfig}}
+        who = get_jwt_identity()
+        what = {"entity": "equipment", "key": {"equipment_config": newConfig}}
         
-        # Change(action="create", who=who, what=what, change={"equipment_config":newFacilityConfig}).save()
+        Change(action="create", who=who, what=what, change={"equipment_config":newConfig}).save()
     
     return Response(
       json.dumps({"message": "Ο νέος εξοπλισμός καταχωρήθηκε με επιτυχία"}),
@@ -62,7 +63,7 @@ def create_equipment_config():
   except Exception as e:
     print(e)
     return Response(
-      json.dumps({"message": f"<strong>Αποτυχία καταχώρησης χώρου ακίνητου:</strong> {e}"}),
+      json.dumps({"message": f"<strong>Αποτυχία εξοπλισμού:</strong> {e}"}),
       mimetype="application/json",
       status=500,
     )
@@ -75,20 +76,20 @@ def update_equipment_config():
   
   try:
     for d in data:
-      print(d)
-      facilityConfig = FacilityConfig.objects.get(id=ObjectId(doc["_id"]))
-      
-      if doc["spaces"] !=  mongo_to_dict(facilityConfig.spaces):
+      equipmentConfig = EquipmentConfig.objects.get(id=ObjectId(d["_id"]))
+   
+      if d["kind"] !=  mongo_to_dict(equipmentConfig.kind):
+        # print(">>>", d)
         
-        facilityConfig.update(
-          type = doc["type"],
-          spaces = doc["spaces"],
+        equipmentConfig.update(
+          resourceSubcategory = d["resourceSubcategory"],
+          kind = d["kind"]
         )
       
         who = get_jwt_identity()
-        what = {"entity": "equipment", "key": {"equipment_config": doc}}
+        what = {"entity": "equipment", "key": {"equipment_config": d}}
           
-        Change(action="update", who=who, what=what, change={"old":facilityConfig, "new":doc}).save()
+        Change(action="update", who=who, what=what, change={"old":equipmentConfig, "new":d}).save()
         
     return Response(
       json.dumps({"message": "Ο εξοπλισμός τροποποιήθηκε με επιτυχία"}),
@@ -99,7 +100,7 @@ def update_equipment_config():
   except Exception as e:
     print(e)
     return Response(
-      json.dumps({"message": f"<strong>Αποτυχία τροποποίησης χώρου ακίνητου:</strong> {e}"}),
+      json.dumps({"message": f"<strong>Αποτυχία τροποποίησης εξοπλισμού:</strong> {e}"}),
       mimetype="application/json",
       status=500,
     )

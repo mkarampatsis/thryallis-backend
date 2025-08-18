@@ -5,6 +5,7 @@ from src.models.timestamp import TimeStampedModel
 class Types(me.EmbeddedDocument):
   name = me.StringField(required=True)
   itemDescription = me.ListField()
+  info = me.ListField()
 
 class Kind(me.EmbeddedDocument):
   name = me.StringField(required=True)
