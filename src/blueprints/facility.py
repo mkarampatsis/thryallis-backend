@@ -594,24 +594,6 @@ def delete_uploaded_file(file_doc):
     print(f"Error deleting file: {e}")
     return False  
 
-def delete_uploaded_file(file_doc):
-  try:
-    # Combine path and filename
-    file_path = os.path.join(file_doc["file_location"], file_doc["file_id"])
-
-    # Check if file exists
-    if os.path.exists(file_path):
-      os.remove(file_path)
-      print(f"Deleted: {file_path}")
-      return True
-    else:
-      print(f"File not found: {file_path}")
-      return False
-
-  except Exception as e:
-    print(f"Error deleting file: {e}")
-    return False
-
 def clean_facility_data(obj):
   """
   Recursively:

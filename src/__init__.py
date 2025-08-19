@@ -25,6 +25,7 @@ from src.blueprints.change import change
 from src.blueprints.helpbox import helpbox
 from src.blueprints.facility import facility
 from src.blueprints.equipment import equipment
+from src.blueprints.employee import employee
 
 from src.config import (
     MONGO_HOST,
@@ -111,3 +112,4 @@ app.register_blueprint(change, url_prefix="/change")
 app.register_blueprint(helpbox, url_prefix="/helpbox")
 app.register_blueprint(facility, url_prefix="/facility")
 app.register_blueprint(equipment, url_prefix="/equipment")
+app.register_blueprint(employee, url_prefix="/employee")
