@@ -54,7 +54,7 @@ def get_employees_by_organization_code(code):
     employees = Employee.objects(organizationCode=code)
 
     return Response(
-      facilities.to_json(),
+      employees.to_json(),
       mimetype="application/json",
       status=200,
     )
@@ -74,7 +74,7 @@ def create_employee():
     data = request.get_json()
     debug_print("POST EMPLOYEE", data)
 
-    newEmployee = Facility(
+    newEmployee = Employee(
       organization = data["organization"],
       organizationCode = data["organizationCode"],
       code = data["code"],
