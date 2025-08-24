@@ -170,6 +170,37 @@ def get_facilities_by_organization_code(code):
       status=500,
     )
 
+@facility.route("/organizations", methods=["GET"])
+def get_facilities_list_by_organization_codes():
+  try:
+    
+    codes = request.args.get("codes")
+    
+    if not codes:
+      return Response(
+        json.dumps({"message": "Δεν έχετε δώσει κωδικούς φορέα"}),
+        mimetype="application/json",
+        status=400,
+      )
+
+    codes_list = codes.split(",")  # ["22", "33"]
+
+    facilities = Facility.objects(organizationCode__in=codes_list)
+
+    return Response(
+      facilities.to_json(),
+      mimetype="application/json",
+      status=200,
+    )
+
+  except Exception as e:
+    print(e)
+    return Response(
+      json.dumps({"message": f"<strong>Αποτυχία εμφάνισης ακινήτων του φορέα:</strong> {e}"}),
+      mimetype="application/json",
+      status=500,
+    )
+
 @facility.route("", methods=["POST"])
 @jwt_required()
 def create_facility():
