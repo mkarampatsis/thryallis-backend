@@ -6,6 +6,7 @@ from flask_jwt_extended import get_jwt_identity, jwt_required, get_jwt
 
 from src.blueprints.utils import debug_print, dict2string
 from src.models.resources.facility import Facility
+from src.models.resources.equipment import Equipment
 from src.models.resources.space import Space
 from src.models.psped.change import Change
 from src.models.resources.facility_config import FacilityConfig
@@ -605,6 +606,53 @@ def delete_space_by_id(id):
   Change(action="delete", who=who, what=what, change={"space":space.to_json()}).save()
   return Response(json.dumps({"message": "<strong>Ο χώρος διαγράφηκε</strong>"}), mimetype="application/json", status=201)
 
+
+# Report Requests
+@facility.route("/report1", methods=["GET"])
+def get_report1():
+  try:
+    
+    codes = request.args.get("codes")
+    
+    if not codes:
+      return Response(
+        json.dumps({"message": "Δεν έχετε δώσει κωδικούς φορέα"}),
+        mimetype="application/json",
+        status=400,
+      )
+
+    codes_list = codes.split(",")  # ["22", "33"]
+
+    facilities = Facility.objects(organizationCode__in=codes_list)
+    equipments = Equipment.objects(organizationCode__in=codes_list)
+
+    facilities_with_spaces = []
+    for facility in facilities:
+      facility_dict = json.loads(facility.to_json())  # Convert MongoEngine object to dict
+      # Query spaces for this facility
+      spaces = Space.objects(facilityId=facility.id)
+      facility_dict["spaces"] = json.loads(spaces.to_json())
+      facilities_with_spaces.append(facility_dict)
+
+
+    result = {
+      "facilities": facilities_with_spaces,
+      "equipments": json.loads(equipments.to_json())
+    }
+
+    return Response(
+      json.dumps(result, ensure_ascii=False),
+      mimetype="application/json",
+      status=200,
+    )
+
+  except Exception as e:
+    print(e)
+    return Response(
+      json.dumps({"message": f"<strong>Αποτυχία εμφάνισης ακινήτων του φορέα:</strong> {e}"}),
+      mimetype="application/json",
+      status=500,
+    )
 
 # Function that deletes all referenced files
 def delete_uploaded_file(file_doc):
