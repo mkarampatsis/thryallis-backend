@@ -123,7 +123,7 @@ def get_all_facilities():
     facilities = Facility.objects()
 
     return Response(
-      questions.to_json(),
+      facilities.to_json(),
       mimetype="application/json",
       status=200,
     )
@@ -606,8 +606,10 @@ def delete_space_by_id(id):
   Change(action="delete", who=who, what=what, change={"space":space.to_json()}).save()
   return Response(json.dumps({"message": "<strong>Ο χώρος διαγράφηκε</strong>"}), mimetype="application/json", status=201)
 
-
+###################
 # Report Requests
+###################
+
 @facility.route("/report1", methods=["GET"])
 def get_report1():
   try:
@@ -650,6 +652,98 @@ def get_report1():
     print(e)
     return Response(
       json.dumps({"message": f"<strong>Αποτυχία εμφάνισης ακινήτων του φορέα:</strong> {e}"}),
+      mimetype="application/json",
+      status=500,
+    )
+
+@facility.route("/organizations/details", methods=["GET"])
+def get_facility_details_by_organizations():
+  try:
+    
+    codes = request.args.get("codes")
+    
+    if not codes:
+      return Response(
+        json.dumps({"message": "Δεν έχετε δώσει κωδικούς φορέα"}),
+        mimetype="application/json",
+        status=400,
+      )
+
+    codes_list = codes.split(",")  # ["22", "33"]
+
+    facilities = Facility.objects(organizationCode__in=codes_list)
+    
+    facilities_with_spaces = []
+    for facility in facilities:
+      facility_dict = json.loads(facility.to_json())  # Convert MongoEngine object to dict
+      # Query spaces for this facility
+      spaces = Space.objects(facilityId=facility.id)
+         
+      # Query equipments for this space
+      spaces_with_equipments = []
+      for space in spaces:
+        space_dict = json.loads(space.to_json())  # Convert MongoEngine object to dict
+        # Query equipments for this space
+        equipments = Equipment.objects(spaceWithinFacility=space.id)
+        space_dict["equipments"] = json.loads(equipments.to_json())
+        spaces_with_equipments.append(space_dict)
+      
+      facility_dict["spaces"] = spaces_with_equipments
+
+      facilities_with_spaces.append(facility_dict)
+    
+    return Response(
+      json.dumps(facilities_with_spaces, ensure_ascii=False),
+      mimetype="application/json",
+      status=200,
+    )
+
+  except Exception as e:
+    print(e)
+    return Response(
+      json.dumps({"message": f"<strong>Αποτυχία εμφάνισης ακινήτων του φορέα:</strong> {e}"}),
+      mimetype="application/json",
+      status=500,
+    )
+
+@facility.route("/<string:id>/details", methods=["GET"])
+def get_facility_details_by_id(id):
+  try:
+    
+    if not id:
+      return Response(
+        json.dumps({"message": "Δεν έχετε δώσει id ακινήτου"}),
+        mimetype="application/json",
+        status=400,
+      )
+
+    facility = Facility.objects.get(id=ObjectId(id))
+    spaces = Space.objects(facilityId=ObjectId(id))
+
+    spaces_with_equipments = []
+    for space in spaces:
+      space_dict = json.loads(space.to_json())  # Convert MongoEngine object to dict
+      # Query equipments for this space
+      equipments = Equipment.objects(spaceWithinFacility=space.id)
+      space_dict["equipments"] = json.loads(equipments.to_json())
+      spaces_with_equipments.append(space_dict)
+
+
+    result = {
+      "facility": json.loads(facility.to_json()),
+      "spaces": spaces_with_equipments
+    }
+
+    return Response(
+      json.dumps(result, ensure_ascii=False),
+      mimetype="application/json",
+      status=200,
+    )
+
+  except Exception as e:
+    print(e)
+    return Response(
+      json.dumps({"message": f"<strong>Αποτυχία εμφάνισης στοιχείων ακινήτου:</strong> {e}"}),
       mimetype="application/json",
       status=500,
     )
