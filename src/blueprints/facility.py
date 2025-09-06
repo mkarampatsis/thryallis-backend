@@ -706,6 +706,110 @@ def get_facility_details_by_organizations():
       status=500,
     )
 
+@facility.route("/organizationalUnits/details", methods=["GET"])
+def get_facility_details_by_organizationalUnits():
+  try:
+    
+    codes = request.args.get("codes")
+    
+    if not codes:
+      return Response(
+        json.dumps({"message": "Δεν έχετε δώσει κωδικούς μονάδας"}),
+        mimetype="application/json",
+        status=400,
+      )
+
+    codes_list = codes.split(",")  # ["22", "33"]
+    
+    spaces = Space.objects(organizationalUnit__organizationalUnitCode__in=codes_list)
+    
+    fileObjectIDs = list(dict.fromkeys([str(space.facilityId.id) for space in spaces if space.facilityId]))
+    facilities = Facility.objects(id__in=fileObjectIDs)
+
+    facilities_with_spaces = []
+    for facility in facilities:
+      facility_dict = json.loads(facility.to_json())  # Convert MongoEngine object to dict
+      # Query spaces for this facility
+      spaces = Space.objects(facilityId=facility.id)
+         
+      # Query equipments for this space
+      spaces_with_equipments = []
+      for space in spaces:
+        space_dict = json.loads(space.to_json())  # Convert MongoEngine object to dict
+        # Query equipments for this space
+        equipments = Equipment.objects(spaceWithinFacility=space.id)
+        space_dict["equipments"] = json.loads(equipments.to_json())
+        spaces_with_equipments.append(space_dict)
+      
+      facility_dict["spaces"] = spaces_with_equipments
+
+      facilities_with_spaces.append(facility_dict)
+    
+    return Response(
+      json.dumps(facilities_with_spaces, ensure_ascii=False),
+      mimetype="application/json",
+      status=200,
+    )
+
+  except Exception as e:
+    print(e)
+    return Response(
+      json.dumps({"message": f"<strong>Αποτυχία εμφάνισης ακινήτων της μονάδας:</strong> {e}"}),
+      mimetype="application/json",
+      status=500,
+    )
+
+@facility.route("/facilities/details", methods=["GET"])
+def get_facility_details_by_ids():
+  try:
+    
+    codes = request.args.get("codes")
+    
+    if not codes:
+      return Response(
+        json.dumps({"message": "Δεν έχετε δώσει κωδικούς ακινήτου"}),
+        mimetype="application/json",
+        status=400,
+      )
+
+    codes_list = codes.split(",")  # ["22", "33"]
+    print(codes_list)
+    
+    facilities = Facility.objects(id__in=codes_list)
+
+    facilities_with_spaces = []
+    for facility in facilities:
+      facility_dict = json.loads(facility.to_json())  # Convert MongoEngine object to dict
+      # Query spaces for this facility
+      spaces = Space.objects(facilityId=facility.id)
+         
+      # Query equipments for this space
+      spaces_with_equipments = []
+      for space in spaces:
+        space_dict = json.loads(space.to_json())  # Convert MongoEngine object to dict
+        # Query equipments for this space
+        equipments = Equipment.objects(spaceWithinFacility=space.id)
+        space_dict["equipments"] = json.loads(equipments.to_json())
+        spaces_with_equipments.append(space_dict)
+      
+      facility_dict["spaces"] = spaces_with_equipments
+
+      facilities_with_spaces.append(facility_dict)
+    
+    return Response(
+      json.dumps(facilities_with_spaces, ensure_ascii=False),
+      mimetype="application/json",
+      status=200,
+    )
+
+  except Exception as e:
+    print(e)
+    return Response(
+      json.dumps({"message": f"<strong>Αποτυχία εμφάνισης ακινήτων:</strong> {e}"}),
+      mimetype="application/json",
+      status=500,
+    )
+
 @facility.route("/<string:id>/details", methods=["GET"])
 def get_facility_details_by_id(id):
   try:
