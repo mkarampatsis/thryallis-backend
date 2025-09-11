@@ -272,6 +272,33 @@ def update_equipment():
       status=500,
     )
 
+@equipment.route("/<string:id>/details", methods=["GET"])
+def get_equipment_details_by_id(id):
+  try:
+    
+    if not id:
+      return Response(
+        json.dumps({"message": "Δεν έχετε δώσει id εξοπλισμού"}),
+        mimetype="application/json",
+        status=400,
+      )
+
+    equipment = Equipment.objects.get(id=ObjectId(id))
+    
+    return Response(
+      equipment.to_json(),
+      mimetype="application/json",
+      status=200,
+    )
+
+  except Exception as e:
+    print(e)
+    return Response(
+      json.dumps({"message": f"<strong>Αποτυχία εμφάνισης στοιχείων εξοπλισμού:</strong> {e}"}),
+      mimetype="application/json",
+      status=500,
+    )
+
 def mongo_to_dict(obj):
   """Convert MongoEngine Document or EmbeddedDocument to plain dict."""
   if isinstance(obj, list):

@@ -852,6 +852,38 @@ def get_facility_details_by_id(id):
       status=500,
     )
 
+@facility.route("/space/<string:id>/details", methods=["GET"])
+def get_space_details_by_id(id):
+  try:
+    
+    if not id:
+      return Response(
+        json.dumps({"message": "Δεν έχετε δώσει id χώρου"}),
+        mimetype="application/json",
+        status=400,
+      )
+
+    space = Space.objects.get(id=ObjectId(id))
+    
+    space_dict = json.loads(space.to_json())  # Convert MongoEngine object to dict
+    # Query equipments for this space
+    equipments = Equipment.objects(spaceWithinFacility=space.id)
+    space_dict["equipments"] = json.loads(equipments.to_json())
+    
+    return Response(
+      json.dumps(space_dict, ensure_ascii=False),
+      mimetype="application/json",
+      status=200,
+    )
+
+  except Exception as e:
+    print(e)
+    return Response(
+      json.dumps({"message": f"<strong>Αποτυχία εμφάνισης στοιχείων ακινήτου:</strong> {e}"}),
+      mimetype="application/json",
+      status=500,
+    )
+
 # Function that deletes all referenced files
 def delete_uploaded_file(file_doc):
   try:
