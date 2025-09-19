@@ -61,7 +61,8 @@ def gsis_login(code: str):
     try: 
         clientId = CLIENT_ID,
         clientSecret = CLIENT_PWD,
-        redirectUri = 'https://ypes.ddns.net/login',
+        # redirectUri = 'https://ypes.ddns.net/login',
+        redirectUri = 'https://thryallis.ypes.gov.gr/login',
         scope = 'openid profile email offline_access roles',
         TOKEN_URL = 'https://test.gsis.gr/oauth2servergov/oauth/token'
         USER_INFO_URL = "https://test.gsis.gr/oauth2servergov/userinfo?format=xml"
