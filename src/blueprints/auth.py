@@ -2,7 +2,7 @@ from flask import Blueprint, request, Response
 from google.oauth2 import id_token
 from google.auth.transport import requests
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
-from src.config import GOOGLE_AUDIENCE, CLIENT_ID, CLIENT_PWD, HORIZONTAL_ID, HORIZONTAL_PWD, TOKEN_URL, USER_INFO_URL, REDIRECT_URI
+from src.config import GOOGLE_AUDIENCE, CLIENT_ID, CLIENT_PWD, HORIZONTAL_ID, HORIZONTAL_PWD, TOKEN_URL, USER_INFO_URL, REDIRECT_URI, HORIZONTAL_URL
 from src.models.user import User
 import json
 from src.models.psped.log import PspedSystemLog as Log
@@ -66,10 +66,10 @@ def gsis_login(code: str):
         tokenUrl = TOKEN_URL
         userInfoUrl = USER_INFO_URL
 
-        HORIZONTAL_SYSTEM_INFO = "https://ked.gsis.gr/esb/pubAuthDocManagementRestService/padInfoSystemAll"
-        HORIZONTAL_EMP_COUNT = "https://ked.gsis.gr/esb/pubAuthDocManagementRestService/padEmplListCount"
-        HORIZONTAL_EMP_LIST = "https://ked.gsis.gr/esb/pubAuthDocManagementRestService/padEmplList"
-        HORIZONTAL_ROLE = "https://ked.gsis.gr/esb/pubAuthDocManagementRestService/padRoleManagement"
+        HORIZONTAL_SYSTEM_INFO = HORIZONTAL_URL + "/padInfoSystemAll"
+        HORIZONTAL_EMP_COUNT = HORIZONTAL_URL + "/padEmplListCount"
+        HORIZONTAL_EMP_LIST = HORIZONTAL_URL + "/padEmplList"
+        HORIZONTAL_ROLE = HORIZONTAL_URL + "/padRoleManagement"
 
         payload = {
           "grant_type": "authorization_code",
@@ -140,7 +140,8 @@ def gsis_login(code: str):
                         }
                     }
                 }
-
+                print ("headers>>>", horizontal_header)
+                print ("data>>>", horizontal_system_info_payload)
                 system_info = gsisRequest.post(HORIZONTAL_SYSTEM_INFO, headers=horizontal_header, data=horizontal_system_info_payload)
                 print("3>>", system_info.json())
                 
