@@ -59,11 +59,11 @@ def google_auth():
 def gsis_login(code: str):
     print("GSIS")
     try: 
-        clientId = CLIENT_ID,
-        clientSecret = CLIENT_PWD,
+        clientId = CLIENT_ID
+        clientSecret = CLIENT_PWD
         # redirectUri = 'https://ypes.ddns.net/login',
-        redirectUri = 'https://thryallis.ypes.gov.gr',
-        scope = 'openid profile email offline_access roles',
+        redirectUri = 'https://thryallis.ypes.gov.gr'
+        scope = 'openid profile email offline_access roles'
         tokenUrl = TOKEN_URL
         userInfoUrl = USER_INFO_URL
 
