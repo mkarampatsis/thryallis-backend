@@ -104,8 +104,9 @@ def gsis_login(code: str):
                 data = f"{HORIZONTAL_ID}:{HORIZONTAL_PWD}".encode('utf-8')
                 encoded_data = base64.b64encode(data).decode('utf-8')
 
-                horizontal_header = f"Basic {data}"
-            
+                # horizontal_header = f"Basic {data}"
+                horizontal_header = f"Basic {encoded_data}"
+
                 headers = { "Authorization": horizontal_header }
 
                 horizontal_system_info_payload = {
@@ -161,6 +162,7 @@ def gsis_login(code: str):
             mimetype="application/json",
             status=404,
         )
+    
 @auth.route("/gsisHorizontal", methods=["GET"])
 def gsis_horizontal():
     print("GSIS Horizontal")
