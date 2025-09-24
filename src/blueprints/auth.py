@@ -2,7 +2,7 @@ from flask import Blueprint, request, Response
 from google.oauth2 import id_token
 from google.auth.transport import requests
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
-from src.config import GOOGLE_AUDIENCE, CLIENT_ID, CLIENT_PWD, HORIZONTAL_ID, HORIZONTAL_PWD, TOKEN_URL, USER_INFO_URL
+from src.config import GOOGLE_AUDIENCE, CLIENT_ID, CLIENT_PWD, HORIZONTAL_ID, HORIZONTAL_PWD, TOKEN_URL, USER_INFO_URL, REDIRECT_URI
 from src.models.user import User
 import json
 from src.models.psped.log import PspedSystemLog as Log
@@ -61,8 +61,7 @@ def gsis_login(code: str):
     try: 
         clientId = CLIENT_ID
         clientSecret = CLIENT_PWD
-        # redirectUri = 'https://ypes.ddns.net/login',
-        redirectUri = 'https://thryallis.ypes.gov.gr'
+        redirectUri = REDIRECT_URI
         scope = 'openid profile email offline_access roles'
         tokenUrl = TOKEN_URL
         userInfoUrl = USER_INFO_URL
