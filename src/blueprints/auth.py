@@ -101,7 +101,7 @@ def gsis_login(code: str):
             
             if userRequest.status_code == 200:
                 ip_addr = request.remote_addr
-                data = f"{HORIZONTAL_ID}:{HOSRIZONTAL_PWD}".encode('utf-8')
+                data = f"{HORIZONTAL_ID}:{HORIZONTAL_PWD}".encode('utf-8')
                 encoded_data = base64.b64encode(data).decode('utf-8')
 
                 horizontal_header = f"Basic {data}"
@@ -144,7 +144,7 @@ def gsis_login(code: str):
                 system_info = gsisRequest.post(HORIZONTAL_SYSTEM_INFO, headers=horizontal_header, data=horizontal_system_info_payload)
                 print("3>>", system_info.json())
                 
-                emp_list = gsisRequest.post(HORIZONTAL_SYSTEM_EMP_LIST, headers=horizontal_header, data=horizontal_emp_list_payload)
+                emp_list = gsisRequest.post(HORIZONTAL_EMP_LIST, headers=horizontal_header, data=horizontal_emp_list_payload)
                 print("4>>", emp_list.json())
 
                 return Response(json.dumps({"accessToken": access_token, "user": json_user }), status=200)
