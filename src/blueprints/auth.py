@@ -58,114 +58,177 @@ def google_auth():
 @auth.route("/gsisUser/<string:code>", methods=["GET"])
 def gsis_login(code: str):
     print("GSIS")
+        
     try: 
-        clientId = CLIENT_ID
-        clientSecret = CLIENT_PWD
-        redirectUri = REDIRECT_URI
-        scope = 'openid profile email offline_access roles'
-        tokenUrl = TOKEN_URL
-        userInfoUrl = USER_INFO_URL
+      clientId = CLIENT_ID
+      clientSecret = CLIENT_PWD
+      redirectUri = REDIRECT_URI
+      scope = 'openid profile email offline_access roles'
+      tokenUrl = TOKEN_URL
+      userInfoUrl = USER_INFO_URL
 
-        HORIZONTAL_SYSTEM_INFO = HORIZONTAL_URL + "/padInfoSystemAll"
-        HORIZONTAL_EMP_COUNT = HORIZONTAL_URL + "/padEmplListCount"
-        HORIZONTAL_EMP_LIST = HORIZONTAL_URL + "/padEmplList"
-        HORIZONTAL_ROLE = HORIZONTAL_URL + "/padRoleManagement"
+      OPSDD_SYSTEM_INFO = HORIZONTAL_URL + "/padInfoSystemAll"
+      OPSDD_EMP_COUNT = HORIZONTAL_URL + "/padEmplListCount"
+      OPSDD_EMP_LIST = HORIZONTAL_URL + "/padEmplList"
+      OPSDD_ROLE = HORIZONTAL_URL + "/padRoleManagement"
 
-        payload = {
-          "grant_type": "authorization_code",
-          "client_id": clientId,
-          "client_secret": clientSecret,
-          "redirect_uri": redirectUri,
-          "code": code,
-          "scope":"read"
+      payload = {
+        "grant_type": "authorization_code",
+        "client_id": clientId,
+        "client_secret": clientSecret,
+        "redirect_uri": redirectUri,
+        "code": code,
+        "scope":"read"
+      }
+      # Send request to GSIS token endpoint
+      response = gsisRequest.post(tokenUrl, data=payload)
+      print("1>>", response.json())
+      
+      if response.status_code == 200:
+        access_token = response.json()
+        
+        # Ensure token is correctly formatted as "Bearer <token>"
+        access_token_bearer = f"Bearer {access_token['access_token']}"
+        
+        gsis_header = {
+          "Authorization": access_token_bearer  # Should be in format "Bearer <token>"
         }
 
-        print("payload>>",payload)
-        # Send request to GSIS token endpoint
-        response = gsisRequest.post(tokenUrl, data=payload)
-        print("1>>", response.json())
+        userRequest = gsisRequest.get(userInfoUrl, headers=gsis_header)
+        print("2>>", userRequest.text)
+        gsisUser = xml_to_json(userRequest.text)
         
-        if response.status_code == 200:
-            access_token = response.json()
+        # Procedures to get details from OPSDD
+        if userRequest.status_code == 200:
+          try:
+            client_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+            host_ip = request.host
             
-            # Ensure token is correctly formatted as "Bearer <token>"
-            access_token_bearer = f"Bearer {access_token['access_token']}"
-            
-            headers = {
-                "Authorization": access_token_bearer  # Should be in format "Bearer <token>"
+            data = f"{HORIZONTAL_ID}:{HORIZONTAL_PWD}".encode('utf-8')
+            encoded_data = base64.b64encode(data).decode('utf-8')
+            basic_auth = f"Basic { encoded_data }"
+            horizontal_header = {
+              "Authorization": basic_auth,
+              "Content-Type": "application/json"
             }
 
-            userRequest = gsisRequest.get(userInfoUrl, headers=headers)
-            print("2>>", userRequest.text)
-            json_user = xml_to_json(userRequest.text)
-            
-            if userRequest.status_code == 200:
-                ip_addr = request.remote_addr
-                data = f"{HORIZONTAL_ID}:{HORIZONTAL_PWD}".encode('utf-8')
-                encoded_data = base64.b64encode(data).decode('utf-8')
+            horizontal_system_info_payload = {
+              "auditRecord": {
+              "auditTransactionId": randomString(),
+              "auditTransactionDate": datetime.datetime.now().isoformat(),
+              "auditUnit": "ΥΠΟΥΡΓΕΙΟ ΕΣΩΤΕΡΙΚΩΝ",
+              "auditProtocol": randomString(),
+              "auditUserId": "markos.karampatsis",
+              "auditUserIp": client_ip
+              },
+              "padInfoSystemAllInputRecord": {
+                  "lang": "el"
+              }
+            }
 
-                # horizontal_header = f"Basic {data}"
-                horizontal_header = f"Basic {encoded_data}"
-
-                headers = { "Authorization": horizontal_header }
-
-                horizontal_system_info_payload = {
-                    "auditRecord": {
-                    "auditTransactionId": "1",
-                    "auditTransactionDate": "2022-09-05T12:09:10Z",
-                    "auditUnit": "GSIS",
-                    "auditProtocol": "1",
-                    "auditUserId": "user",
-                    "auditUserIp": "0.0.0.0"
-                    },
-                    "padInfoSystemAllInputRecord": {
-                        "lang": "el"
-                    }
+            horizontal_emp_list_payload = {
+              "auditRecord": {
+              "auditTransactionId": randomString(),
+              "auditTransactionDate": datetime.datetime.now().isoformat(),
+              "auditUnit": "ΥΠΟΥΡΓΕΙΟ ΕΣΩΤΕΡΙΚΩΝ",
+              "auditProtocol": randomString(),
+              "auditUserId": "markos.karampatsis",
+              "auditUserIp": client_ip
+              },
+              "padEmplListInputRecord": {
+                "page": "1",
+                "size": "15",
+                "lang": "el",
+                "source": {
+                    "employee": {}
                 }
+              }
+            }
 
-                horizontal_emp_list_payload = {
-                    "auditRecord": {
-                    "auditTransactionId": "1",
-                    "auditTransactionDate": "2022-09-05T12:09:10Z",
-                    "auditUnit": "GSIS",
-                    "auditProtocol": "1",
-                    "auditUserId": "user",
-                    "auditUserIp": "0.0.0.0"
-                    },
-                    "padEmplListInputRecord": {
-                        "page": "1",
-                        "size": "15",
-                        "lang": "el",
-                        "source": {
-                            "employee": {}
-                        }
-                    }
+            horizontal_emp_count_payload = {
+              "auditRecord": {
+                "auditTransactionId": randomString(),
+                "auditTransactionDate": datetime.datetime.now().isoformat(),
+                "auditUnit": "ΥΠΟΥΡΓΕΙΟ ΕΣΩΤΕΡΙΚΩΝ",
+                "auditProtocol": randomString(),
+                "auditUserId": "markos.karampatsis",
+                "auditUserIp": client_ip
+                },
+                "padEmplListCountInputRecord": {
+                "lang": "el",
+                "source": {
+                  "employee": {}
                 }
-                print ("headers>>>", horizontal_header)
-                print ("data>>>", horizontal_system_info_payload)
-                system_info = gsisRequest.post(HORIZONTAL_SYSTEM_INFO, headers=horizontal_header, data=horizontal_system_info_payload)
-                print("3>>", system_info.json())
-                
-                emp_list = gsisRequest.post(HORIZONTAL_EMP_LIST, headers=horizontal_header, data=horizontal_emp_list_payload)
-                print("4>>", emp_list.json())
+              }
+            }
 
-                return Response(json.dumps({"accessToken": access_token, "user": json_user }), status=200)
-            else:
-                return Response(json.dumps({"message": "Πρόβλημα στη εξαγωγή του χρήστη", "details": userRequest.text }), status=userRequest.status_code)
+            horizontal_role_payload = {
+              "auditRecord": {
+              "auditTransactionId": randomString(),
+              "auditTransactionDate": datetime.datetime.now().isoformat(),
+              "auditUnit": "ΥΠΟΥΡΓΕΙΟ ΕΣΩΤΕΡΙΚΩΝ",
+              "auditProtocol": randomString(),
+              "auditUserId": "markos.karampatsis",
+              "auditUserIp": client_ip
+              },
+              "padRoleManagementInputRecord": {
+                "lang": "el",
+                "source": {
+                  "roles": [
+                    {
+                      "roleId": 2320,
+                      "roleName": "Help Desk",
+                      "hid": 2268
+                    }
+                  ]
+                }
+              }
+            }
+            print ("headers>>>", horizontal_header)
+
+            infoOPSDD = gsisRequest.post(OPSDD_SYSTEM_INFO, headers=horizontal_header, json=horizontal_system_info_payload)
+            listOPSDD = gsisRequest.post(OPSDD_EMP_LIST, headers=horizontal_header, json=horizontal_emp_list_payload)
+            countOPSDD = gsisRequest.post(OPSDD_EMP_COUNT, headers=horizontal_header, json=horizontal_emp_count_payload)
+            roleOPSDD = gsisRequest.post(OPSDD_ROLE, headers=horizontal_header, json=horizontal_role_payload)
+
+            # return Response(json.dumps({"accessToken": access_token, "user": gsisUser }), status=200)
+            return Response(json.dumps({
+              "accessToken": access_token, 
+              "user": gsisUser,
+              "infoOPSDD": infoOPSDD.json(),
+              "listOPSDD": listOPSDD.json(), 
+              "countOPSDD": countOPSDD.json(), 
+              "roleOPSDD": roleOPSDD.json(), 
+              "client": client_ip, 
+              "host":host_ip, 
+              "timestamp": datetime.datetime.now().isoformat(),
+            }), status=200)
+
+
+          except Exception as err:
+            print(err)
+            return Response(
+                json.dumps({"message": "Πρόβλημα στην εξαγωγή στοιχείων για το οριζόντιο ΠΣ", "details":err}),
+                mimetype="application/json",
+                status=404,
+            )
         else:
-            return Response(json.dumps({"message": "Πρόβλημα στη εξαγωγή του token", "details": response.text }), status=response.status_code) 
+            return Response(json.dumps({"message": "Πρόβλημα στη εξαγωγή του χρήστη", "details": userRequest.text }), status=userRequest.status_code)
+        
+      else:
+          return Response(json.dumps({"message": "Πρόβλημα στη εξαγωγή του token", "details": response.text }), status=response.status_code) 
             
     except Exception as err:
-        print(err)
-        return Response(
-            json.dumps({"message": "Πρόβλημα στην εξαγωγή του code, προσπαθήστε ξανά.", "details":err}),
-            mimetype="application/json",
-            status=404,
-        )
+      print(err)
+      return Response(
+          json.dumps({"message": "Πρόβλημα στην εξαγωγή του code, προσπαθήστε ξανά.", "details":err}),
+          mimetype="application/json",
+          status=404,
+      )
     
 @auth.route("/gsisHorizontal", methods=["GET"])
-def gsis_horizontal():
-    print("GSIS Horizontal")
+def test_horizontal():
+    print("GSIS TEST Horizontal")
     try:
         
         HORIZONTAL_SYSTEM_INFO = "https://test.gsis.gr/esbpilot/pubAuthDocManagementRestService/padInfoSystemAll"
@@ -363,30 +426,3 @@ def randomString():
   length = 6
   random_string = ''.join(random.choices(string.digits, k=length))
   return random_string
-
-# @auth.route("/profile", methods=["PATCH"])
-# @jwt_required()
-# def update_profile():
-#     user = User.get_user_by_email(get_jwt_identity())
-#     data = request.json
-#     user.update(demoSite=data["demoSite"])
-#     user.reload()
-#     user = user.to_mongo_dict()
-
-#     return Response(json.dumps({"user": user, "msg": f"Your demo site is updated to: {user['demoSite']}"}), status=200)
-
-
-# # Endpoint to retrieve all users
-# @auth.route("/users", methods=["GET"])
-# @jwt_required()
-# def get_users():
-#     users = User.objects()
-#     users = [user.to_mongo_dict() for user in users]
-#     return Response(json.dumps(users), status=200)
-
-
-# @auth.route("/user", methods=["GET"])
-# @jwt_required()
-# def get_user():
-#     user = User.get_user_by_email(get_jwt_identity())
-#     return Response(json.dumps(user.to_mongo_dict()), status=200)
