@@ -2,7 +2,7 @@ from flask import Blueprint, request, Response
 from google.oauth2 import id_token
 from google.auth.transport import requests
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
-from src.config import GOOGLE_AUDIENCE, CLIENT_ID, CLIENT_PWD, HORIZONTAL_ID, HORIZONTAL_PWD
+from src.config import GOOGLE_AUDIENCE, CLIENT_ID, CLIENT_PWD, HORIZONTAL_ID, HORIZONTAL_PWD, TOKEN_URL, USER_INFO_URL
 from src.models.user import User
 import json
 from src.models.psped.log import PspedSystemLog as Log
@@ -62,27 +62,28 @@ def gsis_login(code: str):
         clientId = CLIENT_ID,
         clientSecret = CLIENT_PWD,
         # redirectUri = 'https://ypes.ddns.net/login',
-        redirectUri = 'https://thryallis.ypes.gov.gr/login',
+        redirectUri = 'https://thryallis.ypes.gov.gr',
         scope = 'openid profile email offline_access roles',
-        TOKEN_URL = 'https://test.gsis.gr/oauth2servergov/oauth/token'
-        USER_INFO_URL = "https://test.gsis.gr/oauth2servergov/userinfo?format=xml"
+        tokenUrl = TOKEN_URL
+        userInfoUrl = USER_INFO_URL
 
-        HORIZONTAL_SYSTEM_INFO = "https://test.gsis.gr/esbpilot/pubAuthDocManagementRestService/padInfoSystemAll"
-        HORIZONTAL_EMP_COUNT = "https://test.gsis.gr/esbpilot/pubAuthDocManagementRestService/padEmplListCount"
-        HORIZONTAL_EMP_LIST = "https://test.gsis.gr/esbpilot/pubAuthDocManagementRestService/padEmplList"
-        HORIZONTAL_ROLE = "https://test.gsis.gr/esbpilot/pubAuthDocManagementRestService/padRoleManagement"
+        HORIZONTAL_SYSTEM_INFO = "https://ked.gsis.gr/esb/pubAuthDocManagementRestService/padInfoSystemAll"
+        HORIZONTAL_EMP_COUNT = "https://ked.gsis.gr/esb/pubAuthDocManagementRestService/padEmplListCount"
+        HORIZONTAL_EMP_LIST = "https://ked.gsis.gr/esb/pubAuthDocManagementRestService/padEmplList"
+        HORIZONTAL_ROLE = "https://ked.gsis.gr/esb/pubAuthDocManagementRestService/padRoleManagement"
 
         payload = {
-            "grant_type": "authorization_code",
-            "client_id": clientId,
-            "client_secret": clientSecret,
-            "redirect_uri": redirectUri,
-            "code": code,
-            "scope":"read"
+          "grant_type": "authorization_code",
+          "client_id": clientId,
+          "client_secret": clientSecret,
+          "redirect_uri": redirectUri,
+          "code": code,
+          "scope":"read"
         }
 
+        print("payload>>",payload)
         # Send request to GSIS token endpoint
-        response = gsisRequest.post(TOKEN_URL, data=payload)
+        response = gsisRequest.post(tokenUrl, data=payload)
         print("1>>", response.json())
         
         if response.status_code == 200:
@@ -95,7 +96,7 @@ def gsis_login(code: str):
                 "Authorization": access_token_bearer  # Should be in format "Bearer <token>"
             }
 
-            userRequest = gsisRequest.get(USER_INFO_URL, headers=headers)
+            userRequest = gsisRequest.get(userInfoUrl, headers=headers)
             print("2>>", userRequest.text)
             json_user = xml_to_json(userRequest.text)
             
