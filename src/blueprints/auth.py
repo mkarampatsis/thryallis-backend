@@ -405,7 +405,7 @@ def test_horizontal():
         )
 
 @auth.route("/gsisRole/<string:role>", methods=["GET"])
-def gsis_login(role: str):
+def gsis_create_role(role: str):
     print("OPSDD Create Role")
     
     try:
