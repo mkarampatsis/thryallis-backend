@@ -404,6 +404,61 @@ def test_horizontal():
             status=404,
         )
 
+@auth.route("/gsisRole/<string:role>", methods=["GET"])
+def gsis_login(role: str):
+    print("OPSDD Create Role")
+    
+    try:
+      
+      OPSDD_ROLE = HORIZONTAL_URL + "/padRoleManagement"
+      
+      client_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+      host_ip = request.host
+      
+      data = f"{HORIZONTAL_ID}:{HORIZONTAL_PWD}".encode('utf-8')
+      encoded_data = base64.b64encode(data).decode('utf-8')
+      basic_auth = f"Basic { encoded_data }"
+      horizontal_header = {
+        "Authorization": basic_auth,
+        "Content-Type": "application/json"
+      }
+
+      opsdd_create_role = {
+        "auditRecord": {
+          "auditTransactionId": randomString(),
+          "auditTransactionDate": datetime.datetime.now().isoformat(),
+          "auditUnit": "ΥΠΟΥΡΓΕΙΟ ΕΣΩΤΕΡΙΚΩΝ",
+          "auditProtocol": randomString(),
+          "auditUserId": "markos.karampatsis",
+          "auditUserIp": client_ip
+        },
+        "padRoleManagementInputRecord": {
+          "lang": "el",
+          "source": {
+            "roles": [
+              { "roleName": role }
+            ]
+          }
+        }
+      }
+
+      roleOPSDD = gsisRequest.post(OPSDD_ROLE, headers=horizontal_header, json=opsdd_create_role)
+      
+      return Response(json.dumps({
+        "roleOPSDD": roleOPSDD.json(), 
+        "client": client_ip, 
+        "host":host_ip, 
+        "timestamp": datetime.datetime.now().isoformat(),
+      }), status=200)
+
+    except Exception as err:
+      print(err)
+      return Response(
+          json.dumps({"message": "Πρόβλημα στην δημιουργία του ρόλου", "details":err}),
+          mimetype="application/json",
+          status=404,
+      )
+    
 def xml_to_json(xml_str):
     """Convert XML string to JSON."""
     root = ET.fromstring(xml_str)
