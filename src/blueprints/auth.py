@@ -98,16 +98,9 @@ def gsis_login(code: str):
           client_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
           host_ip = request.host
           
-          data = f"{HORIZONTAL_ID}:{HORIZONTAL_PWD}".encode('utf-8')
-          encoded_data = base64.b64encode(data).decode('utf-8')
-          basic_auth = f"Basic { encoded_data }"
-          horizontal_header = {
-            "Authorization": basic_auth,
-            "Content-Type": "application/json"
-          }
-
           opsddRoles = getOpsdRoles()
           print(opsddRoles)
+          print(gsisUser, gsisUser['taxid'])
           opsddUser = getOpsddUser(gsisUser['taxid'])
           print (opsddUser)
           
@@ -335,8 +328,6 @@ def getOpsdRoles():
     }
 
     rolesOPSDD = gsisRequest.post(OPSDD_SYSTEM_INFO, headers=horizontal_header, json=horizontal_system_info_payload).json()
-    print(rolesOPSDD)
-    print(rolesOPSDD['padInfoSystemAllOutputRecord']['pageModel']['pubAuthDoc']['informationSystem']['roles'])
     return rolesOPSDD['padInfoSystemAllOutputRecord']['pageModel']['pubAuthDoc']['informationSystem']['roles']
 
   except Exception as err:
