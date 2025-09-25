@@ -336,8 +336,8 @@ def getOpsdRoles():
 
     rolesOPSDD = gsisRequest.post(OPSDD_SYSTEM_INFO, headers=horizontal_header, json=horizontal_system_info_payload).json()
     print(rolesOPSDD)
-    print(rolesOPSDD['padInfoSystemAllOutputRecord']['pageModel']['pubAuthDoc']['informationSystem ']['roles'])
-    return rolesOPSDD['padInfoSystemAllOutputRecord']['pageModel']['pubAuthDoc']['informationSystem ']['roles']
+    print(rolesOPSDD['padInfoSystemAllOutputRecord']['pageModel']['pubAuthDoc']['informationSystem']['roles'])
+    return rolesOPSDD['padInfoSystemAllOutputRecord']['pageModel']['pubAuthDoc']['informationSystem']['roles']
 
   except Exception as err:
     print(err)
