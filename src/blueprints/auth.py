@@ -99,16 +99,14 @@ def gsis_login(code: str):
           host_ip = request.host
           
           opsddRoles = getOpsdRoles()
-          print(opsddRoles)
-          print(gsisUser, gsisUser['taxid'])
           opsddUser = getOpsddUser(gsisUser['taxid'])
           print (opsddUser)
           
           return Response(json.dumps({
             "accessToken": access_token, 
             "user": gsisUser,
-            "opsddRoles": opsddRoles.json(),
-            "opsddUser": opsddUser.json(), 
+            "opsddRoles": opsddRoles,
+            "opsddUser": opsddUser, 
             "client": client_ip, 
             "host":host_ip, 
             "timestamp": datetime.datetime.now().isoformat(),
@@ -251,7 +249,7 @@ def gsis_update_role(role: str):
       )
 
 def getOpsddUser(vat: str):
-  print("GET OPSDD User")
+  print("GET OPSDD User", vat)
       
   try:
     OPSDD_EMP_LIST = HORIZONTAL_URL + "/padEmplList"
@@ -280,14 +278,15 @@ def getOpsddUser(vat: str):
         "size": "15",
         "lang": "el",
         "source": {
-          "employee":  { }
+          # "employee":  { "employeeVatNo":  vat}
+          "employee":  { "employeeVatNo": "065733009" }
         }
       }
     }
 
-    listOPSDD = gsisRequest.post(OPSDD_EMP_LIST, headers=horizontal_header, json=horizontal_emp_list_payload)
+    listOPSDD = gsisRequest.post(OPSDD_EMP_LIST, headers=horizontal_header, json=horizontal_emp_list_payload).json()
     
-    return listOPSDD.json()
+    return listOPSDD["padEmplListOutputRecord"]["pageModel"]["pubAuthDoc"]["employeesList"]["employees"]
   
   except Exception as err:
     print(err)
