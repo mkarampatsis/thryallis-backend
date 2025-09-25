@@ -493,7 +493,7 @@ def gsis_update_role(role: str):
             "roles": [
               { 
                 "roleId": 1720,
-                "roleName": "helpdesk",
+                "roleName": role,
                 "hid": 2080
               }
             ]
