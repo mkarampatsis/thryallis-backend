@@ -189,12 +189,17 @@ def gsis_create_role(role: str):
       status=404,
     )
 
-@auth.route("/gsisRole/<string:role>", methods=["PUT"])
-def gsis_update_role(role: str):
+@auth.route("/gsisRole", methods=["PUT"])
+def gsis_update_role():
     print("OPSDD Update Role")
     
     try:
       
+      data = request.get_json()
+      roleName = data["roleName"]
+      roleId = data["roleId"]
+      hid = data["hid"]
+
       OPSDD_ROLE = HORIZONTAL_URL + "/padRoleManagement"
       
       client_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
@@ -222,9 +227,9 @@ def gsis_update_role(role: str):
           "source": {
             "roles": [
               { 
-                "roleId": 1720,
-                "roleName": role,
-                "hid": 2080
+                "roleId": roleId,
+                "roleName": roleName,
+                "hid": hid
               }
             ]
           }
