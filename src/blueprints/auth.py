@@ -358,6 +358,7 @@ def getOpsddUser(vat: str):
     listOPSDD = gsisRequest.post(OPSDD_EMP_LIST, headers=horizontal_header, json=horizontal_emp_list_payload).json()
 
     print("listOPSDD>>>>", listOPSDD)
+    print("check>>>", bool(listOPSDD["padEmplListOutputRecord"]["pageModel"]["pubAuthDoc"]))
     
     return listOPSDD["padEmplListOutputRecord"]["pageModel"]["pubAuthDoc"]["employeesList"]["employees"]
   
