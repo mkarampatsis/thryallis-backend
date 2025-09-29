@@ -96,12 +96,11 @@ def gsis_login(code: str):
       # Procedures to get details from OPSDD
       if userRequest.status_code == 200:
         try:
-          client_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
-          host_ip = request.host
+          # client_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+          # host_ip = request.host
           
           opsddRoles = getOpsdRoles()
           opsddUser = getOpsddUser(gsisUser['taxid'])
-          print(opsddUser)
           
           # Create Users Object
           role_lookup = { (role["roleId"], role["hid"]): role["roleName"] for role in opsddRoles }
@@ -114,7 +113,6 @@ def gsis_login(code: str):
               roleName = role_lookup.get((roleId, hid))
               if roleName:
                 auth["role"]["roleName"] = roleName
-              print (auth)
             
           roles = []
           for user in opsddUser:
@@ -126,7 +124,6 @@ def gsis_login(code: str):
                 "monades": get_ouUnit_codes(auth["userOrgCode"])
               }
               roles.append(role)
-          print(roles)
 
           additional_claims = {"roles": roles}
           access_token = create_access_token(identity=gsisUser['taxid'], additional_claims=additional_claims)
