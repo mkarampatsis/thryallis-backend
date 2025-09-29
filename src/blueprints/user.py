@@ -1,6 +1,7 @@
 from flask import Blueprint, Response, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from src.models.user import User, UserRole
+from src.models.userGsis import UserGsis
 from src.models.psped.change import Change
 from src.blueprints.decorators import has_admin_role
 import json
@@ -20,7 +21,7 @@ def get_my_organizations():
     user = User.get_user_by_email(get_jwt_identity())
   else:
     print("Vat Id",get_jwt_identity())
-    user = User.objects.get(taxid=get_jwt_identity())
+    user = UserGsis.objects.get(taxid=get_jwt_identity())
 
   roles = user.roles
   organizationCodesListofLists = [role.foreas for role in roles if role.active and role.role in ["ADMIN", "EDITOR"]]

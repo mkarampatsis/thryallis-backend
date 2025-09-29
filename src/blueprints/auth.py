@@ -4,6 +4,7 @@ from google.auth.transport import requests
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from src.config import GOOGLE_AUDIENCE, CLIENT_ID, CLIENT_PWD, HORIZONTAL_ID, HORIZONTAL_PWD, TOKEN_URL, USER_INFO_URL, REDIRECT_URI, HORIZONTAL_URL
 from src.models.user import User
+from src.models.userGsis import UserGsis
 import json
 from src.models.psped.log import PspedSystemLog as Log
 from src.models.psped.log import PspedSystemLogGsis as LogGsis
@@ -124,7 +125,7 @@ def gsis_login(code: str):
               }
               roles.append(role)
           
-          user = User.objects(taxid=gsisUser['taxid'])
+          user = UserGsis.objects(taxid=gsisUser['taxid'])
 
           if user:
             user.update(
@@ -140,7 +141,7 @@ def gsis_login(code: str):
               roles = roles
             )
           else:
-            User(
+            UserGsis(
               firstname = gsisUser["firstname"],
               lastname = gsisUser["lastname"],
               fathername = gsisUser["fathername"],
