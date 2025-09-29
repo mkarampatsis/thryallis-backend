@@ -6,6 +6,7 @@ from src.config import GOOGLE_AUDIENCE, CLIENT_ID, CLIENT_PWD, HORIZONTAL_ID, HO
 from src.models.user import User
 import json
 from src.models.psped.log import PspedSystemLog as Log
+from src.models.apografi.organizational_unit import OrganizationalUnit
 import requests as gsisRequest
 import xml.etree.ElementTree as ET
 import base64
@@ -121,7 +122,8 @@ def gsis_login(code: str):
               role ={
                 "role": auth["role"]["roleName"],
                 "active": True,
-                "foreas":[auth["userOrgCode"]]
+                "foreas":[auth["userOrgCode"]],
+                "monades": get_ouUnit_codes(auth["userOrgCode"])
               }
               roles.append(role)
           print(roles)
@@ -392,6 +394,10 @@ def randomString():
   return random_string
 
 
+def get_ouUnit_codes(org_code: str):
+  units = OrganizationalUnit.objects(organizationCode=org_code)
+  codes = [unit.code for unit in units]
+  return codes
 
 # @auth.route("/gsisHorizontal", methods=["GET"])
 # def test_horizontal():
