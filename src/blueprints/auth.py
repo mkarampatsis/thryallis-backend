@@ -127,11 +127,21 @@ def gsis_login(code: str):
 
           additional_claims = {"roles": roles}
           access_token = create_access_token(identity=gsisUser['taxid'], additional_claims=additional_claims)
+          user = {
+            "firstname": gsisUser["firstname"],
+            "lastname": gsisUser["lastname"],
+            "fathername": gsisUser["fathername"],
+            "mothername": gsisUser["mothername"],
+            "taxid": gsisUser["taxid"],
+            "gsisUserid": gsisUser["userid"],
+            "empOrgUnitTexts": opsddUser[0]["empOrgUnitTexts"],
+            "employeeId": opsddUser[0]["employeeId"],
+            "roles":roles
+          }
 
           return Response(json.dumps({
             "accessToken": access_token, 
-            "user": gsisUser,
-            "opsddUser": opsddUser, 
+            "user": user,
           }), status=200)
 
 
