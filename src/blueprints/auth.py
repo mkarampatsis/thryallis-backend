@@ -91,7 +91,7 @@ def gsis_login(code: str):
       userRequest = gsisRequest.get(userInfoUrl, headers=gsis_header)
       # print(userRequest.text)
       gsisUser = xml_to_json(userRequest.text)
-      
+
       # Procedures to get details from OPSDD
       if userRequest.status_code == 200:
         try:
@@ -100,12 +100,13 @@ def gsis_login(code: str):
           
           opsddRoles = getOpsdRoles()
           opsddUser = getOpsddUser(gsisUser['taxid'])
+          print(opsddUser)
           
           # Create Users Object
           role_lookup = { (role["roleId"], role["hid"]): role["roleName"] for role in opsddRoles }
 
           # Enrich authorisations with roleName
-          for auth in gsisUser["authorisations"]:
+          for auth in opsddUser["authorisations"]:
             print (auth)
             roleId = auth["role"]["roleId"]
             hid = auth["role"]["hid"]
