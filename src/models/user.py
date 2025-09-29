@@ -12,15 +12,21 @@ class UserRole(me.EmbeddedDocument):
 
 
 class User(me.Document):
-    email = me.EmailField(required=True, unique=True)
+    email = me.EmailField(unique=True)
     firstName = me.StringField(required=True)
     lastName = me.StringField(required=True)
     name = me.StringField(required=True)
-    googleId = me.StringField(required=True)
-    photoUrl = me.StringField(required=True)
-    provider = me.StringField(required=True, choices=["GOOGLE"], default="GOOGLE")
+    googleId = me.StringField()
+    photoUrl = me.StringField()
+    provider = me.StringField(choices=["GOOGLE"], default="GOOGLE")
     roles = me.EmbeddedDocumentListField(UserRole, default=[UserRole(role="READER")])
-
+    # Gsis Fields
+    fathername = me.StringField()
+    mothername = me.StringField()
+    taxid = me.StringField(unique=True)
+    gsisUserid = me.StringField()
+    empOrgUnitTexts = me.ListField(me.StringField(), default=[])
+    employeeId = me.StringField()
     meta = {"collection": "users", "db_alias": MONGO_PSPED_DB}
 
     def to_mongo_dict(self):
