@@ -19,7 +19,7 @@ class UserGsis(me.Document):
   taxid = me.StringField(required=True, unique=True)
   gsisUserid = me.StringField(required=True)
   empOrgUnitTexts = me.ListField(me.StringField(), default=[])
-  employeeId = me.StringField(required=True)
+  employeeId = me.IntField(required=True)
   roles = me.EmbeddedDocumentListField(UserRole, default=[UserRole(role="READER")])
 
   meta = {
