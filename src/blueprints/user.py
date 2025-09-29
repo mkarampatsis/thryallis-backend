@@ -12,62 +12,56 @@ user = Blueprint("user", __name__)
 @user.route("/myaccesses")
 @jwt_required()
 def get_my_organizations():
-    user = User.get_user_by_email(get_jwt_identity())
-    roles = user.roles
-    organizationCodesListofLists = [role.foreas for role in roles if role.active and role.role in ["ADMIN", "EDITOR"]]
-    organizationCodes = [item for sublist in organizationCodesListofLists for item in sublist]
-    monadesCodesListofLists = [role.monades for role in roles if role.active and role.role in ["ADMIN", "EDITOR"]]
-    monadesCodes = [item for sublist in monadesCodesListofLists for item in sublist]
+  user = User.get_user_by_email(get_jwt_identity())
+  roles = user.roles
+  organizationCodesListofLists = [role.foreas for role in roles if role.active and role.role in ["ADMIN", "EDITOR"]]
+  organizationCodes = [item for sublist in organizationCodesListofLists for item in sublist]
+  monadesCodesListofLists = [role.monades for role in roles if role.active and role.role in ["ADMIN", "EDITOR"]]
+  monadesCodes = [item for sublist in monadesCodesListofLists for item in sublist]
 
-    return Response(json.dumps({"organizations": organizationCodes, "organizational_units": monadesCodes}), status=200)
+  return Response(json.dumps({"organizations": organizationCodes, "organizational_units": monadesCodes}), status=200)
 
 
 @user.route("/all")
 @jwt_required()
 @has_admin_role
 def get_all_users():
-    users = User.objects()
-    return Response(users.to_json(), status=200)
+  users = User.objects()
+  return Response(users.to_json(), status=200)
 
 @user.route("/<string:email>", methods=["PUT"])
 @jwt_required()
 @has_admin_role
 def set_user_accesses(email: str):
 
-    data = request.get_json()
+  data = request.get_json()
 
-    orgarganizationCodes = data["organizationCodes"]
-    organizationalUnitCodes = data["organizationalUnitCodes"]
+  orgarganizationCodes = data["organizationCodes"]
+  organizationalUnitCodes = data["organizationalUnitCodes"]
 
-    print("1>>",orgarganizationCodes)
-    print("2>>",organizationalUnitCodes)
-    print("3>>",email)
+  user = User.objects.get(email=email)
 
-    user = User.objects.get(email=email)
+  editor_role = None
+  for role in user.roles:
+    if role.role == 'EDITOR':
+      editor_role = role
+      break
 
-    editor_role = None
-    for role in user.roles:
-        if role.role == 'EDITOR':
-            editor_role = role
-            break
+  if editor_role:
+    editor_role.foreas = orgarganizationCodes
+    editor_role.monades = organizationalUnitCodes
+  else:
+    new_role = UserRole(role='EDITOR', foreas=orgarganizationCodes, monades=organizationalUnitCodes)
+    user.roles.append(new_role)
+  
+  user.save()
 
-    if editor_role:
-        print("YES")
-        editor_role.foreas = orgarganizationCodes
-        editor_role.monades = organizationalUnitCodes
-    else:
-        print("NO")
-        new_role = UserRole(role='EDITOR', foreas=orgarganizationCodes, monades=organizationalUnitCodes)
-        user.roles.append(new_role)
-    
-    user.save()
+  who = get_jwt_identity()
+  what = {"entity": "user", "key": {"email": email}}
+  Change(action="update", who=who, what=what, change={"foreas": orgarganizationCodes, "monades":organizationalUnitCodes}).save()
 
-    who = get_jwt_identity()
-    what = {"entity": "user", "key": {"email": email}}
-    Change(action="update", who=who, what=what, change={"foreas": orgarganizationCodes, "monades":organizationalUnitCodes}).save()
-
-    return Response(
-        json.dumps({"message": "<strong>Ο χρηστης ενημερώθηκε</strong>"}),
-        mimetype="application/json",
-        status=201,
-    )
+  return Response(
+    json.dumps({"message": "<strong>Ο χρηστης ενημερώθηκε</strong>"}),
+    mimetype="application/json",
+    status=201,
+  )

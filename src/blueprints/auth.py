@@ -101,7 +101,30 @@ def gsis_login(code: str):
           opsddRoles = getOpsdRoles()
           opsddUser = getOpsddUser(gsisUser['taxid'])
           print (opsddUser)
+
+
+          # Create Users Object
+
+          role_lookup = { (role["roleId"], role["hid"]): role["roleName"] for role in opsddRoles }
+
+          # Enrich authorisations with roleName
+          for auth in opsddUser["authorisations"]:
+            roleId = auth["role"]["roleId"]
+            hid = auth["role"]["hid"]
+            roleName = role_lookup.get((roleId, hid))
+            if roleName:
+              auth["role"]["roleName"] = roleName
           
+          roles = []
+          for auth in opsddUser["authorisations"]:
+            role ={
+              "role": auth["role"]["roleName"],
+              "active": True,
+              "foreas":[auth["userOrgCode"]]
+            }
+            roles.append(role)
+            print(roles)
+
           return Response(json.dumps({
             "accessToken": access_token, 
             "user": gsisUser,
@@ -110,6 +133,7 @@ def gsis_login(code: str):
             "client": client_ip, 
             "host":host_ip, 
             "timestamp": datetime.datetime.now().isoformat(),
+            "roles": roles
           }), status=200)
 
 
