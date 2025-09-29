@@ -22,7 +22,13 @@ class UserGsis(me.Document):
   employeeId = me.StringField(required=True)
   roles = me.EmbeddedDocumentListField(UserRole, default=[UserRole(role="READER")])
 
-  meta = {"collection": "users_gsis", "db_alias": MONGO_PSPED_DB}
+  meta = {
+    "collection": "users_gsis", 
+    "db_alias": MONGO_PSPED_DB,
+    "indexes": [
+      {"fields": ["taxid"], "unique": True}
+    ],
+  }
 
   def to_mongo_dict(self):
     mongo_dict = self.to_mongo().to_dict()
