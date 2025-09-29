@@ -102,7 +102,13 @@ def gsis_login(code: str):
           opsddRoles = getOpsdRoles()
           opsddUser = getOpsddUser(gsisUser['taxid'])
 
-          print ("opsddUser>>>>",opsddUser)
+          if not opsddUser:
+            print ("opsddUser>>>>",opsddUser)
+            return Response(
+              json.dumps({"message": "Δεν βρέθηκαν στοιχεία πρόσβασης"}),
+              mimetype="application/json",
+              status=204,
+            )
 
           # Create Users Object
           role_lookup = { (role["roleId"], role["hid"]): role["roleName"] for role in opsddRoles }
@@ -349,19 +355,19 @@ def getOpsddUser(vat: str):
         "size": "15",
         "lang": "el",
         "source": {
-          # "employee":  { "employeeVatNo":  vat}
-          "employee":  { "employeeVatNo": "065733009" }
+          "employee":  { "employeeVatNo":  vat}
+          # "employee":  { "employeeVatNo": "065733009" }
         }
       }
     }
 
     listOPSDD = gsisRequest.post(OPSDD_EMP_LIST, headers=horizontal_header, json=horizontal_emp_list_payload).json()
 
-    print("listOPSDD>>>>", listOPSDD)
-    print("check>>>", bool(listOPSDD["padEmplListOutputRecord"]["pageModel"]["pubAuthDoc"]))
+    if (bool(listOPSDD["padEmplListOutputRecord"]["pageModel"]["pubAuthDoc"])):
+      return listOPSDD["padEmplListOutputRecord"]["pageModel"]["pubAuthDoc"]["employeesList"]["employees"]
+    else: 
+      return False
     
-    return listOPSDD["padEmplListOutputRecord"]["pageModel"]["pubAuthDoc"]["employeesList"]["employees"]
-  
   except Exception as err:
     print(err)
     return Response(
