@@ -154,6 +154,7 @@ def gsis_login(code: str):
               roles = roles
             ).save()
 
+          print(user, roles)
           additional_claims = {"roles": roles}
           access_token = create_access_token(identity=gsisUser['taxid'], additional_claims=additional_claims)
           user = {
@@ -169,7 +170,7 @@ def gsis_login(code: str):
             "roles":roles
           }
 
-          Log(user_id=gsisUser["taxid"], action="login", data=user).save()
+          LogGsis(user_id=gsisUser["taxid"], action="login", data=user).save()
 
           return Response(json.dumps({
             "accessToken": access_token, 
