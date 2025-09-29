@@ -125,6 +125,7 @@ def gsis_login(code: str):
               }
               roles.append(role)
           
+          print("Roles", roles, gsisUser)
           userGsis = UserGsis.objects(taxid=gsisUser['taxid'])
 
           if userGsis:
