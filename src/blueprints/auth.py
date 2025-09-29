@@ -131,10 +131,10 @@ def gsis_login(code: str):
           if userGsis:
             print("1>>>>",userGsis)
             userGsis.update(
-              firstname = gsisUser["firstname"],
-              lastname = gsisUser["lastname"],
-              fathername = gsisUser["fathername"],
-              mothername = gsisUser["mothername"],
+              firstName = gsisUser["firstname"],
+              lastName = gsisUser["lastname"],
+              fatherName = gsisUser["fathername"],
+              motherName = gsisUser["mothername"],
               name = gsisUser["firstname"] + ' ' + gsisUser["lastname"],
               taxid = gsisUser["taxid"],
               gsisUserid = gsisUser["userid"],
@@ -145,10 +145,10 @@ def gsis_login(code: str):
           else:
             print("2>>>>",userGsis)
             UserGsis(
-              firstname = gsisUser["firstname"],
-              lastname = gsisUser["lastname"],
-              fathername = gsisUser["fathername"],
-              mothername = gsisUser["mothername"],
+              firstName = gsisUser["firstname"],
+              lastName = gsisUser["lastname"],
+              fatherName = gsisUser["fathername"],
+              motherName = gsisUser["mothername"],
               name = gsisUser["firstname"] + ' ' + gsisUser["lastname"],
               taxid = gsisUser["taxid"],
               gsisUserid = gsisUser["userid"],
@@ -161,10 +161,10 @@ def gsis_login(code: str):
           additional_claims = {"roles": roles}
           access_token = create_access_token(identity=gsisUser['taxid'], additional_claims=additional_claims)
           user = {
-            "firstname": gsisUser["firstname"],
-            "lastname": gsisUser["lastname"],
-            "fathername": gsisUser["fathername"],
-            "mothername": gsisUser["mothername"],
+            "firstName": gsisUser["firstname"],
+            "lastName": gsisUser["lastname"],
+            "fatherName": gsisUser["fathername"],
+            "motherName": gsisUser["mothername"],
             "name": gsisUser["firstname"] + ' ' + gsisUser["lastname"],
             "taxid": gsisUser["taxid"],
             "gsisUserid": gsisUser["userid"],
