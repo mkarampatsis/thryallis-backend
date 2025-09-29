@@ -108,15 +108,16 @@ def gsis_login(code: str):
           # Enrich authorisations with roleName
           for user in opsddUser:
             for auth in user["authorisations"]:
-              print (auth)
               roleId = auth["role"]["roleId"]
               hid = auth["role"]["hid"]
               roleName = role_lookup.get((roleId, hid))
               if roleName:
                 auth["role"]["roleName"] = roleName
+              print (auth)
             
-            roles = []
-            for auth in gsisUser["authorisations"]:
+          roles = []
+          for user in opsddUser:
+            for auth in user["authorisations"]:
               role ={
                 "role": auth["role"]["roleName"],
                 "active": True,
