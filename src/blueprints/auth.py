@@ -80,10 +80,10 @@ def gsis_login(code: str):
     # print(response.json())
     
     if response.status_code == 200:
-      access_token = response.json()
+      access_token_gsis = response.json()
       
       # Ensure token is correctly formatted as "Bearer <token>"
-      access_token_bearer = f"Bearer {access_token['access_token']}"
+      access_token_bearer = f"Bearer {access_token_gsis['access_token']}"
       
       gsis_header = {
         "Authorization": access_token_bearer  # Should be in format "Bearer <token>"
@@ -128,15 +128,13 @@ def gsis_login(code: str):
               roles.append(role)
           print(roles)
 
+          additional_claims = {"roles": roles}
+          access_token = create_access_token(identity=gsisUser['taxid'], additional_claims=additional_claims)
+
           return Response(json.dumps({
             "accessToken": access_token, 
             "user": gsisUser,
-            "opsddRoles": opsddRoles,
             "opsddUser": opsddUser, 
-            "client": client_ip, 
-            "host":host_ip, 
-            "timestamp": datetime.datetime.now().isoformat(),
-            "roles": roles
           }), status=200)
 
 
