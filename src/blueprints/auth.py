@@ -102,7 +102,7 @@ def gsis_login(code: str):
           opsddRoles = getOpsdRoles()
           opsddUser = getOpsddUser(gsisUser['taxid'])
 
-          print (">>>>",opsddUser)
+          print ("opsddUser>>>>",opsddUser)
 
           # Create Users Object
           role_lookup = { (role["roleId"], role["hid"]): role["roleName"] for role in opsddRoles }
@@ -356,6 +356,8 @@ def getOpsddUser(vat: str):
     }
 
     listOPSDD = gsisRequest.post(OPSDD_EMP_LIST, headers=horizontal_header, json=horizontal_emp_list_payload).json()
+
+    print("listOPSDD>>>>", listOPSDD)
     
     return listOPSDD["padEmplListOutputRecord"]["pageModel"]["pubAuthDoc"]["employeesList"]["employees"]
   
