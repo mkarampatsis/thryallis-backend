@@ -128,7 +128,6 @@ def gsis_login(code: str):
           userGsis = UserGsis.objects(taxid=gsisUser['taxid'])
 
           if userGsis:
-            print("1>>>>",userGsis)
             userGsis.update(
               firstName = gsisUser["firstname"],
               lastName = gsisUser["lastname"],
@@ -142,7 +141,6 @@ def gsis_login(code: str):
               roles = roles
             )
           else:
-            print("2>>>>",userGsis)
             UserGsis(
               firstName = gsisUser["firstname"],
               lastName = gsisUser["lastname"],
