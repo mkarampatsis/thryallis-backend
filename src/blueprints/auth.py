@@ -125,7 +125,6 @@ def gsis_login(code: str):
               }
               roles.append(role)
           
-          print("User", opsddUser, gsisUser)
           userGsis = UserGsis.objects(taxid=gsisUser['taxid'])
 
           if userGsis:
@@ -157,7 +156,6 @@ def gsis_login(code: str):
               roles = roles
             ).save()
 
-          print(userGsis, opsddUser)
           additional_claims = {"roles": roles}
           access_token = create_access_token(identity=gsisUser['taxid'], additional_claims=additional_claims)
           user = {
@@ -172,8 +170,6 @@ def gsis_login(code: str):
             "employeeId": opsddUser[0]["employeeId"],
             "roles":roles
           }
-
-          print("User>>", user)
 
           LogGsis(user_id=gsisUser["taxid"], action="login", data=user).save()
 

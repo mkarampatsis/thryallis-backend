@@ -42,4 +42,5 @@ class PspedSystemLogGsis(me.Document):
       "update",
     ],
   )
+  type = me.StringField(required=True, default="gsis")
   data = me.DictField()
