@@ -12,6 +12,7 @@ user = Blueprint("user", __name__)
 @user.route("/myaccesses")
 @jwt_required()
 def get_my_organizations():
+  print(get_jwt_identity())
   user = User.get_user_by_email(get_jwt_identity())
   roles = user.roles
   organizationCodesListofLists = [role.foreas for role in roles if role.active and role.role in ["ADMIN", "EDITOR"]]
