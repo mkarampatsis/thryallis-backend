@@ -101,7 +101,7 @@ def gsis_login(code: str):
           
           opsddRoles = getOpsdRoles()
           opsddUser = getOpsddUser(gsisUser['taxid'])
-          
+          print("aaaaaaa")
           # Create Users Object
           role_lookup = { (role["roleId"], role["hid"]): role["roleName"] for role in opsddRoles }
 
