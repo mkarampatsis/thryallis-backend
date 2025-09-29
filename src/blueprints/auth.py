@@ -314,7 +314,7 @@ def getOpsddUser(vat: str):
 
     listOPSDD = gsisRequest.post(OPSDD_EMP_LIST, headers=horizontal_header, json=horizontal_emp_list_payload).json()
     
-    return listOPSDD["padEmplListOutputRecord"]["pageModel"]["pubAuthDoc"]["employeesList"]["employees"]
+    return listOPSDD["padEmplListOutputRecord"]["pageModel"]["pubAuthDoc"]["employeesList"]["employees"].json()
   
   except Exception as err:
     print(err)
@@ -355,7 +355,7 @@ def getOpsdRoles():
     }
 
     rolesOPSDD = gsisRequest.post(OPSDD_SYSTEM_INFO, headers=horizontal_header, json=horizontal_system_info_payload).json()
-    return rolesOPSDD['padInfoSystemAllOutputRecord']['pageModel']['pubAuthDoc']['informationSystem']['roles']
+    return rolesOPSDD['padInfoSystemAllOutputRecord']['pageModel']['pubAuthDoc']['informationSystem']['roles'].json()
 
   except Exception as err:
     print(err)
