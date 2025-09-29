@@ -6,6 +6,7 @@ from src.config import GOOGLE_AUDIENCE, CLIENT_ID, CLIENT_PWD, HORIZONTAL_ID, HO
 from src.models.user import User
 import json
 from src.models.psped.log import PspedSystemLog as Log
+from src.models.psped.log import PspedSystemLogGsis as LogGsis
 from src.models.apografi.organizational_unit import OrganizationalUnit
 import requests as gsisRequest
 import xml.etree.ElementTree as ET
@@ -58,7 +59,6 @@ def google_auth():
 
 @auth.route("/gsisUser/<string:code>", methods=["GET"])
 def gsis_login(code: str):
-  print("GSIS")
       
   try: 
     clientId = CLIENT_ID
@@ -77,7 +77,6 @@ def gsis_login(code: str):
     }
     # Send request to GSIS token endpoint
     response = gsisRequest.post(tokenUrl, data=payload)
-    # print(response.json())
     
     if response.status_code == 200:
       access_token_gsis = response.json()
@@ -124,6 +123,33 @@ def gsis_login(code: str):
                 "monades": get_ouUnit_codes(auth["userOrgCode"])
               }
               roles.append(role)
+          
+          user = User.objects(taxid=gsisUser['taxid'])
+
+          if user:
+            user.update(
+              firstname = gsisUser["firstname"],
+              lastname = gsisUser["lastname"],
+              fathername = gsisUser["fathername"],
+              mothername = gsisUser["mothername"],
+              taxid = gsisUser["taxid"],
+              gsisUserid = gsisUser["userid"],
+              empOrgUnitTexts = opsddUser[0]["empOrgUnitTexts"],
+              employeeId = opsddUser[0]["employeeId"],
+              roles = roles
+            )
+          else:
+            User(
+              firstname = gsisUser["firstname"],
+              lastname = gsisUser["lastname"],
+              fathername = gsisUser["fathername"],
+              mothername = gsisUser["mothername"],
+              taxid = gsisUser["taxid"],
+              gsisUserid = gsisUser["userid"],
+              empOrgUnitTexts = opsddUser[0]["empOrgUnitTexts"],
+              employeeId = opsddUser[0]["employeeId"],
+              roles = roles
+            ).save()
 
           additional_claims = {"roles": roles}
           access_token = create_access_token(identity=gsisUser['taxid'], additional_claims=additional_claims)
@@ -138,6 +164,8 @@ def gsis_login(code: str):
             "employeeId": opsddUser[0]["employeeId"],
             "roles":roles
           }
+
+          Log(user_id=gsisUser["taxid"], action="login", data=user).save()
 
           return Response(json.dumps({
             "accessToken": access_token, 

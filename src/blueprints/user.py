@@ -4,6 +4,7 @@ from src.models.user import User, UserRole
 from src.models.psped.change import Change
 from src.blueprints.decorators import has_admin_role
 import json
+import re
 
 
 user = Blueprint("user", __name__)
@@ -12,8 +13,15 @@ user = Blueprint("user", __name__)
 @user.route("/myaccesses")
 @jwt_required()
 def get_my_organizations():
-  print(get_jwt_identity())
-  user = User.get_user_by_email(get_jwt_identity())
+
+  regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b'
+  if(re.fullmatch(regex, get_jwt_identity())):
+    print("Email",get_jwt_identity())
+    user = User.get_user_by_email(get_jwt_identity())
+  else:
+    print("Vat Id",get_jwt_identity())
+    user = User.objects.get(taxid=get_jwt_identity())
+
   roles = user.roles
   organizationCodesListofLists = [role.foreas for role in roles if role.active and role.role in ["ADMIN", "EDITOR"]]
   organizationCodes = [item for sublist in organizationCodesListofLists for item in sublist]
