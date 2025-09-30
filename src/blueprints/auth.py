@@ -106,7 +106,7 @@ def gsis_login(code: str):
             print ("opsddUser>>>>",opsddUser)
             return Response(
               json.dumps({"message": "Δεν βρέθηκαν στοιχεία πρόσβασης"}),
-              status=204,
+              status=200,
             )
           
           # Create Users Object
