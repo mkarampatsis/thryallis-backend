@@ -105,11 +105,10 @@ def gsis_login(code: str):
           if not opsddUser:
             print ("opsddUser>>>>",opsddUser)
             return Response(
-              json.dumps({"message": f"Δεν βρέθηκαν στοιχεία πρόσβασης"}),
-              mimetype="application/json",
+              json.dumps({"message": "Δεν βρέθηκαν στοιχεία πρόσβασης"}),
               status=204,
             )
-
+          
           # Create Users Object
           role_lookup = { (role["roleId"], role["hid"]): role["roleName"] for role in opsddRoles }
 
