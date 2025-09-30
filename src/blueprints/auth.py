@@ -103,12 +103,13 @@ def gsis_login(code: str):
           opsddUser = getOpsddUser(gsisUser['taxid'])
 
           if not opsddUser:
-            print ("opsddUser>>>>",opsddUser)
+            print ("not opsddUser>>>>",opsddUser)
             return Response(
               json.dumps({"message": "Δεν βρέθηκαν στοιχεία πρόσβασης"}),
               status=204,
             )
           
+          print(">>>",opsddUser)
           # Create Users Object
           role_lookup = { (role["roleId"], role["hid"]): role["roleName"] for role in opsddRoles }
 
@@ -133,6 +134,7 @@ def gsis_login(code: str):
               roles.append(role)
           
           userGsis = UserGsis.objects(taxid=gsisUser['taxid'])
+          print("userGis>>>", userGsis) 
 
           if userGsis:
             userGsis.update(
@@ -354,8 +356,8 @@ def getOpsddUser(vat: str):
         "size": "15",
         "lang": "el",
         "source": {
-          "employee":  { "employeeVatNo":  vat}
-          # "employee":  { "employeeVatNo": "065733009" }
+          # "employee":  { "employeeVatNo":  vat}
+          "employee":  { "employeeVatNo": "065733009" }
         }
       }
     }
