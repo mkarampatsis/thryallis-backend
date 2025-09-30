@@ -356,8 +356,8 @@ def getOpsddUser(vat: str):
         "size": "15",
         "lang": "el",
         "source": {
-          # "employee":  { "employeeVatNo":  vat}
-          "employee":  { "employeeVatNo": "065733009" }
+          "employee":  { "employeeVatNo":  vat}
+          # "employee":  { "employeeVatNo": "065733009" }
         }
       }
     }
