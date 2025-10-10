@@ -189,46 +189,7 @@ def gsis_login(code: str):
                 employeeId=opsddUser[0]["employeeId"],
                 roles=roles
             ).save()   
-          # roles = []
-          # for user in opsddUser:
-          #   for auth in user["authorisations"]:
-          #     role ={
-          #       "role": auth["role"]["roleName"],
-          #       "active": True,
-          #       "foreas":[auth["userOrgCode"]],
-          #       "monades": get_ouUnit_codes(auth["userOrgCode"])
-          #     }
-          #     roles.append(role)
           
-          # userGsis = UserGsis.objects(taxid=gsisUser['taxid'])
-          # print("userGis>>>", userGsis) 
-
-          # if userGsis:
-          #   userGsis.update(
-          #     firstName = gsisUser["firstname"],
-          #     lastName = gsisUser["lastname"],
-          #     fatherName = gsisUser["fathername"],
-          #     motherName = gsisUser["mothername"],
-          #     name = gsisUser["firstname"] + ' ' + gsisUser["lastname"],
-          #     taxid = gsisUser["taxid"],
-          #     gsisUserid = gsisUser["userid"],
-          #     empOrgUnitTexts = opsddUser[0]["empOrgUnitTexts"],
-          #     employeeId = opsddUser[0]["employeeId"],
-          #     roles = roles
-          #   )
-          # else:
-          #   UserGsis(
-          #     firstName = gsisUser["firstname"],
-          #     lastName = gsisUser["lastname"],
-          #     fatherName = gsisUser["fathername"],
-          #     motherName = gsisUser["mothername"],
-          #     name = gsisUser["firstname"] + ' ' + gsisUser["lastname"],
-          #     taxid = gsisUser["taxid"],
-          #     gsisUserid = gsisUser["userid"],
-          #     empOrgUnitTexts = opsddUser[0]["empOrgUnitTexts"],
-          #     employeeId = opsddUser[0]["employeeId"],
-          #     roles = roles
-          #   ).save()
 
           additional_claims = {"roles": roles}
           access_token = create_access_token(identity=gsisUser['taxid'], additional_claims=additional_claims)
@@ -242,7 +203,7 @@ def gsis_login(code: str):
             "gsisUserid": gsisUser["userid"],
             "empOrgUnitTexts": opsddUser[0]["empOrgUnitTexts"],
             "employeeId": opsddUser[0]["employeeId"],
-            "roles":roles
+            "roles":combined_roles if userGsis else roles
           }
 
           LogGsis(user_id=gsisUser["taxid"], action="login", data=user).save()
