@@ -405,6 +405,57 @@ def getAllOpsddUsers():
       mimetype="application/json",
       status=404,
     )
+  
+@auth.route("/opsddUser/<string:vat>", methods=["GET"])
+def getAllOpsddUsers(vat:str):
+  print("GET OPSDD User", vat)
+      
+  try:
+    OPSDD_EMP_LIST = HORIZONTAL_URL + "/padEmplList"
+
+    client_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+    
+    data = f"{HORIZONTAL_ID}:{HORIZONTAL_PWD}".encode('utf-8')
+    encoded_data = base64.b64encode(data).decode('utf-8')
+    basic_auth = f"Basic { encoded_data }"
+    horizontal_header = {
+      "Authorization": basic_auth,
+      "Content-Type": "application/json"
+    }
+
+    horizontal_emp_list_payload = {
+      "auditRecord": {
+        "auditTransactionId": randomString(),
+        "auditTransactionDate": datetime.datetime.now().isoformat(),
+        "auditUnit": "ΥΠΟΥΡΓΕΙΟ ΕΣΩΤΕΡΙΚΩΝ",
+        "auditProtocol": randomString(),
+        "auditUserId": "markos.karampatsis",
+        "auditUserIp": client_ip
+      },
+      "padEmplListInputRecord": {
+        "page": "1",
+        "size": "15",
+        "lang": "el",
+        "source": {
+          "employee":  { "employeeVatNo": vat }
+        }
+      }
+    }
+
+    listOPSDD = gsisRequest.post(OPSDD_EMP_LIST, headers=horizontal_header, json=horizontal_emp_list_payload).json()
+
+    if (bool(listOPSDD["padEmplListOutputRecord"]["pageModel"]["pubAuthDoc"])):
+      return listOPSDD["padEmplListOutputRecord"]["pageModel"]["pubAuthDoc"]["employeesList"]["employees"]
+    else: 
+      return False
+    
+  except Exception as err:
+    print(err)
+    return Response(
+      json.dumps({"message": "Πρόβλημα στην εξαγωγή χρήστη για το οριζόντιο ΠΣ", "details":err}),
+      mimetype="application/json",
+      status=404,
+    )
 
 def getOpsddUser(vat: str):
   print("GET OPSDD User", vat)
