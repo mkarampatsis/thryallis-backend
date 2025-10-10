@@ -141,10 +141,16 @@ def gsis_login(code: str):
             print("Existing user found:", userGsis.taxid)
 
             # Keep ADMIN and HELPDESK roles
-            preserved_roles = [
-              r for r in userGsis.roles
-              if getattr(r, "role", None) in ["ADMIN", "HELPDESK"]
-            ]
+            preserved_roles = []
+            for r in userGsis.roles:
+              try:
+                if hasattr(r, "role") and r.role in ["ADMIN", "HELPDESK"]:
+                  preserved_roles.append({
+                    "role": r.role,
+                    "active": getattr(r, "active", True),
+                  })
+              except Exception as e:
+                print("Error while processing existing role:", str(e))
 
             print("preserved_roles",preserved_roles)
 
