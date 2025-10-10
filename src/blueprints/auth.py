@@ -121,47 +121,108 @@ def gsis_login(code: str):
               roleName = role_lookup.get((roleId, hid))
               if roleName:
                 auth["role"]["roleName"] = roleName
-            
+
+          # Build new roles list from OPSDD
           roles = []
           for user in opsddUser:
             for auth in user["authorisations"]:
-              role ={
+              role = {
                 "role": auth["role"]["roleName"],
                 "active": True,
-                "foreas":[auth["userOrgCode"]],
+                "foreas": [auth["userOrgCode"]],
                 "monades": get_ouUnit_codes(auth["userOrgCode"])
               }
               roles.append(role)
-          
-          userGsis = UserGsis.objects(taxid=gsisUser['taxid'])
-          print("userGis>>>", userGsis) 
+
+          # Try to find existing user by taxid
+          userGsis = UserGsis.objects(taxid=gsisUser['taxid']).first()
 
           if userGsis:
+            print("Existing user found:", userGsis.taxid)
+
+            # Keep ADMIN and HELPDESK roles
+            preserved_roles = [
+              r for r in userGsis.roles
+              if r.get("role") in ["ADMIN", "HELPDESK"]
+            ]
+
+            print("preserved_roles",preserved_roles)
+
+            # Merge preserved + new roles (avoid duplicates)
+            combined_roles = preserved_roles.copy()
+
+            for r in roles:
+              if not any(pr.get("role") == r["role"] for pr in preserved_roles):
+                combined_roles.append(r)
+
+            # Update the document
             userGsis.update(
-              firstName = gsisUser["firstname"],
-              lastName = gsisUser["lastname"],
-              fatherName = gsisUser["fathername"],
-              motherName = gsisUser["mothername"],
-              name = gsisUser["firstname"] + ' ' + gsisUser["lastname"],
-              taxid = gsisUser["taxid"],
-              gsisUserid = gsisUser["userid"],
-              empOrgUnitTexts = opsddUser[0]["empOrgUnitTexts"],
-              employeeId = opsddUser[0]["employeeId"],
-              roles = roles
+              firstName=gsisUser["firstname"],
+              lastName=gsisUser["lastname"],
+              fatherName=gsisUser["fathername"],
+              motherName=gsisUser["mothername"],
+              name=f"{gsisUser['firstname']} {gsisUser['lastname']}",
+              taxid=gsisUser["taxid"],
+              gsisUserid=gsisUser["userid"],
+              empOrgUnitTexts=opsddUser[0]["empOrgUnitTexts"],
+              employeeId=opsddUser[0]["employeeId"],
+              roles=combined_roles
             )
+
           else:
+            print("New user created")
             UserGsis(
-              firstName = gsisUser["firstname"],
-              lastName = gsisUser["lastname"],
-              fatherName = gsisUser["fathername"],
-              motherName = gsisUser["mothername"],
-              name = gsisUser["firstname"] + ' ' + gsisUser["lastname"],
-              taxid = gsisUser["taxid"],
-              gsisUserid = gsisUser["userid"],
-              empOrgUnitTexts = opsddUser[0]["empOrgUnitTexts"],
-              employeeId = opsddUser[0]["employeeId"],
-              roles = roles
-            ).save()
+                firstName=gsisUser["firstname"],
+                lastName=gsisUser["lastname"],
+                fatherName=gsisUser["fathername"],
+                motherName=gsisUser["mothername"],
+                name=f"{gsisUser['firstname']} {gsisUser['lastname']}",
+                taxid=gsisUser["taxid"],
+                gsisUserid=gsisUser["userid"],
+                empOrgUnitTexts=opsddUser[0]["empOrgUnitTexts"],
+                employeeId=opsddUser[0]["employeeId"],
+                roles=roles
+            ).save()   
+          # roles = []
+          # for user in opsddUser:
+          #   for auth in user["authorisations"]:
+          #     role ={
+          #       "role": auth["role"]["roleName"],
+          #       "active": True,
+          #       "foreas":[auth["userOrgCode"]],
+          #       "monades": get_ouUnit_codes(auth["userOrgCode"])
+          #     }
+          #     roles.append(role)
+          
+          # userGsis = UserGsis.objects(taxid=gsisUser['taxid'])
+          # print("userGis>>>", userGsis) 
+
+          # if userGsis:
+          #   userGsis.update(
+          #     firstName = gsisUser["firstname"],
+          #     lastName = gsisUser["lastname"],
+          #     fatherName = gsisUser["fathername"],
+          #     motherName = gsisUser["mothername"],
+          #     name = gsisUser["firstname"] + ' ' + gsisUser["lastname"],
+          #     taxid = gsisUser["taxid"],
+          #     gsisUserid = gsisUser["userid"],
+          #     empOrgUnitTexts = opsddUser[0]["empOrgUnitTexts"],
+          #     employeeId = opsddUser[0]["employeeId"],
+          #     roles = roles
+          #   )
+          # else:
+          #   UserGsis(
+          #     firstName = gsisUser["firstname"],
+          #     lastName = gsisUser["lastname"],
+          #     fatherName = gsisUser["fathername"],
+          #     motherName = gsisUser["mothername"],
+          #     name = gsisUser["firstname"] + ' ' + gsisUser["lastname"],
+          #     taxid = gsisUser["taxid"],
+          #     gsisUserid = gsisUser["userid"],
+          #     empOrgUnitTexts = opsddUser[0]["empOrgUnitTexts"],
+          #     employeeId = opsddUser[0]["employeeId"],
+          #     roles = roles
+          #   ).save()
 
           additional_claims = {"roles": roles}
           access_token = create_access_token(identity=gsisUser['taxid'], additional_claims=additional_claims)
