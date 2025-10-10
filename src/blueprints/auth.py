@@ -143,7 +143,7 @@ def gsis_login(code: str):
             # Keep ADMIN and HELPDESK roles
             preserved_roles = [
               r for r in userGsis.roles
-              if r.get("role") in ["ADMIN", "HELPDESK"]
+              if getattr(r, "role", None) in ["ADMIN", "HELPDESK"]
             ]
 
             print("preserved_roles",preserved_roles)
