@@ -407,7 +407,7 @@ def getAllOpsddUsers():
     )
   
 @auth.route("/opsddUser/<string:vat>", methods=["GET"])
-def getAllOpsddUsers(vat:str):
+def getOpsddUser(vat:str):
   print("GET OPSDD User", vat)
       
   try:
