@@ -50,7 +50,7 @@ def get_legal_provisions_by_regulated_organization(code: str):
 
 
 @legal_provision.route("by_regulated_organization_unit/<string:code>", methods=["GET"])
-@jwt_required()
+# @jwt_required()
 def get_legal_provisions_by_regulated_organization_unit(code: str):
     organization_unit = Monada.objects.get(code=code)
     debug_print("LEGAL PROVISIONS BY ORGANIZATION UNIT CODE", organization_unit.to_mongo().to_dict())
@@ -83,7 +83,7 @@ def get_legal_provisions_by_regulated_organization_unit(code: str):
     return Response(json.dumps(legal_provisions), mimetype="application/json", status=200)
 
 @legal_provision.route("by_regulated_remit/<string:code>", methods=["GET"])
-@jwt_required()
+# @jwt_required()
 def get_legal_provisions_by_regulated_remit(code: str):
     regulatedObject = RegulatedObject(
         regulatedObjectType="remit",
