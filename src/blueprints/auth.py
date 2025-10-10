@@ -128,12 +128,11 @@ def gsis_login(code: str):
             for auth in user["authorisations"]:
               role = {
                 "role": auth["role"]["roleName"],
-                "active": True,
+                "active": auth["active"],
                 "foreas": [auth["userOrgCode"]],
                 "monades": get_ouUnit_codes(auth["userOrgCode"])
               }
               roles.append(role)
-
           # Try to find existing user by taxid
           userGsis = UserGsis.objects(taxid=gsisUser['taxid']).first()
 
