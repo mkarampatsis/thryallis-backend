@@ -187,6 +187,42 @@ def count_all_remits():
     count = Remit.objects().count()
     return Response(json.dumps({"count": count}), mimetype="application/json", status=201)
 
+@remit.route("/by_id/<string:id>", methods=["GET"])
+# @jwt_required()
+def retrieve_remit_by_id(id):
+  remit = Remit.objects.get(id=ObjectId(id))
+  
+  data = {
+    "_id": str(remit.id),
+    "organizationalUnitCode": remit.organizationalUnitCode,
+    "remitText": remit.remitText,
+    "remitType": remit.remitType,
+    "cofog": remit.cofog.to_mongo().to_dict(),
+    "status": remit.status,
+    "legalProvisions": [],
+  }
+  
+  # legal_provisions = [provision.to_dict() for provision in remit.legalProvisionRefs]
+  legal_provisions = [provision for provision in remit.legalProvisionRefs]
+
+  for provision in legal_provisions:
+    legalActRef = provision.legalAct
+    legalActKey = legalActRef.legalActKey
+    legalProvisionSpecs = provision["legalProvisionSpecs"].to_mongo().to_dict()
+    legalProvisionText = provision["legalProvisionText"]
+    data["legalProvisions"].append({
+      "_id": str(provision.id),
+      "legalActKey": legalActKey,
+      "legalProvisionSpecs": legalProvisionSpecs,
+      "legalProvisionText": legalProvisionText,
+    })
+
+  return Response(
+    json.dumps(data),
+    mimetype="application/json",
+    status=200,
+  )
+
 
 @remit.route("/by_code/<string:code>", methods=["GET"])
 # @jwt_required()
