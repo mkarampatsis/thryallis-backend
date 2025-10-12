@@ -190,7 +190,7 @@ def gsis_login(code: str):
             ).save()   
           
 
-          additional_claims = {"roles": roles}
+          additional_claims = {"roles": combined_roles if userGsis else roles}
           access_token = create_access_token(identity=gsisUser['taxid'], additional_claims=additional_claims)
           user = {
             "firstName": gsisUser["firstname"],
@@ -202,7 +202,7 @@ def gsis_login(code: str):
             "gsisUserid": gsisUser["userid"],
             "empOrgUnitTexts": opsddUser[0]["empOrgUnitTexts"],
             "employeeId": opsddUser[0]["employeeId"],
-            "roles":combined_roles if userGsis else roles
+            "roles": combined_roles if userGsis else roles
           }
 
           LogGsis(user_id=gsisUser["taxid"], action="login", data=user).save()
