@@ -25,6 +25,7 @@ class Helpbox(me.Document):
 
   key = me.StringField(required=True)
   email = me.EmailField(required=True)
+  taxid = me.StringField(required=True)
   firstName = me.StringField(required=True)
   lastName = me.StringField(required=True)
   organizations = me.ListField(me.StringField(), default=[])
@@ -32,4 +33,5 @@ class Helpbox(me.Document):
   questionCategory = me.StringField(required=True)
   questions = me.EmbeddedDocumentListField(Question, required=True)
   toWhom = me.EmbeddedDocumentField(Whom, required=True)
-  finalized = me.BooleanField(default=False)  
+  finalized = me.BooleanField(default=False)
+  enableGoogleAuth = me.BooleanField(required=True, default=False) 

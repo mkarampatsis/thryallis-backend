@@ -173,7 +173,6 @@ def create_question():
         "_id": 0,
         "email":"$_id.email",
         "countNumberOfDocuments":1,
-        "count": {"$size":"$questions"}
       }
     }
   ]
@@ -204,6 +203,7 @@ def create_question():
       fileObjectIDs = [ObjectId(id_str) for id_str in files]
     
     email = data["email"]
+    taxid = data["taxid"]
     lastName = data["lastName"]
     firstName = data["firstName"]
     organizations = data["organizations"]
@@ -218,6 +218,7 @@ def create_question():
       "firstName" : helpdeskUser["firstName"],
       "lastName" : helpdeskUser["lastName"]
     }
+    enableGoogleAuth = True if data["enableGoogleAuth"]=="true" else False 
 
     length = 6
     random_string = ''.join(random.choices(string.digits, k=length))
@@ -225,13 +226,15 @@ def create_question():
     newHelpbox = Helpbox(
       key = random_string,
       email=email,
+      taxid = taxid,
       lastName=lastName,
       firstName=firstName,
       organizations=organizations,
       questionTitle = questionTitle,
       questionCategory = questionCategory,
       questions = question,
-      toWhom = toWhom         
+      toWhom = toWhom,
+      enableGoogleAuth = enableGoogleAuth     
     ).save()
 
     return Response(

@@ -1,4 +1,4 @@
-from flask import Blueprint, Response, request
+from flask import Blueprint, Response, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from src.models.user import User, UserRole
 from src.models.userGsis import UserGsis
@@ -7,9 +7,7 @@ from src.blueprints.decorators import has_admin_role
 import json
 import re
 
-
 user = Blueprint("user", __name__)
-
 
 @user.route("/myaccesses")
 @jwt_required()
@@ -31,13 +29,27 @@ def get_my_organizations():
 
   return Response(json.dumps({"organizations": organizationCodes, "organizational_units": monadesCodes}), status=200)
 
-
 @user.route("/all")
 @jwt_required()
 @has_admin_role
 def get_all_users():
-  users = User.objects()
-  return Response(users.to_json(), status=200)
+  googleUsers = User.objects()
+  gsisUsers = UserGsis.objects()
+
+  try:
+    users = {
+      "googleUsers": json.loads(googleUsers.to_json()),
+      "gsisUsers": json.loads(gsisUsers.to_json())
+    }
+
+    return jsonify(users), 200
+  except Exception as e:
+    print(e)
+    return Response(
+        json.dumps({"message": f"<strong>Αποτυχία εμφάνισης χρηστών:</strong> {e}"}),
+        mimetype="application/json",
+        status=500,
+    )
 
 @user.route("/<string:email>", methods=["PUT"])
 @jwt_required()
