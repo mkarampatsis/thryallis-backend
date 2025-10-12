@@ -154,6 +154,7 @@ def has_admin_role(f):
         user_roles = claims["roles"]
         roles = [x for x in user_roles]
         # check if user has helpdesk role
+        print(roles)
         admin_roles = [x for x in roles if x["role"] == "ADMIN"]
 
         if not admin_roles:
