@@ -19,7 +19,8 @@ def can_edit(f):
 
         user_roles = claims["roles"]
         print(user_roles)
-        type_roles = [x for x in user_roles if x["role"] in ["EDITOR", "ADMIN", "ROOT"]]
+        # type_roles = [x for x in user_roles if x["role"] in ["EDITOR", "ADMIN", "ROOT"]]
+        type_roles = [x for x in user_roles if x["role"] in ["EDITOR"]]
         code = kwargs.get("code", "")
         print(">>>>>> CODE >>", code)
 
