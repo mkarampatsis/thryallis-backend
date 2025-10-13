@@ -45,13 +45,15 @@ def can_update_delete(f):
         claims = get_jwt()
 
         user_roles = claims["roles"]
-        roles = [x for x in user_roles if x["role"] in ["EDITOR", "ADMIN", "ROOT"]]
-        print(">>>>>> ROLES >>", roles)
+        # with admin or root then save is not made because admin and root do not have foreas and monades
+        # roles = [x for x in user_roles if x["role"] in ["EDITOR", "ADMIN", "ROOT"]]
+        roles = [x for x in user_roles if x["role"] in ["EDITOR"]]
+        # print(">>>>>> ROLES >>", roles)
         all_codes = [code for entry in roles for code_list in (entry["foreas"], entry["monades"]) for code in code_list]
-        print(">>>>>> ALL CODES >>", all_codes)
+        # print(">>>>>> ALL CODES >>", all_codes)
         data = request.get_json()
         code = data.get("code", "")
-        print(">>>>>> CODE >>", code)
+        # print(">>>>>> CODE >>", code)
 
         if code not in all_codes:
             return Response(
@@ -73,7 +75,9 @@ def can_delete_legal_provision(f):
         # print(">>>>>> CLAIMS >>", claims)
 
         user_roles = claims["roles"]
-        roles = [x for x in user_roles if x["role"] in ["EDITOR", "ADMIN", "ROOT"]]
+        # with admin or root then save is not made because admin and root do not have foreas and monades
+        # roles = [x for x in user_roles if x["role"] in ["EDITOR", "ADMIN", "ROOT"]]
+        roles = [x for x in user_roles if x["role"] in ["EDITOR"]]
         # print(">>>>>> ROLES >>", roles)
         all_codes = [code for entry in roles for code_list in (entry["foreas"], entry["monades"]) for code in code_list]
         # print(">>>>>> ALL CODES >>", all_codes)
@@ -115,7 +119,9 @@ def can_finalize_remits(f):
     def decorated_function(*args, **kwargs):
         claims = get_jwt()
         user_roles = claims["roles"]
-        roles = [x for x in user_roles if x["role"] in ["EDITOR", "ADMIN", "ROOT"]]
+        # with admin or root then save is not made because admin and root do not have foreas and monades
+        # roles = [x for x in user_roles if x["role"] in ["EDITOR", "ADMIN", "ROOT"]]
+        roles = [x for x in user_roles if x["role"] in ["EDITOR"]]
         all_codes = [code for entry in roles for code_list in (entry["foreas"], entry["monades"]) for code in code_list]
 
         code = kwargs.get("code", "")
