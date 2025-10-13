@@ -165,7 +165,7 @@ def create_question():
   pipeline = [
     {
       "$match":{
-        "toWhom.user": data["enableGoogleAuth"],
+        "enableGoogleAuth":data["enableGoogleAuth"]
       }
     },
     {
@@ -189,28 +189,24 @@ def create_question():
     users = UserGsis.objects(roles__role='HELPDESK').only('taxid').exclude("id")
   
   document_counts = list(Helpbox.objects.aggregate(pipeline))
-  print ("document_counts>>", document_counts)
-
+  
   # Create a lookup for document counts
   count_dict = {entry['user']: entry['countNumberOfDocuments'] for entry in document_counts}
-  print ("document_counts>>", document_counts)
-
-  # Assign a default high value (e.g., float('inf')) for taxid not in document_counts
-  all_counts = [{'user': user['user'], 'countNumberOfDocuments': count_dict.get(user['user'], 0)} for user in users]
-  print("all_counts>>",all_counts)
-
-  # Find the taxid with the lowest countNumberOfDocuments
+  
+  # Assign a default high value (e.g., float('inf')) for user not in document_counts
+  if data["enableGoogleAuth"]:
+    all_counts = [{'user': email['email'], 'countNumberOfDocuments': count_dict.get(email['email'], 0)} for email in users]
+  else:
+    all_counts = [{'user': taxid['taxid'], 'countNumberOfDocuments': count_dict.get(taxid['taxid'], 0)} for taxid in users]
+  
+    # Find the taxid with the lowest countNumberOfDocuments
   user_with_lowest_count = min(all_counts, key=lambda x: x['countNumberOfDocuments'])
-  print("user_with_lowest_count>>",user_with_lowest_count)
   
   if data["enableGoogleAuth"]:
     helpdeskUser = User.objects.get(email=user_with_lowest_count['user'])
   else:
     helpdeskUser = UserGsis.objects.get(taxid=user_with_lowest_count['user'])
 
-  print("User with lowest countNumberOfDocuments:", user_with_lowest_count['user'])
-  print("helpdeskUser>>:", helpdeskUser.to_json())
-  
   try:
     fileObjectIDs = []
 
@@ -219,7 +215,6 @@ def create_question():
       # Convert to ObjectId instances
       fileObjectIDs = [ObjectId(id_str) for id_str in files]
 
-    print(helpdeskUser['taxid']. helpdeskUser["email"])    
     email = data["email"]
     taxid = data["taxid"]
     lastName = data["lastName"]
@@ -232,7 +227,7 @@ def create_question():
       "questionFile": fileObjectIDs
     }]
     toWhom = {
-      "user" : helpdeskUser["taxid"] if helpdeskUser['taxid'] else helpdeskUser["email"],
+      "user" : helpdeskUser["taxid"] if 'taxid' in helpdeskUser else helpdeskUser["email"],
       "firstName" : helpdeskUser["firstName"],
       "lastName" : helpdeskUser["lastName"]
     }
