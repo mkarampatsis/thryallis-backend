@@ -229,6 +229,8 @@ def create_question():
     helpdeskUser = UserGsis.objects.get(taxid=taxid_with_lowest_count['taxid'])
 
     # print("Taxid with lowest countNumberOfDocuments:", taxid_with_lowest_count['taxid'])
+  
+  print("Helpdesk User", helpdeskUser)
 
   try:
     fileObjectIDs = []
@@ -237,7 +239,8 @@ def create_question():
     if files:
       # Convert to ObjectId instances
       fileObjectIDs = [ObjectId(id_str) for id_str in files]
-    
+
+    print(helpdeskUser['taxid']. helpdeskUser["email"])    
     email = data["email"]
     taxid = data["taxid"]
     lastName = data["lastName"]
@@ -250,8 +253,7 @@ def create_question():
       "questionFile": fileObjectIDs
     }]
     toWhom = {
-      "email" : helpdeskUser["email"] if helpdeskUser['email'] else '',
-      "taxid" : helpdeskUser["taxid"] if helpdeskUser['taxid'] else '',
+      "user" : helpdeskUser["taxid"] if helpdeskUser['taxid'] else helpdeskUser["email"],
       "firstName" : helpdeskUser["firstName"],
       "lastName" : helpdeskUser["lastName"]
     }
