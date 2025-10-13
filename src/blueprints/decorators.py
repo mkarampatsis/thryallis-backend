@@ -18,9 +18,11 @@ def can_edit(f):
         # print(claims)
 
         user_roles = claims["roles"]
+        print(user_roles)
         type_roles = [x for x in user_roles if x["role"] in ["EDITOR", "ADMIN", "ROOT"]]
         code = kwargs.get("code", "")
-        # print(">>>>>> CODE >>", code)
+        print(">>>>>> CODE >>", code)
+
         type_roles = [x for x in type_roles if code in x["foreas"] or code in x["monades"]]
 
         if not type_roles:
