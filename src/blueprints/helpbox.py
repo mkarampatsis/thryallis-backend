@@ -9,6 +9,7 @@ from src.models.psped.general_info import GeneralInfo
 from src.models.upload import FileUpload 
 from src.models.psped.change import Change
 from src.models.user import User
+from src.models.userGsis import UserGsis
 from src.blueprints.utils import debug_print, dict2string
 from src.blueprints.decorators import can_edit, can_update_delete, can_finalize_remits
 from datetime import datetime
@@ -157,44 +158,79 @@ def retrieve_all_published_questions():
 @helpbox.route("", methods=["POST"])
 @jwt_required()
 def create_question():
+  debug_print("POST HELPBOX", data)
+  
+  if data['enableGoogleAuth']:
+    emails = User.objects(roles__role='HELPDESK').only('email').exclude("id")
+    # print (emails.to_json())
 
-  emails = User.objects(roles__role='HELPDESK').only('email').exclude("id")
-  # print (emails.to_json())
-
-  pipeline = [
-    {
-      "$group":{
-        "_id": {"email":"$toWhom.email"},
-        "countNumberOfDocuments": {"$count": {}}
+    pipeline = [
+      {
+        "$group":{
+          "_id": {"email":"$toWhom.email"},
+          "countNumberOfDocuments": {"$count": {}}
+        }
+      },
+      {
+        "$project": {
+          "_id": 0,
+          "email":"$_id.email",
+          "countNumberOfDocuments":1,
+        }
       }
-    },
-    {
-      "$project": {
-        "_id": 0,
-        "email":"$_id.email",
-        "countNumberOfDocuments":1,
+    ]
+
+    document_counts = list(Helpbox.objects.aggregate(pipeline))
+    # print (document_counts)
+
+    # Create a lookup for document counts
+    count_dict = {entry['email']: entry['countNumberOfDocuments'] for entry in document_counts}
+
+    # Assign a default high value (e.g., float('inf')) for emails not in document_counts
+    all_counts = [{'email': email['email'], 'countNumberOfDocuments': count_dict.get(email['email'], 0)} for email in emails]
+
+    # Find the email with the lowest countNumberOfDocuments
+    email_with_lowest_count = min(all_counts, key=lambda x: x['countNumberOfDocuments'])
+    helpdeskUser = User.objects.get(email=email_with_lowest_count['email'])
+
+    # print("Email with lowest countNumberOfDocuments:", email_with_lowest_count['email'])
+  else:
+    taxids = UserGsis.objects(roles__role='HELPDESK').only('taxid').exclude("id")
+    # print (taxids.to_json())
+
+    pipeline = [
+      {
+        "$group":{
+          "_id": {"taxid":"$toWhom.taxid"},
+          "countNumberOfDocuments": {"$count": {}}
+        }
+      },
+      {
+        "$project": {
+          "_id": 0,
+          "taxid":"$_id.taxid",
+          "countNumberOfDocuments":1,
+        }
       }
-    }
-  ]
+    ]
 
-  document_counts = list(Helpbox.objects.aggregate(pipeline))
-  # print (document_counts)
+    document_counts = list(Helpbox.objects.aggregate(pipeline))
+    # print (document_counts)
 
-  # Create a lookup for document counts
-  count_dict = {entry['email']: entry['countNumberOfDocuments'] for entry in document_counts}
+    # Create a lookup for document counts
+    count_dict = {entry['taxid']: entry['countNumberOfDocuments'] for entry in document_counts}
 
-  # Assign a default high value (e.g., float('inf')) for emails not in document_counts
-  all_counts = [{'email': email['email'], 'countNumberOfDocuments': count_dict.get(email['email'], 0)} for email in emails]
+    # Assign a default high value (e.g., float('inf')) for taxid not in document_counts
+    all_counts = [{'taxid': taxid['taxid'], 'countNumberOfDocuments': count_dict.get(taxid['taxid'], 0)} for taxid in taxids]
 
-  # Find the email with the lowest countNumberOfDocuments
-  email_with_lowest_count = min(all_counts, key=lambda x: x['countNumberOfDocuments'])
-  helpdeskUser = User.objects.get(email=email_with_lowest_count['email'])
+    # Find the taxid with the lowest countNumberOfDocuments
+    taxid_with_lowest_count = min(all_counts, key=lambda x: x['countNumberOfDocuments'])
+    helpdeskUser = UserGsis.objects.get(taxid=taxid_with_lowest_count['taxid'])
 
-  # print("Email with lowest countNumberOfDocuments:", email_with_lowest_count['email'])
+    # print("Taxid with lowest countNumberOfDocuments:", taxid_with_lowest_count['taxid'])
 
   try:
     data = request.get_json()
-    debug_print("POST HELPBOX", data)
     fileObjectIDs = []
 
     files = data["question"]['questionFile']
@@ -214,11 +250,12 @@ def create_question():
       "questionFile": fileObjectIDs
     }]
     toWhom = {
-      "email" : helpdeskUser["email"],
+      "email" : helpdeskUser["email"] if helpdeskUser['email'] else '',
+      "taxid" : helpdeskUser["taxid"] if helpdeskUser['taxid'] else '',
       "firstName" : helpdeskUser["firstName"],
       "lastName" : helpdeskUser["lastName"]
     }
-    enableGoogleAuth = True if data["enableGoogleAuth"]=="true" else False 
+    enableGoogleAuth = data["enableGoogleAuth"] 
 
     length = 6
     random_string = ''.join(random.choices(string.digits, k=length))
