@@ -4,8 +4,8 @@ from bson import ObjectId
 from src.models.upload import FileUpload
 
 class Whom(me.EmbeddedDocument):
-  email = me.StringField(required=True)
-  taxid = me.StringField(required=True)
+  email = me.StringField()
+  taxid = me.StringField()
   firstName = me.StringField(required=True)
   lastName = me.StringField(required=True)
 
