@@ -158,6 +158,7 @@ def retrieve_all_published_questions():
 @helpbox.route("", methods=["POST"])
 @jwt_required()
 def create_question():
+  data = request.get_json()
   debug_print("POST HELPBOX", data)
   
   if data['enableGoogleAuth']:
@@ -230,7 +231,6 @@ def create_question():
     # print("Taxid with lowest countNumberOfDocuments:", taxid_with_lowest_count['taxid'])
 
   try:
-    data = request.get_json()
     fileObjectIDs = []
 
     files = data["question"]['questionFile']
