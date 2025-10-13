@@ -19,6 +19,7 @@ def can_edit(f):
 
         user_roles = claims["roles"]
         print(user_roles)
+        # with admin or root then save is not made because admin and root do not have foreas and monades
         # type_roles = [x for x in user_roles if x["role"] in ["EDITOR", "ADMIN", "ROOT"]]
         type_roles = [x for x in user_roles if x["role"] in ["EDITOR"]]
         code = kwargs.get("code", "")
