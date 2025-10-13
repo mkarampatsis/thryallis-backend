@@ -5,6 +5,7 @@ from src.models.upload import FileUpload
 
 class Whom(me.EmbeddedDocument):
   email = me.StringField(required=True)
+  taxid = me.StringField(required=True)
   firstName = me.StringField(required=True)
   lastName = me.StringField(required=True)
 
