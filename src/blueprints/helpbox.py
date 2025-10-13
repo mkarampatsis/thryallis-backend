@@ -215,8 +215,8 @@ def create_question():
       # Convert to ObjectId instances
       fileObjectIDs = [ObjectId(id_str) for id_str in files]
 
-    email = data["email"]
-    taxid = data["taxid"]
+    email = data["email"] if data["email"] else "-"
+    taxid = data["taxid"] if data["taxid"] else "-"
     lastName = data["lastName"]
     firstName = data["firstName"]
     organizations = data["organizations"]
