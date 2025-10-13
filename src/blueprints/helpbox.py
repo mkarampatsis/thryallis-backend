@@ -216,21 +216,24 @@ def create_question():
     ]
 
     document_counts = list(Helpbox.objects.aggregate(pipeline))
-    # print (document_counts)
+    print ("document_counts>>", document_counts)
 
     # Create a lookup for document counts
     count_dict = {entry['taxid']: entry['countNumberOfDocuments'] for entry in document_counts}
+    print ("document_counts>>", document_counts)
 
     # Assign a default high value (e.g., float('inf')) for taxid not in document_counts
     all_counts = [{'taxid': taxid['taxid'], 'countNumberOfDocuments': count_dict.get(taxid['taxid'], 0)} for taxid in taxids]
+    print("all_counts>>",all_counts)
 
     # Find the taxid with the lowest countNumberOfDocuments
     taxid_with_lowest_count = min(all_counts, key=lambda x: x['countNumberOfDocuments'])
+    print("taxid_with_lowest_count>>",taxid_with_lowest_count)
     helpdeskUser = UserGsis.objects.get(taxid=taxid_with_lowest_count['taxid'])
 
     # print("Taxid with lowest countNumberOfDocuments:", taxid_with_lowest_count['taxid'])
   
-  print("Helpdesk User", helpdeskUser)
+  print("Helpdesk User>>", helpdeskUser)
 
   try:
     fileObjectIDs = []
