@@ -282,13 +282,14 @@ def update_question(id):
 
     helpbox = Helpbox.objects.get(id=ObjectId(helpboxID))
     
+    fileObjectIDs = []
     if questionFile:
       # Convert to ObjectId instances
       fileObjectIDs = [ObjectId(id_str) for id_str in questionFile]
     
     new_question = Question(
       questionText = questionText,
-      questionFile = fileObjectIDs
+      questionFile = fileObjectIDs if fileObjectIDs else []
     )
 
     # Add the new question to the 'questions' field
