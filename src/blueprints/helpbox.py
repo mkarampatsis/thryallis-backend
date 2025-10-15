@@ -461,22 +461,26 @@ def create_general_info():
         data = request.get_json()
         debug_print("POST GENERAL INFO", data)
 
-        email = data["email"]
+        email = data["email"] if data["email"] else "noemail@noemail.gr"
+        taxid = data["taxid"] if data["taxid"] else "-"
         lastName = data["lastName"]
         firstName = data["firstName"]
         title = data["title"]
         text = data["text"]
         file = data["file"]
         category = data["category"]
+        enableGoogleAuth = data["enableGoogleAuth"]
 
         newInfo = GeneralInfo(
-            email=email,
-            lastName=lastName,
-            firstName=firstName,
-            title = title,
-            text = text,
-            file = file,
-            category = category
+          email=email,
+          taxid = taxid,
+          lastName=lastName,
+          firstName=firstName,
+          title = title,
+          text = text,
+          file = file,
+          category = category,
+          enableGoogleAuth  = enableGoogleAuth
         ).save()
 
         return Response(
@@ -501,12 +505,14 @@ def update_general_info(generalInfoId):
         debug_print("PUT GENERAL INFO", data)
 
         email = data["email"]
+        taxid = data["taxid"]
         lastName = data["lastName"]
         firstName = data["firstName"]
         title = data["title"]
         text = data["text"]
         file = data["file"]
         category = data["category"]
+        enableGoogleAuth = data["enableGoogleAuth"]
 
         # Convert to ObjectId instances
         fileObjectIDs = [ObjectId(id_str) for id_str in file]
@@ -516,32 +522,38 @@ def update_general_info(generalInfoId):
 
         generalInfo.update(
           email = email,
+          taxid = taxid,
           lastName = lastName,
           firstName = firstName,
           title = title,
           text = text,
           file = fileObjectIDs,
           category = category,
+          enableGoogleAuth = enableGoogleAuth
         )
 
         curr_change = {
           "old": {
             "email": generalInfo.email,
+            "taxid": generalInfo.taxid,
             "lastName": generalInfo.lastName,
             "firstName": generalInfo.firstName,
             "title": generalInfo.title,
             "text": generalInfo.text,
             "file": generalInfo.file,
             "category": generalInfo.category,
+            "enableGoogleAuth": generalInfo.enableGoogleAuth
           },
           "new": {
             "email": email,
+            "taxid": taxid,
             "lastName": lastName,
             "firstName": firstName,
             "title": title,
             "text": text,
             "file": file,
             "category": category,
+            "enableGoogleAuth": enableGoogleAuth,
           },
         }
         who = get_jwt_identity()
