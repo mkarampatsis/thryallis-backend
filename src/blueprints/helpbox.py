@@ -41,71 +41,75 @@ def retrieve_all_questions():
 @jwt_required()
 def retrieve_question_by_id(id):
     try:
-        # Step 1: Fetch Helpbox
-        helpbox = Helpbox.objects.get(id=ObjectId(id))
+      # Step 1: Fetch Helpbox
+      print("9>>")
+      helpbox = Helpbox.objects.get(id=ObjectId(id))
+      print("19>>")
+      # Step 2: Convert Helpbox to dict and format fields
+      helpbox_dict = helpbox.to_mongo().to_dict()
+      helpbox_dict['id'] = str(helpbox_dict.pop('_id'))
 
-        # Step 2: Convert Helpbox to dict and format fields
-        helpbox_dict = helpbox.to_mongo().to_dict()
-        helpbox_dict['id'] = str(helpbox_dict.pop('_id'))
-       
-       # Convert and process each question
-        enriched_questions = []
-        for question in helpbox_dict.get('questions', []):
-            question_id = str(question['id'])
-            file_ids = [oid for oid in question.get('questionFile', [])]
+      print("1>>")
+      
+      # Convert and process each question
+      enriched_questions = []
+      for question in helpbox_dict.get('questions', []):
+        question_id = str(question['id'])
+        file_ids = [oid for oid in question.get('questionFile', [])]
 
-            # Get all file documents for the question for questionFile
-            files = FileUpload.objects(id__in=file_ids)
-            question['questionFile'] = [
-                {
-                    "id": str(file.id),
-                    "file_name": file.file_name,
-                    "file_type": file.file_type,
-                    "file_size": file.file_size,
-                    "file_location": file.file_location
-                }
-                for file in files
-            ]
+        # Get all file documents for the question for questionFile
+        files = FileUpload.objects(id__in=file_ids)
+        question['questionFile'] = [
+            {
+                "id": str(file.id),
+                "file_name": file.file_name,
+                "file_type": file.file_type,
+                "file_size": file.file_size,
+                "file_location": file.file_location
+            }
+            for file in files
+        ]
 
-            file_ids = [oid for oid in question.get('answerFile', [])]
+        file_ids = [oid for oid in question.get('answerFile', [])]
 
-            # Get all file documents for the question for answerFile
-            files = FileUpload.objects(id__in=file_ids)
-            question['answerFile'] = [
-                {
-                    "id": str(file.id),
-                    "file_name": file.file_name,
-                    "file_type": file.file_type,
-                    "file_size": file.file_size,
-                    "file_location": file.file_location
-                }
-                for file in files
-            ]
+        print("2>>")
+        # Get all file documents for the question for answerFile
+        files = FileUpload.objects(id__in=file_ids)
+        question['answerFile'] = [
+            {
+                "id": str(file.id),
+                "file_name": file.file_name,
+                "file_type": file.file_type,
+                "file_size": file.file_size,
+                "file_location": file.file_location
+            }
+            for file in files
+        ]
+        print("3>>")
+        # Format ObjectIds and datetime
+        question['id'] = str(question['id'])
+        if 'whenAsked' in question:
+            question['whenAsked'] = question['whenAsked'].isoformat()
+        if 'whenAnswered' in question:
+            question['whenAnswered'] = question['whenAnswered'].isoformat()
 
-            # Format ObjectIds and datetime
-            question['id'] = str(question['id'])
-            if 'whenAsked' in question:
-                question['whenAsked'] = question['whenAsked'].isoformat()
-            if 'whenAnswered' in question:
-                question['whenAnswered'] = question['whenAnswered'].isoformat()
-
-            enriched_questions.append(question)
-
-        # Replace questions with enriched versions
-        helpbox_dict['questions'] = enriched_questions
-        
-        return Response(
-            json.dumps(helpbox_dict),
-            mimetype="application/json",
-            status=200,
-        )
+        enriched_questions.append(question)
+        print("4>>")
+      # Replace questions with enriched versions
+      helpbox_dict['questions'] = enriched_questions
+      
+      return Response(
+        json.dumps(helpbox_dict),
+        mimetype="application/json",
+        status=200,
+      )
     except Exception as e:
-        print(e)
-        return Response(
-            json.dumps({"message": f"<strong>Αποτυχία εμφάνισης ερωτημάτων:</strong> {e}"}),
-            mimetype="application/json",
-            status=500,
-        )   
+      print(e)
+      return Response(
+        json.dumps({"message": f"<strong>Αποτυχία εμφάνισης ερωτημάτων:</strong> {e}"}),
+        mimetype="application/json",
+        status=500,
+      )   
     
 @helpbox.route("/all/published", methods=["GET"])
 @jwt_required()
@@ -381,7 +385,7 @@ def publish_question():
         helpbox.save()
 
     return Response(
-      json.dumps({"message": "Η απάντηση σας καταχωρήθηκε με επιτυχία"}),
+      json.dumps({"message": "Η δήλωση σας καταχωρήθηκε με επιτυχία"}),
       mimetype="application/json",
       status=201,
     )
@@ -389,7 +393,7 @@ def publish_question():
   except Exception as e:
     print(e)
     return Response(
-      json.dumps({"message": f"<strong>Αποτυχία καταχώρησης απάντησης:</strong> {e}"}),
+      json.dumps({"message": f"<strong>Αποτυχία καταχώρησης δήλωσης:</strong> {e}"}),
       mimetype="application/json",
       status=500,
     )
