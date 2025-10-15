@@ -42,14 +42,10 @@ def retrieve_all_questions():
 def retrieve_question_by_id(id):
     try:
       # Step 1: Fetch Helpbox
-      print("9>>")
       helpbox = Helpbox.objects.get(id=ObjectId(id))
-      print("19>>")
       # Step 2: Convert Helpbox to dict and format fields
       helpbox_dict = helpbox.to_mongo().to_dict()
       helpbox_dict['id'] = str(helpbox_dict.pop('_id'))
-
-      print("1>>")
       
       # Convert and process each question
       enriched_questions = []
@@ -72,7 +68,6 @@ def retrieve_question_by_id(id):
 
         file_ids = [oid for oid in question.get('answerFile', [])]
 
-        print("2>>")
         # Get all file documents for the question for answerFile
         files = FileUpload.objects(id__in=file_ids)
         question['answerFile'] = [
@@ -85,7 +80,6 @@ def retrieve_question_by_id(id):
             }
             for file in files
         ]
-        print("3>>")
         # Format ObjectIds and datetime
         question['id'] = str(question['id'])
         if 'whenAsked' in question:
@@ -94,7 +88,6 @@ def retrieve_question_by_id(id):
             question['whenAnswered'] = question['whenAnswered'].isoformat()
 
         enriched_questions.append(question)
-        print("4>>")
       # Replace questions with enriched versions
       helpbox_dict['questions'] = enriched_questions
       
@@ -116,36 +109,36 @@ def retrieve_question_by_id(id):
 def retrieve_all_published_questions():
 
     pipeline = [
-        {
-            "$unwind": "$questions"
-        },
-        {
-            "$match": {
-                "questions.published": True
-            }
-        },
-        {
-            "$project": {
-                "_id":0,
-                "questionTitle":1,
-                "questions.questionText":1,
-                "questions.answerText":1,
-                "questions.whenAsked":1,
-                "questions.whenAnswered":1,
-            }
-        },
-        { 
-            "$sort" : { 
-                "questions.whenAnswered" : -1 
-            } 
+      {
+        "$unwind": "$questions"
+      },
+      {
+        "$match": {
+          "questions.published": True
         }
+      },
+      {
+        "$project": {
+          "_id":1,
+          "questionTitle":1,
+          "questions.questionText":1,
+          "questions.answerText":1,
+          "questions.whenAsked":1,
+          "questions.whenAnswered":1,
+        }
+      },
+      { 
+        "$sort" : { 
+          "questions.whenAnswered" : -1 
+        } 
+      }
     ]
 
     try:
-        pubished = list(Helpbox.objects.aggregate(pipeline))
+        published = list(Helpbox.objects.aggregate(pipeline))
 
         return Response(
-            json.dumps({"data": pubished}, default=custom_serializer),
+            json_util.dumps({"data": published}, default=custom_serializer),
             # jsonify(json.loads(json.dumps(pubished, default=custom_serializer))),
             mimetype="application/json",
             status=200,
