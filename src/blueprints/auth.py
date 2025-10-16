@@ -90,7 +90,7 @@ def gsis_login(code: str):
       }
 
       userRequest = gsisRequest.get(userInfoUrl, headers=gsis_header)
-      # print(userRequest.text)
+      print(userRequest.text)
       gsisUser = xml_to_json(userRequest.text)
 
       # Procedures to get details from OPSDD
@@ -103,13 +103,13 @@ def gsis_login(code: str):
           opsddUser = getOpsddUser(gsisUser['taxid'])
 
           if not opsddUser:
-            print ("not opsddUser>>>>",opsddUser)
+            # print ("not opsddUser>>>>",opsddUser)
             return Response(
               json.dumps({"message": "Δεν βρέθηκαν στοιχεία πρόσβασης"}),
               status=204,
             )
-          
-          print(">>>",opsddUser)
+         
+          # print(">>>",opsddUser)
           # Create Users Object
           role_lookup = { (role["roleId"], role["hid"]): role["roleName"] for role in opsddRoles }
 
