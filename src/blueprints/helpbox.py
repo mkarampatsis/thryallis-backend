@@ -426,32 +426,37 @@ def finalize_question():
 @helpbox.route("/general-info", methods=["GET"])
 @jwt_required()
 def retrieve_all_general_info():
-    try:
-        infos = GeneralInfo.objects.order_by('-when')
-        output = []
-        
-        for info in infos:
-            data = info.to_mongo().to_dict()
-            
-            # Manually replace the 'file' field with the actual file document(s)
-            data['file'] = [
-                f.to_mongo().to_dict() for f in info.file if f is not None
-            ]
+  try:
+    infos = GeneralInfo.objects.order_by('-when')
+    output = []
+    
+    for info in infos:
+      data = info.to_mongo().to_dict()
 
-            output.append(data)
+      # Replace the file field with the actual File documents
+      file_docs = []
+      if info.file:
+        for f in info.file:
+          try:
+            file_docs.append(f.to_mongo().to_dict())
+          except Exception as e:
+            print(f"Error serializing file: {e}")
 
-        return Response(
-            json_util.dumps(output),  # Handles ObjectId and datetime serialization
-            mimetype="application/json",
-            status=200,
-        )
-    except Exception as e:
-        print(e)
-        return Response(
-            json.dumps({"message": f"<strong>Αποτυχία εμφάνισης ενημερώσεων:</strong> {e}"}),
-            mimetype="application/json",
-            status=500,
-        )    
+      data['file'] = file_docs
+      output.append(data)
+
+    return Response(
+      json_util.dumps(output),  # Handles ObjectId and datetime serialization
+      mimetype="application/json",
+      status=200,
+    )
+  except Exception as e:
+    print(e)
+    return Response(
+      json.dumps({"message": f"<strong>Αποτυχία εμφάνισης ενημερώσεων:</strong> {e}"}),
+      mimetype="application/json",
+      status=500,
+    )    
     
 @helpbox.route("/general-info", methods=["POST"])
 @jwt_required()
