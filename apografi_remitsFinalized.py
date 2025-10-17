@@ -1,0 +1,3 @@
+from src.apografi.update_apografi_organizational_untis_with_remitsFinalized import updateApografiOrganizationalUnits_With_remitsFinalized
+
+updateApografiOrganizationalUnits_With_remitsFinalized()

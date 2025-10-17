@@ -32,6 +32,7 @@ class OrganizationalUnit(me.Document):
     url = me.StringField()
     mainAddress = me.EmbeddedDocumentField(Address)
     secondaryAddresses = me.ListField(me.EmbeddedDocumentField(Address))
+    remitsFinalized = me.BooleanField(default=False)
 
     dict_cache = redis.Redis(db=1)
 
