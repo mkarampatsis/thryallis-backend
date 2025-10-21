@@ -56,16 +56,9 @@ def getOrganizations():
 
         pipeline = [
             {"$match": {"what.entity":"remit"}},
-            {"$group": 
-                { 
-                    "_id": 0, 
-                    "organizationalUnits":  { "$addToSet": "$what.key.organizationalUnitCode" },
-                }
-            },
             {
                 "$project": {
-                    "organizationalUnits": 1,
-                    "_id":0,
+                "_id":1,
                 }
             }
         ]
@@ -74,11 +67,15 @@ def getOrganizations():
 
         # Convert the CommandCursor to a list
         result_list_remits = list(resultRemits)
+        # Convert ObjectIds to strings
+        for r in result_list_remits:
+            if isinstance(r.get("_id"), ObjectId):
+                r["_id"] = str(r["_id"])
 
         result = {
             "organizations": result_list_organizations[0]['organizations'],
             "organizationalUnits": result_list_organizationalUnits[0]['organizationalUnits'],
-            "remits": result_list_remits[0]['organizationalUnits']
+            "remits": result_list_remits[0]
         }
 
         # print(result)
@@ -129,3 +126,25 @@ def retrieve_change_by_code(code):
         mimetype="application/json",
         status=200,
     )
+
+
+@change.route("/<string:id>", methods=["GET"])
+@jwt_required()
+def retrieve_change_by_id(id):
+    
+    try:
+        change = Change.objects.get(id=ObjectId(id))
+
+        return Response(
+            change.to_json(),
+            mimetype="application/json",
+            status=200,
+        )    
+    except Exception as e:
+        return Response(
+            json.dumps({"message": f"<strong>Αποτυχία εμφάνισης ιστορικού:</strong> {e}"}),
+            mimetype="application/json",
+            status=500,
+        )
+
+     
