@@ -125,7 +125,8 @@ def get_all_organizational_units_with_pagination():
         page_size = int(request.args.get("pageSize", 100))
 
         # Filtering
-        filters = json.loads(request.args.get("filters", "{}"))
+        filters = json.loads(request.args.get("filter", "{}"))
+        print("FIlters>>",filters)
         query = {}
         
         for field, condition in filters.items():
@@ -145,11 +146,16 @@ def get_all_organizational_units_with_pagination():
 
         total = OrganizationalUnit.objects(**query).count()
 
+        print("Query>>",**query)
+        print("order_by_list>>",order_by_list)
+        print("Pages>>",page, page_size)
+
         org_units  = (
-        OrganizationalUnit.objects(**query)
+          OrganizationalUnit.objects(**query)
             .order_by(*order_by_list)
             .skip((page - 1) * page_size)
             .limit(page_size)
+            .order_by("preferredLabel")
         )
 
         data = [u.to_mongo().to_dict() for u in org_units]
