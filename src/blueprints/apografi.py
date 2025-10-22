@@ -1,11 +1,13 @@
 import json
 
-from flask import Blueprint, Response
+from flask import Blueprint, Response, request
 
 from src.blueprints.utils import convert_greek_accented_chars
 from src.models.apografi.dictionary import Dictionary
 from src.models.apografi.organization import Organization
 from src.models.apografi.organizational_unit import OrganizationalUnit
+
+from bson import json_util
 
 apografi = Blueprint("apografi", __name__)
 
@@ -113,6 +115,53 @@ def get_all_organizational_units():
         mimetype="application/json",
         status=200,
     )
+
+@apografi.route("/organizationalUnit/all/pagination")
+def get_all_organizational_units_with_pagination():
+
+    try:
+        # Pagination
+        page = int(request.args.get("page", 1))
+        page_size = int(request.args.get("pageSize", 100))
+
+        # Filtering
+        filters = json.loads(request.args.get("filters", "{}"))
+        query = {}
+        
+        for field, condition in filters.items():
+            value = condition.get("filter")
+            if value:
+                # Use icontains for text fields
+                query[f"{field}__icontains"] = value
+
+        # Sorting
+        sort_model = json.loads(request.args.get("sortModel", "[]"))
+        order_by_list = []
+        for sort in sort_model:
+            col = sort.get("colId")
+            order = sort.get("sort")
+            if col and order:
+                order_by_list.append(f"{'' if order == 'asc' else '-'}{col}")
+
+        total = OrganizationalUnit.objects(**query).count()
+
+        org_units  = (
+        OrganizationalUnit.objects(**query)
+            .order_by(*order_by_list)
+            .skip((page - 1) * page_size)
+            .limit(page_size)
+        )
+
+        data = [u.to_mongo().to_dict() for u in org_units]
+
+        return json.loads(json_util.dumps({"rows": data, "total": total})), 200
+    except Exception as e:
+        print("Error:", e)
+        return Response(
+            json.dumps({"error": f"Δεν βρέθηκαν στοιχεία για τις μονάδες {e}"}),
+            mimetype="application/json",
+            status=404,
+        )
 
 
 @apografi.route("/organizationalUnit/count")
