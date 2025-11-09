@@ -3,11 +3,24 @@ from datetime import datetime
 from src.models.upload import FileUpload
 from src.models.timestamp import TimeStampedModel
 
+class SafeDateField(me.DateField):
+  def to_python(self, value):
+    # Handle empty string or None before conversion
+    if value in ("", None):
+      return None
+    return super().to_python(value)
+  
+  def validate(self, value):
+    if value in ("", None):
+      return
+    super().validate(value)
+
 class Qualification(me.EmbeddedDocument):
   qualification = me.StringField()
   qualificationTitle = me.StringField()
   qualificationOrganization = me.StringField()
-  date = me.DateField()
+  # date = me.DateField()
+  date = SafeDateField()
   file = me.ReferenceField(FileUpload)  # store file name or path
 
 class Employee(TimeStampedModel):

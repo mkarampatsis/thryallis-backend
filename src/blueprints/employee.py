@@ -117,95 +117,86 @@ def create_employee():
       status=500,
     )
 
-# @facility.route("/<string:id>", methods=["PUT"])
-# @jwt_required()
-# def update_facility(id):
+@employee.route("/<string:email>", methods=["PUT"])
+@jwt_required()
+def update_employee(email):
 
-#   try:
-#     data = request.get_json()
-#     debug_print("UPDATE FACILITY", data)
+  try:
+    data = request.get_json()
+    debug_print("UPDATE EMPLOYEE", data)
     
-#     facility = Facility.objects.get(id=ObjectId(id))
+    employee = Employee.objects.get(emailWork=email)
 
-#     serialized_floorPlans = []
-#     for floor in data["floorPlans"]:
-#       fileObjectIDs = [ObjectId(id_str) for id_str in floor["floorPlan"]]
-#       serialized_floorPlan = {
-#         "floorArea": floor["floorArea"],
-#         "floorPlan": fileObjectIDs,
-#         "level": floor["level"],
-#         "num": floor["num"]
-#       }
-#       serialized_floorPlans.append(serialized_floorPlan)
+    employee.update(
+      organization = data["organization"],
+      organizationCode = data["organizationCode"],
+      code = data["code"],
+      firstname = data["firstname"],
+      lastname = data["lastname"],
+      fathername = data["fathername"],
+      mothername = data["mothername"],
+      identity = data["identity"],
+      birthday = data["birthday"],
+      sex = data["sex"],
+      dateAppointment = data["dateAppointment"],
+      workStatus = data["workStatus"],
+      workCategory = data["workCategory"],
+      workSector = data["workSector"],
+      organizationalUnit = data["organizationalUnit"],
+      building = data["building"],
+      office = data["office"],
+      phoneWork = data["phoneWork"],
+      emailWork = data["emailWork"],
+      finalized = data["finalized"],
+      qualifications = data["qualifications"],
+    )
 
-#     facility.update(
-#       organization = data["organization"],
-#       organizationCode = data["organizationCode"],
-#       kaek = data["kaek"],
-#       belongsTo = data["belongsTo"],
-#       distinctiveNameOfFacility = data["distinctiveNameOfFacility"],
-#       useOfFacility =data["useOfFacility"],
-#       uniqueUseOfFacility = data["uniqueUseOfFacility"],
-#       private = data["private"],
-#       coveredPremisesArea = data["coveredPremisesArea"],
-#       floorsOrLevels = data["floorsOrLevels"],
-#       floorPlans = serialized_floorPlans,
-#       addressOfFacility = data["addressOfFacility"],
-#       # finalized = True if data["finalized"]=='true' else False 
-#       finalized = data["finalized"]
-#     )
-
-#     who = get_jwt_identity()
-#     what = {"entity": "facility", "key": {"faciltyId": id}}
+    who = get_jwt_identity()
+    what = {"entity": "employee", "key": {"emailWork": email}}
     
-#     Change(action="update", who=who, what=what, change={"old":facility, "new":data}).save()
+    Change(action="update", who=who, what=what, change={"old":employee, "new":data}).save()
 
-#     return Response(
-#       json.dumps({"message": "Το ακίνητο σας τροποποιήθηκε με επιτυχία"}),
-#       mimetype="application/json",
-#       status=201,
-#     )
+    return Response(
+      json.dumps({"message": "Το προσωπικό τροποποιήθηκε με επιτυχία"}),
+      mimetype="application/json",
+      status=201,
+    )
 
-#   except Exception as e:
-#     print(e)
-#     return Response(
-#       json.dumps({"message": f"<strong>Αποτυχία τροποποίησης ακίνητου:</strong> {e}"}),
-#       mimetype="application/json",
-#       status=500,
-#     )
+  except Exception as e:
+    print(e)
+    return Response(
+      json.dumps({"message": f"<strong>Αποτυχία τροποποίησης προσωπικού:</strong> {e}"}),
+      mimetype="application/json",
+      status=500,
+    )
 
-# @facility.route("/<string:id>", methods=["DELETE"])
-# @jwt_required()
-# def delete_facility_by_id(id):
-#   try: 
-#     facility = Facility.objects.get(id=ObjectId(id))
+@employee.route("/<string:email>", methods=["DELETE"])
+@jwt_required()
+def delete_employee_by_email(email):
+  try: 
+    employee = Employee.objects.get(emailWork=email)
 
-#     # Delete referenced files of facility
-#     for floorPlan in facility.floorPlans:
-#       for item in floorPlan.floorPlan:
-#         file_doc = FileUpload.objects(id=item["id"]).first()
-#         if file_doc:
-#           delete_uploaded_file(file_doc)
-#           file_doc.delete()
+    # Delete referenced files of employee
+    for q in employee.qualifications:
+      file =q.file
+      file_doc = FileUpload.objects(id=file["id"]).first()
+      if file_doc:
+        delete_uploaded_file(file_doc)
+        file_doc.delete()
     
-#     # Delete all spaces of facility
-#     spaces = Space.objects(facilityId=ObjectId(id))
-#     for space in spaces:
-#       space.delete()
-    
-#     # Delete the main document
-#     facility.delete()
+    # Delete the main document
+    employee.delete()
   
-#   except DoesNotExist:
-#     return Response(json.dumps({"message": "Το ακίνητο δεν υπάρχει"}), mimetype="application/json", status=404)
-#   except Exception as e:
-#     return Response(json.dumps({"message": f"<strong>Error:</strong> {str(e)}"}), mimetype="application/json", status=500)
+  except DoesNotExist:
+    return Response(json.dumps({"message": "Το προσωπικό δεν υπάρχει"}), mimetype="application/json", status=404)
+  except Exception as e:
+    return Response(json.dumps({"message": f"<strong>Error:</strong> {str(e)}"}), mimetype="application/json", status=500)
   
-#   who = get_jwt_identity()
-#   what = {"entity": "facility", "key": {"Facility": id}}
+  who = get_jwt_identity()
+  what = {"entity": "employee", "key": {"emailWork": email}}
   
-#   Change(action="delete", who=who, what=what, change={"facility":facility.to_json()}).save()
-#   return Response(json.dumps({"message": "<strong>Το ακίνητο διαγράφηκε</strong>"}), mimetype="application/json", status=201)
+  Change(action="delete", who=who, what=what, change={"employee":employee.to_json()}).save()
+  return Response(json.dumps({"message": "<strong>Το προσωπικό διαγράφηκε</strong>"}), mimetype="application/json", status=201)
 
 # Function that deletes all referenced files
 def delete_uploaded_file(file_doc):
