@@ -178,11 +178,13 @@ def delete_employee_by_email(email):
 
     # Delete referenced files of employee
     for q in employee.qualifications:
-      file =q.file
-      file_doc = FileUpload.objects(id=file["id"]).first()
-      if file_doc:
-        delete_uploaded_file(file_doc)
-        file_doc.delete()
+      print (">>",q.to_json())
+      if q.file:
+        file =q.file
+        file_doc = FileUpload.objects(id=file["id"]).first()
+        if file_doc:
+          delete_uploaded_file(file_doc)
+          file_doc.delete()
     
     # Delete the main document
     employee.delete()
