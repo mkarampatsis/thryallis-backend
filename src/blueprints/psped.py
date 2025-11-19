@@ -276,7 +276,69 @@ def get_monada(code: str):
             mimetype="application/json",
             status=200,
         )
+    
+@psped.route("/monada/pagination", methods=["GET"])
+def get_monada_pagination():
+  try:
+    # Pagination params
+    page = int(request.args.get("page", 1))
+    page_size = int(request.args.get("pageSize", 20))
 
+    # Sorting params
+    sort_by = request.args.get("sortBy")
+    sort_dir = request.args.get("sort", "asc")
+
+    # Filter params: filter[field]=value
+    raw_filters = request.args.getlist("filter")
+
+    # Convert ?filter[field]=value → dict
+    filters = {}
+    for key, value in request.args.items():
+      if key.startswith("filter[") and key.endswith("]"):
+        field = key[7:-1]  # extract inside brackets
+        # Convert dots to __
+        me_field = field.replace(".", "__")
+        # icontains for string filtering
+        filters[f"{me_field}__icontains"] = value
+
+    # Base queryset
+    qs = Monada.objects
+
+    # Apply filters if any
+    if filters:
+        qs = qs.filter(**filters)
+
+    # Apply sorting
+    if sort_by:
+      me_sort = sort_by.replace(".", "__")
+      if sort_dir == "desc":
+        me_sort = f"-{me_sort}"
+      qs = qs.order_by(me_sort)
+
+    # Pagination
+    total = qs.count()
+    items = qs.skip((page - 1) * page_size).limit(page_size)
+
+    # Convert results to list of dicts
+    data = [item.to_dict() for item in items]
+
+    return Response(
+      # monada.to_json(),
+      json.dumps({
+            "total": total,
+            "page": page,
+            "pageSize": page_size,
+            "data": data
+        }, default=str), 
+      mimetype="application/json",
+      status=200,
+    )
+  except Monada.DoesNotExist:
+    return Response(
+      json.dumps({"remitsFinalized": False}),
+      mimetype="application/json",
+      status=200,
+    )
 
 @psped.route("/monada/all", methods=["GET"])
 def get_all_monades():
