@@ -17,7 +17,8 @@ class What(me.EmbeddedDocument):
           "facility",
           "space",
           "equipment",
-          "employee"
+          "employee",
+          "ota"
         ]
     )
     key = me.DictField(required=True)

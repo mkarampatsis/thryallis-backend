@@ -5,7 +5,7 @@ from src.models.apografi.organizational_unit import OrganizationalUnit as Monada
 
 
 class RegulatedObject(me.EmbeddedDocument):
-    regulatedObjectType = me.StringField(required=True, choices=["organization", "organizationalUnit", "remit"])
+    regulatedObjectType = me.StringField(required=True, choices=["organization", "organizationalUnit", "remit", "ota"])
     # regulatedObjectCode = me.StringField(required=True)
     regulatedObjectId = me.ObjectIdField(required=True)
     # regulatedObjectObjectId = me.StringField()
@@ -52,6 +52,19 @@ class LegalProvision(me.Document):
     legalProvisionSpecs = me.EmbeddedDocumentField(LegalProvisionSpecs, required=True)
     legalProvisionText = me.StringField(required=True)
     abolition = me.EmbeddedDocumentField(Abolition)
+
+    def to_dict(self):
+      return {
+        "_id": str(self.id),
+        "regulatedObject": self.regulatedObject.to_mongo() if self.regulatedObject else None,
+        "legalAct": self.legalAct.to_dict() if hasattr(self.legalAct, "to_dict") else {
+            "_id": str(self.legalAct.id),
+            **self.legalAct.to_mongo().to_dict()
+        },
+        "legalProvisionSpecs": self.legalProvisionSpecs.to_mongo() if self.legalProvisionSpecs else None,
+        "legalProvisionText": self.legalProvisionText,
+        "abolition": self.abolition.to_mongo() if self.abolition else None
+      }
 
     # A static method that receives an array of new legal provisions and saves them to the database
     @staticmethod

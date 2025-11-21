@@ -4,7 +4,7 @@ from flask_jwt_extended import get_jwt_identity, jwt_required
 from mongoengine import DoesNotExist
 
 from src.models.psped.legal_act import LegalAct
-from src.models.ota import Ota
+from src.models.ota.ota import Ota
 from src.models.psped.legal_provision import LegalProvision, RegulatedObject
 from src.models.psped.change import Change
 from src.blueprints.decorators import can_edit
@@ -16,14 +16,14 @@ ota = Blueprint("ota", __name__)
 
 @ota.route("", methods=["GET"])
 def retrieve_all_ota():
-  otaData = Ota.objects()
+  otaData = Ota.objects().select_related()
+
+  result = [ota.to_dict() for ota in otaData]
 
   return Response(
-    json.dumps({
-      otaData
-    }, default=str), 
+    json.dumps(result, default=str),
     mimetype="application/json",
-    status=200,
+    status=200
   )
 
 @ota.route("/by_id/<string:id>", methods=["GET"])
@@ -52,32 +52,28 @@ def create_ota():
     remitType = data["remitType"]
     remitLocalOrGlobal = data["remitLocalOrGlobal"]
     legalProvisions = data["legalProvisions"]
-    instructionProvisionRefs = data["instructionProvisions"]
+    instructionProvisions = data["instructionProvisions"]
     publicPolicyAgency = data["publicPolicyAgency"]
-    status = data["status"]
-    finalized = data["finalized"]
-    elasticSync = data["elasticSync"]
+    status = data.get("status", "ΕΝΕΡΓΗ")
+    finalized = data.get("finalized", False)
 
     newRemit = Ota(
       remitText=remitText,
       remitCompetence=remitCompetence,
       remitType=remitType,
       remitLocalOrGlobal=remitLocalOrGlobal,
-      instructionProvisionRefs=instructionProvisionRefs,
       publicPolicyAgency=publicPolicyAgency,
       status=status,
       finalized=finalized,
-      elasticSync=elasticSync,
     ).save()
 
     newRemitID = newRemit.id
     regulatedObject = RegulatedObject(
-      regulatedObjectType="Ota",
+      regulatedObjectType="ota",
       regulatedObjectId=newRemitID,
     )
 
     legal_provisions_changes_inserts = []
-
     legal_provisions_docs = LegalProvision.save_new_legal_provisions(legalProvisions, regulatedObject)
     legal_provisions_changes_inserts = [provision.to_mongo() for provision in legal_provisions_docs]
 
@@ -85,11 +81,20 @@ def create_ota():
       "inserts": legal_provisions_changes_inserts,
     }
 
+    instruction_provisions_changes_inserts = []
+    instruction_provisions_docs = LegalProvision.save_new_legal_provisions(instructionProvisions, regulatedObject)
+    instruction_provisions_changes_inserts = [provision.to_mongo() for provision in instruction_provisions_docs]
+
+    curr_change["instructionProvisions"] = {
+      "inserts": instruction_provisions_changes_inserts,
+    }
+
     who = get_jwt_identity()
-    what = {"entity": "Ota", "key": {"organizationalUnitCode": publicPolicyAgency["organizationalUnitCode"]}}
+    what = {"entity": "ota", "key": {"organizationalUnitCode": publicPolicyAgency["organizationalUnitCode"]}}
     Change(action="create", who=who, what=what, change=curr_change).save()
 
     newRemit.legalProvisionRefs = legal_provisions_docs
+    newRemit.instructionProvisionRefs = instruction_provisions_docs
     newRemit.save()
 
     return Response(
@@ -122,8 +127,8 @@ def update_ota():
       cofog = data["cofog"]
       legalProvisions = data["legalProvisions"]
       regulatedObject = RegulatedObject(
-          regulatedObjectType="remit",
-          regulatedObjectId=remitID,
+        regulatedObjectType="remit",
+        regulatedObjectId=remitID,
       )
       legalProvisionDocs = LegalProvision.save_new_legal_provisions(legalProvisions, regulatedObject)
 
