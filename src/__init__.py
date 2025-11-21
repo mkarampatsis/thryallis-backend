@@ -26,6 +26,7 @@ from src.blueprints.helpbox import helpbox
 from src.blueprints.facility import facility
 from src.blueprints.equipment import equipment
 from src.blueprints.employee import employee
+from src.blueprints.ota import ota
 
 from src.config import (
     MONGO_HOST,
@@ -33,6 +34,7 @@ from src.config import (
     MONGO_APOGRAFI_DB,
     MONGO_PSPED_DB,
     MONGO_RESOURCES_DB,
+    MONGO_OTA_DB,
     MONGO_USERNAME,
     MONGO_PASSWORD,
     MONGO_AUTHENTICATION_SOURCE,
@@ -59,41 +61,42 @@ def too_large(e):
 
 connect(host=MONGO_URI)
 connect(
-    host=MONGO_URI,
-    # port=MONGO_PORT,
-    # username=MONGO_USERNAME,
-    # password=MONGO_PASSWORD,
-    # authentication_source=MONGO_AUTHENTICATION_SOURCE,
-    db=MONGO_APOGRAFI_DB,
-    alias=MONGO_APOGRAFI_DB,
+  host=MONGO_URI,
+  # port=MONGO_PORT,
+  # username=MONGO_USERNAME,
+  # password=MONGO_PASSWORD,
+  # authentication_source=MONGO_AUTHENTICATION_SOURCE,
+  db=MONGO_APOGRAFI_DB,
+  alias=MONGO_APOGRAFI_DB,
 )
 
 connect(
-    host=MONGO_URI,
-    #host=MONGO_URI_ATLAS,
-    # port=MONGO_PORT,
-    # username=MONGO_USERNAME,
-    # password=MONGO_PASSWORD,
-    # authentication_source=MONGO_AUTHENTICATION_SOURCE,
-    db=MONGO_PSPED_DB,
-    alias=MONGO_PSPED_DB,
+  host=MONGO_URI,
+  #host=MONGO_URI_ATLAS,
+  # port=MONGO_PORT,
+  # username=MONGO_USERNAME,
+  # password=MONGO_PASSWORD,
+  # authentication_source=MONGO_AUTHENTICATION_SOURCE,
+  db=MONGO_PSPED_DB,
+  alias=MONGO_PSPED_DB,
 )
 
 connect(
-    host=MONGO_URI,
-    #host=MONGO_URI_ATLAS,
-    # port=MONGO_PORT,
-    # username=MONGO_USERNAME,
-    # password=MONGO_PASSWORD,
-    # authentication_source=MONGO_AUTHENTICATION_SOURCE,
-    db=MONGO_RESOURCES_DB,
-    alias=MONGO_RESOURCES_DB,
+  host=MONGO_URI,
+  db=MONGO_RESOURCES_DB,
+  alias=MONGO_RESOURCES_DB,
+)
+
+connect(
+  host=MONGO_URI,
+  db=MONGO_OTA_DB,
+  alias=MONGO_OTA_DB,
 )
 
 # CORS configuration
 cors = CORS(
-    app,
-    resources={r"*": {"origins": ["http://localhost:4200", "https://thryallis-frontend.duckdns.org", "https://thryallis.ypes.gov.gr"]}},
+  app,
+  resources={r"*": {"origins": ["http://localhost:4200", "https://thryallis-frontend.duckdns.org", "https://thryallis.ypes.gov.gr"]}},
 )
 
 # Register blueprints
@@ -113,3 +116,4 @@ app.register_blueprint(helpbox, url_prefix="/helpbox")
 app.register_blueprint(facility, url_prefix="/facility")
 app.register_blueprint(equipment, url_prefix="/equipment")
 app.register_blueprint(employee, url_prefix="/employee")
+app.register_blueprint(ota, url_prefix="/ota")
