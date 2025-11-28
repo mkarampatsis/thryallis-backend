@@ -7,11 +7,10 @@ from src.models.psped.legal_provision import LegalProvision
 class PublicPolicyAgency(me.EmbeddedDocument):
   organization = me.StringField(required=True)
   organizationCode = me.StringField(required=True)
-  organizationalUnit = me.StringField(required=True)
-  organizationalUnitCode = me.StringField(required=True)
+  organizationType = me.StringField(required=True)
+  status = me.StringField(required=True)
   subOrganizationOf = me.StringField(required=True)
-  supervisorUnitCode = me.StringField(required=True)
-  unitType = me.IntField(required=True)
+  subOrganizationOfCode = me.StringField(required=True)
 
 class Ota(TimeStampedModel):
   meta = {"collection": "ota", "db_alias": MONGO_PSPED_DB}
