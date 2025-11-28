@@ -11,6 +11,7 @@ class What(me.EmbeddedDocument):
           "organizationalUnit", 
           "remit", 
           "legalAct", 
+          "instructionAct", 
           "legalProvision", 
           "helpbox",
           "generalInfo",
