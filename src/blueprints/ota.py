@@ -90,7 +90,7 @@ def create_ota():
     }
 
     who = get_jwt_identity()
-    what = {"entity": "ota", "key": {"organizationalUnitCode": publicPolicyAgency["organizationalUnitCode"]}}
+    what = {"entity": "ota", "key": {"organization": publicPolicyAgency["organization"], "organizationCode": publicPolicyAgency["organizationCode"]}}
     Change(action="create", who=who, what=what, change=curr_change).save()
 
     newRemit.legalProvisionRefs = legal_provisions_docs

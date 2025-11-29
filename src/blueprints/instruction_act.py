@@ -1,6 +1,6 @@
 from flask import Blueprint, request, Response
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from src.models.ota.instruction_act import FEK, InstructionAct
+from src.models.ota.instruction_act import InstructionAct
 from src.models.psped.change import Change
 from src.models.upload import FileUpload
 import json
@@ -10,45 +10,43 @@ from src.blueprints.utils import debug_print
 
 instruction_act = Blueprint("instruction_act", __name__)
 
-
 @instruction_act.route("", methods=["POST"])
 @jwt_required()
 def create_instruction_act():
-    who = get_jwt_identity()
-    try:
-        data = request.get_json()
-        instructionActFile = FileUpload.objects.get(id=ObjectId(data["instructionActFile"]))
-        del data["instructionActFile"]
-        instructionAct = InstructionAct(**data, instructionActFile=instructionActFile)
+  who = get_jwt_identity()
+  try:
+    data = request.get_json()
+    instructionActFile = FileUpload.objects.get(id=ObjectId(data["instructionActFile"]))
+    del data["instructionActFile"]
+    instructionAct = InstructionAct(**data, instructionActFile=instructionActFile)
 
-        instructionActKey = instructionAct.create_key()
+    instructionActKey = instructionAct.create_key()
 
-        what = {"entity": "instructionAct", "key": {"code": instructionActKey}}
+    what = {"entity": "instructionAct", "key": {"code": instructionActKey}}
 
-        instructionAct.save()
-        Change(action="create", who=who, what=what, change=instructionAct.to_mongo()).save()
+    instructionAct.save()
+    Change(action="create", who=who, what=what, change=instructionAct.to_mongo()).save()
 
-        return Response(
-            json.dumps({"message": f"Επιτυχής δημιουργία νομικής πράξης <strong>{instructionAct.key2str}</strong>"}),
-            mimetype="application/json",
-            status=201,
-        )
-    except NotUniqueError:
-        return Response(
-            json.dumps({"message": "Απόπειρα δημιουργίας διπλοεγγραφής."}),
-            mimetype="application/json",
-            status=409,
-        )
-    except Exception as e:
-        print(e)
-        return Response(
-            json.dumps({"message": "Απόπειρα δημιουργίας διπλοεγγραφής."})
-            if "duplicate key error" in str(e)
-            else json.dumps({"message": f"Αποτυχία ενημέρωσης νομικής πράξης: {e}"}),
-            mimetype="application/json",
-            status=500,
-        )
-
+    return Response(
+      json.dumps({"message": f"Επιτυχής δημιουργία εγκύκλιας οδηγίας: <strong>{instructionAct.instructionActKey}</strong>"}),
+      mimetype="application/json",
+      status=201,
+    )
+  except NotUniqueError:
+    return Response(
+      json.dumps({"message": "Απόπειρα δημιουργίας διπλοεγγραφής."}),
+      mimetype="application/json",
+      status=409,
+    )
+  except Exception as e:
+    print(e)
+    return Response(
+      json.dumps({"message": "Απόπειρα δημιουργίας διπλοεγγραφής."})
+      if "duplicate key error" in str(e)
+      else json.dumps({"message": f"Αποτυχία ενημέρωσης εγκύκλιας οδηγίας: {e}"}),
+      mimetype="application/json",
+      status=500,
+    )
 
 @instruction_act.route("/<string:id>", methods=["PUT"])
 @jwt_required()
