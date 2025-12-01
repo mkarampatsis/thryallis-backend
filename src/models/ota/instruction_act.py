@@ -45,7 +45,7 @@ class InstructionAct(me.Document):
 
     existingDoc = InstructionAct.objects(instructionActKey=instructionActKey).first()
     if existingDoc:
-      raise ValueError(f"Υπάρχει ήδη νομική πράξη με κλειδί {instructionActKey}")
+      raise ValueError(f"Υπάρχει ήδη εγκύκλιος οδηγία με κλειδί {instructionActKey}")
 
     self.instructionActKey = instructionActKey
 

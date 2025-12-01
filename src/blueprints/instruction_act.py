@@ -14,14 +14,17 @@ instruction_act = Blueprint("instruction_act", __name__)
 @jwt_required()
 def create_instruction_act():
   who = get_jwt_identity()
+  
   try:
     data = request.get_json()
+    debug_print("POST CREATE INTRUCTION ACT", data)
     instructionActFile = FileUpload.objects.get(id=ObjectId(data["instructionActFile"]))
+
     del data["instructionActFile"]
     instructionAct = InstructionAct(**data, instructionActFile=instructionActFile)
 
     instructionActKey = instructionAct.create_key()
-
+    
     what = {"entity": "instructionAct", "key": {"code": instructionActKey}}
 
     instructionAct.save()
@@ -33,13 +36,13 @@ def create_instruction_act():
       status=201,
     )
   except NotUniqueError:
+
     return Response(
       json.dumps({"message": "Απόπειρα δημιουργίας διπλοεγγραφής."}),
       mimetype="application/json",
       status=409,
     )
   except Exception as e:
-    print(e)
     return Response(
       json.dumps({"message": "Απόπειρα δημιουργίας διπλοεγγραφής."})
       if "duplicate key error" in str(e)

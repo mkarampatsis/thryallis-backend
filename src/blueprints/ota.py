@@ -51,9 +51,10 @@ def create_ota():
     remitCompetence = data["remitCompetence"]
     remitType = data["remitType"]
     remitLocalOrGlobal = data["remitLocalOrGlobal"]
+    publicPolicyAgency = data["publicPolicyAgency"]
     legalProvisions = data["legalProvisions"]
     instructionProvisions = data["instructionProvisions"]
-    publicPolicyAgency = data["publicPolicyAgency"]
+    
     status = data.get("status", "ΕΝΕΡΓΗ")
     finalized = data.get("finalized", False)
 
@@ -72,7 +73,7 @@ def create_ota():
       regulatedObjectType="ota",
       regulatedObjectId=newRemitID,
     )
-
+    
     legal_provisions_changes_inserts = []
     legal_provisions_docs = LegalProvision.save_new_legal_provisions(legalProvisions, regulatedObject)
     legal_provisions_changes_inserts = [provision.to_mongo() for provision in legal_provisions_docs]

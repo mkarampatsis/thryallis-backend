@@ -3,6 +3,7 @@ from datetime import datetime
 from src.models.timestamp import TimeStampedModel
 from src.config import MONGO_PSPED_DB
 from src.models.ota.instruction_provision import InstructionProvision
+from src.models.psped.legal_provision import LegalProvision
 
 class PublicPolicyAgency(me.EmbeddedDocument):
   organization = me.StringField(required=True)
@@ -43,7 +44,7 @@ class Ota(TimeStampedModel):
       'Αρμοδιότητα που συνιστά αποστολή του κράτους (Κρατική)'
     ],
   )
-  instructionProvisionRefs = me.ListField(me.ReferenceField(InstructionProvision))
+  legalProvisionRefs = me.ListField(me.ReferenceField(LegalProvision))
   instructionProvisionRefs = me.ListField(me.ReferenceField(InstructionProvision))
   publicPolicyAgency = me.EmbeddedDocumentField(PublicPolicyAgency)
   status = me.StringField(choices=["ΕΝΕΡΓΗ", "ΑΝΕΝΕΡΓΗ"], default="ΕΝΕΡΓΗ")
@@ -64,15 +65,14 @@ class Ota(TimeStampedModel):
         ),
         "instructionProvisionSpecs": provision.instructionProvisionSpecs.to_mongo(),
         "instructionProvisionText": provision.instructionProvisionText,
-        "abolition": provision.abolition.to_mongo() if provision.abolition else None
       }
 
     # Convert instructionProvisionRefs (ObjectIds) → actual docs
-    instruction_provisions = []
-    for ref in self.instructionProvisionRefs:
+    legal_provisions = []
+    for ref in self.legalProvisionRefs:
       provision = InstructionProvision.objects(id=ref.id).first()
       if provision:
-          instruction_provisions.append(provision_to_dict(provision))
+          legal_provisions.append(provision_to_dict(provision))
 
     instruction_provisions = []
     for ref in self.instructionProvisionRefs:
@@ -86,7 +86,7 @@ class Ota(TimeStampedModel):
       "remitCompetence": self.remitCompetence,
       "remitType": self.remitType,
       "remitLocalOrGlobal": self.remitLocalOrGlobal,
-      "instructionProvisionRefs": instruction_provisions,
+      "legalProvisionRefs": legal_provisions,
       "instructionProvisionRefs": instruction_provisions,
       "publicPolicyAgency": self.publicPolicyAgency.to_mongo() if self.publicPolicyAgency else None,
       "status": self.status,
