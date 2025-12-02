@@ -94,5 +94,7 @@ class LegalProvision(me.Document):
             return RegulatedObject(regulatedObjectType=legalProvisionType, regulatedObjectId=monada.id)
         elif legalProvisionType == "remit":
             return RegulatedObject(regulatedObjectType=legalProvisionType, regulatedObjectId=code)
+        elif legalProvisionType == "ota":
+            return RegulatedObject(regulatedObjectType=legalProvisionType, regulatedObjectId=code)
         else:
             raise ValueError("Invalid legalProvisionType")

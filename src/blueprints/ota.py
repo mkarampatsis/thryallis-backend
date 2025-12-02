@@ -6,6 +6,7 @@ from mongoengine import DoesNotExist
 from src.models.psped.legal_act import LegalAct
 from src.models.ota.ota import Ota
 from src.models.psped.legal_provision import LegalProvision, RegulatedObject
+from src.models.ota.instruction_provision import InstructionProvision, RegulatedObjectOta
 from src.models.psped.change import Change
 from src.blueprints.decorators import can_edit
 import json
@@ -52,6 +53,14 @@ def create_ota():
     remitType = data["remitType"]
     remitLocalOrGlobal = data["remitLocalOrGlobal"]
     publicPolicyAgency = data["publicPolicyAgency"]
+    cofog = {
+       "cofog1" : data["cofog1"],
+       "cofog1_name" : data["cofog1_name"],
+       "cofog2" : data["cofog2"],
+       "cofog2_name" : data["cofog2_name"],
+       "cofog3" : data["cofog3"],            
+       "cofog3_name" : data["cofog3_name"],
+    } 
     legalProvisions = data["legalProvisions"]
     instructionProvisions = data["instructionProvisions"]
     
@@ -64,6 +73,7 @@ def create_ota():
       remitType=remitType,
       remitLocalOrGlobal=remitLocalOrGlobal,
       publicPolicyAgency=publicPolicyAgency,
+      cofog=cofog,
       status=status,
       finalized=finalized,
     ).save()
@@ -73,19 +83,22 @@ def create_ota():
       regulatedObjectType="ota",
       regulatedObjectId=newRemitID,
     )
+
+    regulatedObjectOta = RegulatedObjectOta(
+      regulatedObjectType="ota",
+      regulatedObjectId=newRemitID,
+    )
     
     legal_provisions_changes_inserts = []
     legal_provisions_docs = LegalProvision.save_new_legal_provisions(legalProvisions, regulatedObject)
     legal_provisions_changes_inserts = [provision.to_mongo() for provision in legal_provisions_docs]
-
     curr_change["legalProvisions"] = {
       "inserts": legal_provisions_changes_inserts,
     }
 
     instruction_provisions_changes_inserts = []
-    instruction_provisions_docs = LegalProvision.save_new_legal_provisions(instructionProvisions, regulatedObject)
+    instruction_provisions_docs = InstructionProvision.save_new_instruction_provisions(instructionProvisions, regulatedObjectOta)
     instruction_provisions_changes_inserts = [provision.to_mongo() for provision in instruction_provisions_docs]
-
     curr_change["instructionProvisions"] = {
       "inserts": instruction_provisions_changes_inserts,
     }

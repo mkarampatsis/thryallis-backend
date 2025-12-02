@@ -5,6 +5,14 @@ from src.config import MONGO_PSPED_DB
 from src.models.ota.instruction_provision import InstructionProvision
 from src.models.psped.legal_provision import LegalProvision
 
+class COFOG(me.EmbeddedDocument):
+  cofog1 = me.StringField(required=True)
+  cofog1_name = me.StringField(required=True)
+  cofog2 = me.StringField(required=True)
+  cofog2_name = me.StringField(required=True)
+  cofog3 = me.StringField(required=True)
+  cofog3_name = me.StringField(required=True) 
+
 class PublicPolicyAgency(me.EmbeddedDocument):
   organization = me.StringField(required=True)
   organizationCode = me.StringField(required=True)
@@ -47,12 +55,14 @@ class Ota(TimeStampedModel):
   legalProvisionRefs = me.ListField(me.ReferenceField(LegalProvision))
   instructionProvisionRefs = me.ListField(me.ReferenceField(InstructionProvision))
   publicPolicyAgency = me.EmbeddedDocumentField(PublicPolicyAgency)
+  cofog = me.EmbeddedDocumentField(COFOG)
   status = me.StringField(choices=["ΕΝΕΡΓΗ", "ΑΝΕΝΕΡΓΗ"], default="ΕΝΕΡΓΗ")
   finalized = me.BooleanField(default=False)
   elasticSync = me.BooleanField(default=False)
 
   def to_dict(self):
-    def provision_to_dict(provision: InstructionProvision):
+    
+    def provision_to_dict_instruction(provision: InstructionProvision):
       if not provision:
           return None
 
@@ -63,22 +73,40 @@ class Ota(TimeStampedModel):
             provision.instructionAct.to_mongo()
             if provision.instructionAct else None
         ),
+        "instructionActKey" : provision.instructionAct.instructionActKey if provision.instructionAct else None,
         "instructionProvisionSpecs": provision.instructionProvisionSpecs.to_mongo(),
         "instructionProvisionText": provision.instructionProvisionText,
+        "instructionPages": provision.instructionPages.to_mongo(),
+      }
+    
+    def provision_to_dict_legal(provision: LegalProvision):
+      if not provision:
+          return None
+      
+      return {
+        "_id": str(provision.id),
+        "regulatedObject": provision.regulatedObject.to_mongo(),
+        "legalAct": (
+            provision.legalAct.to_mongo()
+            if provision.legalAct else None
+        ),
+        "legalActKey" : provision.legalAct.legalActKey if provision.legalAct else None,
+        "legalProvisionSpecs": provision.legalProvisionSpecs.to_mongo(),
+        "legalProvisionText": provision.legalProvisionText,
       }
 
     # Convert instructionProvisionRefs (ObjectIds) → actual docs
     legal_provisions = []
     for ref in self.legalProvisionRefs:
-      provision = InstructionProvision.objects(id=ref.id).first()
+      provision = LegalProvision.objects(id=ref.id).first()
       if provision:
-          legal_provisions.append(provision_to_dict(provision))
+        legal_provisions.append(provision_to_dict_legal(provision))
 
     instruction_provisions = []
     for ref in self.instructionProvisionRefs:
       provision = InstructionProvision.objects(id=ref.id).first()
       if provision:
-          instruction_provisions.append(provision_to_dict(provision))
+        instruction_provisions.append(provision_to_dict_instruction(provision))
 
     return {
       "_id": str(self.id),
@@ -86,9 +114,10 @@ class Ota(TimeStampedModel):
       "remitCompetence": self.remitCompetence,
       "remitType": self.remitType,
       "remitLocalOrGlobal": self.remitLocalOrGlobal,
-      "legalProvisionRefs": legal_provisions,
-      "instructionProvisionRefs": instruction_provisions,
+      "legalProvisions": legal_provisions,
+      "instructionProvisions": instruction_provisions,
       "publicPolicyAgency": self.publicPolicyAgency.to_mongo() if self.publicPolicyAgency else None,
+      "cofog": self.cofog.to_mongo() if hasattr(self, 'cofog') else None,
       "status": self.status,
       "finalized": self.finalized,
       "elasticSync": self.elasticSync,
