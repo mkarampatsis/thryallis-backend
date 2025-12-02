@@ -334,3 +334,24 @@ def delete_ota_by_code(id):
     # print(remit_to_delete.to_json())
     Change(action="delete", who=who, what=what, change={"remit":remit_to_delete.to_json()}).save()
     return Response(json.dumps({"message": "<strong>H Αρμοδιότητα διαγράφηκε</strong>"}), mimetype="application/json", status=201)
+
+@ota.route("/organization-types", methods=["GET"])
+def get_unique_organization_types():
+  collection = Ota._get_collection()
+
+  pipeline = [
+    {"$match": {"publicPolicyAgency.organizationType": {"$exists": True}}},
+    {"$group": {"_id": "$publicPolicyAgency.organizationType"}},
+    {"$sort": {"_id": 1}}
+  ]
+
+  results = list(collection.aggregate(pipeline))
+
+  # Convert into a simple list of strings
+  unique_types = [item["_id"] for item in results]
+
+  return Response(
+    json.dumps(unique_types, ensure_ascii=False),
+    mimetype="application/json",
+    status=200,
+  )
