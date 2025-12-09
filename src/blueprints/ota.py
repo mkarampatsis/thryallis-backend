@@ -27,14 +27,12 @@ def retrieve_all_ota():
     status=200
   )
 
-@ota.route("/by_id/<string:id>", methods=["GET"])
+@ota.route("/<string:id>", methods=["GET"])
 def retrieve_ota_by_id(id):
   otaData = Ota.objects.get(id=ObjectId(id))
   
   return Response(
-     json.dumps({
-      otaData
-    }, default=str),
+     json.dumps(otaData.to_dict(), default=str),
     mimetype="application/json",
     status=200,
   )
