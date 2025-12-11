@@ -124,71 +124,102 @@ def create_ota():
     )
 
 
-@ota.route("", methods=["PUT"])
+@ota.route("/<string:id>", methods=["PUT"])
 @jwt_required()
-def update_ota():
+def update_ota(id: str):
   curr_change = {}
   try:
-      data = request.get_json()
-      debug_print("UPDATE REMIT", data)
+    data = request.get_json()
+    debug_print("UPDATE REMIT", data)
 
-      remitID = ObjectId(data["_id"])
-      organizationalUnitCode = data["organizationalUnitCode"]
-      remitText = data["remitText"]
-      remitType = data["remitType"]
-      cofog = data["cofog"]
-      legalProvisions = data["legalProvisions"]
-      regulatedObject = RegulatedObject(
-        regulatedObjectType="remit",
-        regulatedObjectId=remitID,
-      )
-      legalProvisionDocs = LegalProvision.save_new_legal_provisions(legalProvisions, regulatedObject)
+    remitText = data["remitText"]
+    remitCompetence = data["remitCompetence"]
+    remitType = data["remitType"]
+    remitLocalOrGlobal = data["remitLocalOrGlobal"]
+    publicPolicyAgency = data["publicPolicyAgency"]
+    cofog = {
+       "cofog1" : data["cofog1"],
+       "cofog1_name" : data["cofog1_name"],
+       "cofog2" : data["cofog2"],
+       "cofog2_name" : data["cofog2_name"],
+       "cofog3" : data["cofog3"],            
+       "cofog3_name" : data["cofog3_name"],
+    } 
+    legalProvisions = data["legalProvisions"]
+    instructionProvisions = data["instructionProvisions"]
+    
+    remitID = ObjectId(id)
+    regulatedObject = RegulatedObject(
+      regulatedObjectType="ota",
+      regulatedObjectId=remitID,
+    )
 
-      remit = Ota.objects.get(id=remitID)
-      existingLegalProvisions = remit.legalProvisionRefs
-      updatedLegalProvisions = existingLegalProvisions + legalProvisionDocs
+    regulatedObjectOta = RegulatedObjectOta(
+      regulatedObjectType="ota",
+      regulatedObjectId=remitID,
+    )
+    
+    legal_provisions_docs = LegalProvision.save_new_legal_provisions(legalProvisions, regulatedObject)
+    instruction_provisions_docs = InstructionProvision.save_new_instruction_provisions(instructionProvisions, regulatedObjectOta)
+    
+    remit = Ota.objects.get(id=ObjectId(id))
 
-      remit.update(
-          organizationalUnitCode=organizationalUnitCode,
-          remitText=remitText,
-          remitType=remitType,
-          cofog=cofog,
-          legalProvisionRefs=updatedLegalProvisions,
-      )
+    existingLegalProvisions = remit.legalProvisionRefs
+    updatedLegalProvisions = existingLegalProvisions + legal_provisions_docs
 
-      curr_change = {
-          "old": {
-              "organizationalUnitCode": remit.organizationalUnitCode,
-              "remitText": remit.remitText,
-              "remitType": remit.remitType,
-              "cofog": remit.cofog.to_mongo().to_dict(),
-              "legalProvisions": [provision.to_mongo().to_dict() for provision in existingLegalProvisions],
-          },
-          "new": {
-              "organizationalUnitCode": organizationalUnitCode,
-              "remitText": remitText,
-              "remitType": remitType,
-              "cofog": cofog,
-              "legalProvisions": [provision.to_mongo().to_dict() for provision in updatedLegalProvisions],
-          },
-      }
-      who = get_jwt_identity()
-      what = {"entity": "remit", "key": {"organizationalUnitCode": organizationalUnitCode}}
-      Change(action="update", who=who, what=what, change=curr_change).save()
+    existingInstructionProvisions = remit.instructionProvisionRefs
+    updatedInstructionProvisions = existingInstructionProvisions + instruction_provisions_docs
+    
+    remit.update(
+      remitText=remitText,
+      remitCompetence=remitCompetence,
+      remitType=remitType,
+      remitLocalOrGlobal=remitLocalOrGlobal,
+      publicPolicyAgency=publicPolicyAgency,
+      cofog=cofog,
+      legalProvisionRefs=updatedLegalProvisions,
+      instructionProvisionRefs=updatedInstructionProvisions,
+    )
+    
+    curr_change = {
+      "old": {
+        "remitText": remit.remitText,
+        "remitCompetence":remit.remitCompetence,
+        "remitType": remit.remitType,
+        "remitLocalOrGlobal": remit.remitLocalOrGlobal,
+        "publicPolicyAgency": remit.publicPolicyAgency,
+        "cofog": remit.cofog.to_mongo().to_dict(),
+        "legalProvisions": [provision.to_mongo().to_dict() for provision in existingLegalProvisions],
+        "instructionProvisions": [provision.to_mongo().to_dict() for provision in existingInstructionProvisions], 
+      },
+      "new": {
+        "remitText": remitText,
+        "remitCompetence":remitCompetence,
+        "remitType": remitType,
+        "remitLocalOrGlobal":remitLocalOrGlobal,
+        "publicPolicyAgency":publicPolicyAgency,
+        "cofog": cofog,
+        "legalProvisions": [provision.to_mongo().to_dict() for provision in updatedLegalProvisions],
+        "instructionProvisions": [provision.to_mongo().to_dict() for provision in updatedInstructionProvisions],  
+      },
+    }
+    who = get_jwt_identity()
+    what = {"entity": "ota", "key":  {"organization": publicPolicyAgency["organization"], "organizationCode": publicPolicyAgency["organizationCode"]}}
+    Change(action="update", who=who, what=what, change=curr_change).save()
 
-      return Response(
-          json.dumps({"message": "Η αρμοδιότητα ενημερώθηκε με επιτυχία"}),
-          mimetype="application/json",
-          status=201,
-      )
+    return Response(
+      json.dumps({"message": "Η αρμοδιότητα ενημερώθηκε με επιτυχία"}),
+      mimetype="application/json",
+      status=201,
+    )
 
   except Exception as e:
-      print("UPDATE REMIT EXCEPTION", e)
-      return Response(
-          json.dumps({"message": f"<strong>Αποτυχία ενημέρωσης αρμοδιότητας:</strong> {e}"}),
-          mimetype="application/json",
-          status=500,
-      )
+    print("UPDATE REMIT EXCEPTION", e)
+    return Response(
+      json.dumps({"message": f"<strong>Αποτυχία ενημέρωσης αρμοδιότητας:</strong> {e}"}),
+      mimetype="application/json",
+      status=500,
+    )
 
 
 @ota.route("/status/<string:remitID>", methods=["PUT"])

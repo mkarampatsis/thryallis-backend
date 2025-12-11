@@ -62,17 +62,16 @@ def update_instructionact(id):
         instructionAct = InstructionAct.objects.get(id=ObjectId(id))
         foundinstructionActKey = instructionAct.instructionActKey  # Save the key of the found instructionAct for "what"
         debug_print("FOUND INSTRUCTION ACT", instructionAct.to_mongo().to_dict())
+        
         try:
             instructionActFile = FileUpload.objects.get(id=ObjectId(data["instructionActFile"]["$oid"]))
         except Exception:
             instructionActFile = FileUpload.objects.get(id=ObjectId(data["instructionActFile"]))
+        
         # Update the found instructionAct with the new data
         for key, value in data.items():
             if hasattr(instructionAct, key):
-                if key == "fek":
-                    fek = FEK(**value)
-                    setattr(instructionAct, key, fek)
-                elif key == "instructionActFile":
+                if key == "instructionActFile":
                     setattr(instructionAct, key, instructionActFile)
                 else:
                     setattr(instructionAct, key, value)
@@ -89,7 +88,7 @@ def update_instructionact(id):
         Change(action="update", who=who, what=what, change=updatedInstructionAct).save()
 
         return Response(
-            json.dumps({"message": "Επιτυχής ενημέρωση νομικής πράξης."}),
+            json.dumps({"message": "Επιτυχής ενημέρωση εγκύκλιας οδηγίας."}),
             mimetype="application/json",
             status=201,
         )
@@ -99,7 +98,7 @@ def update_instructionact(id):
         return Response(
             json.dumps({"message": "Απόπειρα δημιουργίας διπλοεγγραφής."})
             if "duplicate key error" in str(e)
-            else json.dumps({"message": f"Αποτυχία ενημέρωσης νομικής πράξης: {e}"}),
+            else json.dumps({"message": f"Αποτυχία ενημέρωσης εγκύκλιας οδηγίας: {e}"}),
             mimetype="application/json",
             status=500,
         )
