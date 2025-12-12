@@ -5,173 +5,196 @@ import json
 
 
 from src.models.psped.legal_provision import LegalProvision
+from src.models.ota.instruction_provision import InstructionProvision
 from src.models.apografi.organizational_unit import OrganizationalUnit
 from src.models.psped.foreas import Foreas
 from src.models.psped.remit import Remit
 
 
 def can_edit(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        # current_user = get_jwt_identity()
-        claims = get_jwt()
-        # print(claims)
+  @wraps(f)
+  def decorated_function(*args, **kwargs):
+    # current_user = get_jwt_identity()
+    claims = get_jwt()
+    # print(claims)
 
-        user_roles = claims["roles"]
-        print(user_roles)
-        # with admin or root then save is not made because admin and root do not have foreas and monades
-        # type_roles = [x for x in user_roles if x["role"] in ["EDITOR", "ADMIN", "ROOT"]]
-        type_roles = [x for x in user_roles if x["role"] in ["EDITOR"]]
-        code = kwargs.get("code", "")
-        print(">>>>>> CODE >>", code)
+    user_roles = claims["roles"]
+    print(user_roles)
+    # with admin or root then save is not made because admin and root do not have foreas and monades
+    # type_roles = [x for x in user_roles if x["role"] in ["EDITOR", "ADMIN", "ROOT"]]
+    type_roles = [x for x in user_roles if x["role"] in ["EDITOR"]]
+    code = kwargs.get("code", "")
+    print(">>>>>> CODE >>", code)
 
-        type_roles = [x for x in type_roles if code in x["foreas"] or code in x["monades"]]
+    type_roles = [x for x in type_roles if code in x["foreas"] or code in x["monades"]]
 
-        if not type_roles:
-            return Response(
-                json.dumps({"message": f"Δεν επιτρέπεται η αλλαγή του φορέα {code}"}),
-                mimetype="application/json",
-                status=403,
-            )
+    if not type_roles:
+      return Response(
+        json.dumps({"message": f"Δεν επιτρέπεται η αλλαγή του φορέα {code}"}),
+        mimetype="application/json",
+        status=403,
+      )
 
-        return f(*args, **kwargs)
+    return f(*args, **kwargs)
 
-    return decorated_function
+  return decorated_function
 
 
 def can_update_delete(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        claims = get_jwt()
+  @wraps(f)
+  def decorated_function(*args, **kwargs):
+    claims = get_jwt()
 
-        user_roles = claims["roles"]
-        # with admin or root then save is not made because admin and root do not have foreas and monades
-        # roles = [x for x in user_roles if x["role"] in ["EDITOR", "ADMIN", "ROOT"]]
-        roles = [x for x in user_roles if x["role"] in ["EDITOR"]]
-        # print(">>>>>> ROLES >>", roles)
-        all_codes = [code for entry in roles for code_list in (entry["foreas"], entry["monades"]) for code in code_list]
-        # print(">>>>>> ALL CODES >>", all_codes)
-        data = request.get_json()
-        code = data.get("code", "")
-        # print(">>>>>> CODE >>", code)
+    user_roles = claims["roles"]
+    # with admin or root then save is not made because admin and root do not have foreas and monades
+    # roles = [x for x in user_roles if x["role"] in ["EDITOR", "ADMIN", "ROOT"]]
+    roles = [x for x in user_roles if x["role"] in ["EDITOR"]]
+    # print(">>>>>> ROLES >>", roles)
+    all_codes = [code for entry in roles for code_list in (entry["foreas"], entry["monades"]) for code in code_list]
+    # print(">>>>>> ALL CODES >>", all_codes)
+    data = request.get_json()
+    code = data.get("code", "")
+    # print(">>>>>> CODE >>", code)
 
-        if code not in all_codes:
-            return Response(
-                json.dumps({"message": "<strong>Δεν έχετε τέτοιο δικαίωμα διαγραφής</strong>"}),
-                mimetype="application/json",
-                status=403,
-            )
+    if code not in all_codes:
+      return Response(
+        json.dumps({"message": "<strong>Δεν έχετε τέτοιο δικαίωμα διαγραφής</strong>"}),
+        mimetype="application/json",
+        status=403,
+      )
 
-        return f(*args, **kwargs)
+    return f(*args, **kwargs)
 
-    return decorated_function
+  return decorated_function
 
 
 def can_delete_legal_provision(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        print(">>>>>> CAN DELETE DECORATOR")
-        claims = get_jwt()
-        # print(">>>>>> CLAIMS >>", claims)
+  @wraps(f)
+  def decorated_function(*args, **kwargs):
+    print(">>>>>> CAN DELETE DECORATOR")
+    claims = get_jwt()
+    # print(">>>>>> CLAIMS >>", claims)
 
-        user_roles = claims["roles"]
-        # with admin or root then save is not made because admin and root do not have foreas and monades
-        # roles = [x for x in user_roles if x["role"] in ["EDITOR", "ADMIN", "ROOT"]]
-        roles = [x for x in user_roles if x["role"] in ["EDITOR"]]
-        # print(">>>>>> ROLES >>", roles)
-        all_codes = [code for entry in roles for code_list in (entry["foreas"], entry["monades"]) for code in code_list]
-        # print(">>>>>> ALL CODES >>", all_codes)
+    user_roles = claims["roles"]
+    # with admin or root then save is not made because admin and root do not have foreas and monades
+    # roles = [x for x in user_roles if x["role"] in ["EDITOR", "ADMIN", "ROOT"]]
+    roles = [x for x in user_roles if x["role"] in ["EDITOR"]]
+    # print(">>>>>> ROLES >>", roles)
+    all_codes = [code for entry in roles for code_list in (entry["foreas"], entry["monades"]) for code in code_list]
+    # print(">>>>>> ALL CODES >>", all_codes)
 
-        legal_provision_id = kwargs.get("legalProvisionID", "")
-        print("LEGAL PROVISION ID >>>>", legal_provision_id)
+    legal_provision_id = kwargs.get("legalProvisionID", "")
+    print("LEGAL PROVISION ID >>>>", legal_provision_id)
 
-        legal_provision = LegalProvision.objects.get(id=legal_provision_id)
-        regulatedObject = legal_provision.regulatedObject
-        regulatedObjectType = regulatedObject.regulatedObjectType
-        regulatedObjectId = regulatedObject.regulatedObjectId
+    legal_provision = LegalProvision.objects.get(id=legal_provision_id)
+    regulatedObject = legal_provision.regulatedObject
+    regulatedObjectType = regulatedObject.regulatedObjectType
+    regulatedObjectId = regulatedObject.regulatedObjectId
 
-        code = ""
-        if regulatedObjectType == "organization":
-            foreas = Foreas.objects.get(id=regulatedObjectId)
-            code = foreas.code
-        elif regulatedObjectType == "organizationalUnit":
-            organizationalUnit = OrganizationalUnit.objects.get(id=regulatedObjectId)
-            code = organizationalUnit.code
-        elif regulatedObjectType == "remit":
-            remit = Remit.objects.get(id=regulatedObjectId)
-            code = remit.organizationalUnitCode
+    code = ""
+    if regulatedObjectType == "organization":
+      foreas = Foreas.objects.get(id=regulatedObjectId)
+      code = foreas.code
+    elif regulatedObjectType == "organizationalUnit":
+      organizationalUnit = OrganizationalUnit.objects.get(id=regulatedObjectId)
+      code = organizationalUnit.code
+    elif regulatedObjectType == "remit":
+      remit = Remit.objects.get(id=regulatedObjectId)
+      code = remit.organizationalUnitCode
 
-        if code not in all_codes:
-            return Response(
-                json.dumps({"message": "<strong>Δεν έχετε τέτοιο δικαίωμα διαγραφής</strong>"}),
-                mimetype="application/json",
-                status=403,
-            )
-        print(">>>>>>>>>>>>> GO ON DELETE THE FUCKING LEGAL PROVISION !!!!")
+    if code not in all_codes:
+      return Response(
+        json.dumps({"message": "<strong>Δεν έχετε τέτοιο δικαίωμα διαγραφής</strong>"}),
+        mimetype="application/json",
+        status=403,
+      )
+    print(">>>>>>>>>>>>> GO ON DELETE THE FUCKING LEGAL PROVISION !!!!")
 
-        return f(*args, **kwargs)
+    return f(*args, **kwargs)
 
-    return decorated_function
+  return decorated_function
 
+def can_delete_instruction_provision(f):
+  @wraps(f)
+  def decorated_function(*args, **kwargs):
+    print("CAN DELETE INSTRUCTION DECORATOR")
+    claims = get_jwt()
+    # print(">>>>>> CLAIMS >>", claims)
+
+    user_roles = claims["roles"]
+    # with admin or root then save is not made because admin and root do not have foreas and monades
+    # roles = [x for x in user_roles if x["role"] in ["EDITOR", "ADMIN", "ROOT"]]
+    role = [x for x in user_roles if x["role"] in ["OTA_EDITOR"]]
+    
+    if not role:
+      return Response(
+        json.dumps({"message": "<strong>Δεν έχετε τέτοιο δικαίωμα διαγραφής</strong>"}),
+        mimetype="application/json",
+        status=403,
+      )
+    
+    return f(*args, **kwargs)
+
+  return decorated_function
 
 def can_finalize_remits(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        claims = get_jwt()
-        user_roles = claims["roles"]
-        # with admin or root then save is not made because admin and root do not have foreas and monades
-        # roles = [x for x in user_roles if x["role"] in ["EDITOR", "ADMIN", "ROOT"]]
-        roles = [x for x in user_roles if x["role"] in ["EDITOR"]]
-        all_codes = [code for entry in roles for code_list in (entry["foreas"], entry["monades"]) for code in code_list]
+  @wraps(f)
+  def decorated_function(*args, **kwargs):
+    claims = get_jwt()
+    user_roles = claims["roles"]
+    # with admin or root then save is not made because admin and root do not have foreas and monades
+    # roles = [x for x in user_roles if x["role"] in ["EDITOR", "ADMIN", "ROOT"]]
+    roles = [x for x in user_roles if x["role"] in ["EDITOR"]]
+    all_codes = [code for entry in roles for code_list in (entry["foreas"], entry["monades"]) for code in code_list]
 
-        code = kwargs.get("code", "")
+    code = kwargs.get("code", "")
 
-        if code not in all_codes:
-            return Response(
-                json.dumps({"message": "<strong>Δεν έχετε τέτοιο δικαίωμα τροποποίησης</strong>"}),
-                mimetype="application/json",
-                status=403,
-            )
+    if code not in all_codes:
+      return Response(
+        json.dumps({"message": "<strong>Δεν έχετε τέτοιο δικαίωμα τροποποίησης</strong>"}),
+        mimetype="application/json",
+        status=403,
+      )
 
-        return f(*args, **kwargs)
+    return f(*args, **kwargs)
 
-    return decorated_function
+  return decorated_function
 
 
 def has_helpdesk_role(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        claims = get_jwt()
-        user_roles = claims["roles"]
-        roles = [x for x in user_roles]
-        # check if user has helpdesk role
-        helpdesk_roles = [x for x in roles if x["role"] == "HELPDESK"]
+  @wraps(f)
+  def decorated_function(*args, **kwargs):
+    claims = get_jwt()
+    user_roles = claims["roles"]
+    roles = [x for x in user_roles]
+    # check if user has helpdesk role
+    helpdesk_roles = [x for x in roles if x["role"] == "HELPDESK"]
 
-        if not helpdesk_roles:
-            return Response(
-                json.dumps({"message": "<strong>Δεν έχετε τέτοιο δικαίωμα</strong>"}),
-                mimetype="application/json",
-                status=403,
-            )
-        return f(*args, **kwargs)
+    if not helpdesk_roles:
+      return Response(
+        json.dumps({"message": "<strong>Δεν έχετε τέτοιο δικαίωμα</strong>"}),
+        mimetype="application/json",
+        status=403,
+      )
+    return f(*args, **kwargs)
 
-    return decorated_function
+  return decorated_function
 
 def has_admin_role(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        claims = get_jwt()
-        user_roles = claims["roles"]
-        roles = [x for x in user_roles]
-        # check if user has helpdesk role
-        admin_roles = [x for x in roles if x["role"] == "ADMIN"]
+  @wraps(f)
+  def decorated_function(*args, **kwargs):
+    claims = get_jwt()
+    user_roles = claims["roles"]
+    roles = [x for x in user_roles]
+    # check if user has helpdesk role
+    admin_roles = [x for x in roles if x["role"] == "ADMIN"]
 
-        if not admin_roles:
-            return Response(
-                json.dumps({"message": "<strong>Δεν έχετε τέτοιο δικαίωμα</strong>"}),
-                mimetype="application/json",
-                status=403,
-            )
-        return f(*args, **kwargs)
+    if not admin_roles:
+      return Response(
+        json.dumps({"message": "<strong>Δεν έχετε τέτοιο δικαίωμα</strong>"}),
+        mimetype="application/json",
+        status=403,
+      )
+    return f(*args, **kwargs)
 
-    return decorated_function
+  return decorated_function
