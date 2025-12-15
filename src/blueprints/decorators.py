@@ -114,10 +114,10 @@ def can_delete_legal_provision(f):
 
   return decorated_function
 
-def can_delete_instruction_provision(f):
+def can_update_delete_instruction_provision(f):
   @wraps(f)
   def decorated_function(*args, **kwargs):
-    print("CAN DELETE INSTRUCTION DECORATOR")
+    print("CAN UPDATE DELETE INSTRUCTION DECORATOR")
     claims = get_jwt()
     # print(">>>>>> CLAIMS >>", claims)
 
@@ -128,7 +128,7 @@ def can_delete_instruction_provision(f):
     
     if not role:
       return Response(
-        json.dumps({"message": "<strong>Δεν έχετε τέτοιο δικαίωμα διαγραφής</strong>"}),
+        json.dumps({"message": "<strong>Δεν έχετε τέτοιο δικαίωμα διαγραφής/τροποποίησης</strong>"}),
         mimetype="application/json",
         status=403,
       )

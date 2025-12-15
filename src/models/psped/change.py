@@ -12,6 +12,7 @@ class What(me.EmbeddedDocument):
           "remit", 
           "legalAct", 
           "instructionAct", 
+          "instructionProvision",
           "legalProvision", 
           "helpbox",
           "generalInfo",

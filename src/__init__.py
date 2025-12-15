@@ -19,6 +19,7 @@ from src.blueprints.remit import remit
 from src.blueprints.legal_provision import legal_provision
 from src.blueprints.legal_act import legal_act
 from src.blueprints.instruction_act import instruction_act
+from src.blueprints.instruction_provision import instruction_provision
 
 from src.blueprints.upload import upload
 from src.blueprints.change import change
@@ -104,6 +105,7 @@ app.register_blueprint(log, url_prefix="/log")
 app.register_blueprint(upload, url_prefix="/upload")
 app.register_blueprint(remit, url_prefix="/remit")
 app.register_blueprint(legal_provision, url_prefix="/legal_provision")
+app.register_blueprint(instruction_provision, url_prefix="/instruction_provision")
 app.register_blueprint(legal_act, url_prefix="/legal_act")
 app.register_blueprint(instruction_act, url_prefix="/instruction_act")
 app.register_blueprint(change, url_prefix="/change")

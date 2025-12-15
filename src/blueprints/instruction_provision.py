@@ -1,16 +1,13 @@
 from flask import Blueprint, request, Response
 from flask_jwt_extended import get_jwt_identity, jwt_required
 from mongoengine import DoesNotExist
-from src.models.psped.foreas import Foreas
-from src.models.psped.remit import Remit
-from src.models.apografi.organizational_unit import OrganizationalUnit as Monada
-from src.models.psped.legal_act import LegalAct
-from src.models.psped.legal_provision import LegalProvision, RegulatedObject
+from src.models.ota.ota import Ota
+from src.models.ota.instruction_act import InstructionAct
 from src.models.ota.instruction_provision import InstructionProvision
 from src.models.psped.change import Change
 from .utils import debug_print
 import json
-from src.blueprints.decorators import can_update_delete, can_delete_instruction_provision
+from src.blueprints.decorators import can_update_delete_instruction_provision
 from bson import ObjectId
 
 
@@ -19,7 +16,7 @@ instruction_provision = Blueprint("instruction_provision", __name__)
 
 @instruction_provision.route("/<string:instructionProvisionID>", methods=["DELETE"])
 @jwt_required()
-@can_delete_instruction_provision
+@can_update_delete_instruction_provision
 def delete_instruction_provision(instructionProvisionID: str):
   instruction_provision = InstructionProvision.objects.get(id=instructionProvisionID)
   regulatedObject = instruction_provision.regulatedObject
@@ -34,7 +31,7 @@ def delete_instruction_provision(instructionProvisionID: str):
 
   if regulatedObject.regulatedObjectType == "ota":
     try:
-      remit = Remit.objects.get(id=regulatedObject.regulatedObjectId)
+      remit = Ota.objects.get(id=regulatedObject.regulatedObjectId)
       remit.instructionProvisionRefs = [provision for provision in remit.instructionProvisionRefs if str(provision.id) != instructionProvisionID]
       remit.save()
     except DoesNotExist:
@@ -51,35 +48,36 @@ def delete_instruction_provision(instructionProvisionID: str):
 
 @instruction_provision.route("", methods=["PUT"])
 @jwt_required()
-@can_update_delete
+@can_update_delete_instruction_provision
 def update_instruction_provision():
   data = request.get_json()
-  debug_print("UPDATE LEGAL PROVISION", data)
+  debug_print("UPDATE INSTRUCTION PROVISION", data)
 
   code = data["code"]
   if data["remitID"]:
     code = ObjectId(data["remitID"])
-  instructionProvisionType = data["provisionType"]
   currentProvision = data["currentProvision"]
   updatedProvision = data["updatedProvision"]
 
-  regulatedObject = InstructionProvision.regulated_object(code, instructionProvisionType)
   instructionActKey = currentProvision["instructionActKey"]
-  instructionAct = LegalAct.objects.get(instructionActKey=instructionActKey)
+  instructionAct = InstructionAct.objects.get(instructionActKey=instructionActKey)
   instructionProvisionSpecs = currentProvision["instructionProvisionSpecs"]
+  instructionPages = currentProvision["instructionPages"]
   existing_instruction_provision = InstructionProvision.objects(
-    instructionAct=instructionAct, instructionProvisionSpecs=instructionProvisionSpecs, regulatedObject=regulatedObject
+    instructionAct=instructionAct, instructionProvisionSpecs=instructionProvisionSpecs, instructionPages=instructionPages
   ).first()
 
   try:
     updated_instructionActKey = updatedProvision["instructionActKey"]
-    updated_instructionAct = LegalAct.objects.get(instructionActKey=updated_instructionActKey)
+    updated_instructionAct = InstructionAct.objects.get(instructionActKey=updated_instructionActKey)
     updated_instructionProvisionSpecs = updatedProvision["instructionProvisionSpecs"]
     updated_instructionProvisionText = updatedProvision["instructionProvisionText"]
+    updated_instructionPages = updatedProvision["instructionPages"]
     existing_instruction_provision.update(
       instructionAct=updated_instructionAct,
       instructionProvisionSpecs=updated_instructionProvisionSpecs,
       instructionProvisionText=updated_instructionProvisionText,
+      instructionPages=updated_instructionPages,
     )
 
     who = get_jwt_identity()
@@ -87,9 +85,9 @@ def update_instruction_provision():
       "entity": "instructionProvision",
       "key": {
         "code": code,
-        "instructionProvisionType": instructionProvisionType,
         "instructionActKey": instructionActKey,
         "instructionProvisionSpecs": instructionProvisionSpecs,
+        "instructionPages": instructionPages,
       },
     }
     change = {
@@ -101,10 +99,11 @@ def update_instruction_provision():
       json.dumps(
         {
           "message": "<strong>H διάταξη ανανεώθηκε</strong>",
-          "updatedLegalProvision": {
+          "updatedInstructionProvision": {
             "instructionActKey": updated_instructionActKey,
             "instructionProvisionSpecs": updated_instructionProvisionSpecs,
             "instructionProvisionText": updated_instructionProvisionText,
+            "instructionPages": updated_instructionPages,
           },
         }
       ),
