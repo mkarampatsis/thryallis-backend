@@ -6,12 +6,12 @@ from src.models.ota.instruction_provision import InstructionProvision
 from src.models.psped.legal_provision import LegalProvision
 
 class COFOG(me.EmbeddedDocument):
-  cofog1 = me.StringField(required=True)
-  cofog1_name = me.StringField(required=True)
-  cofog2 = me.StringField(required=True)
-  cofog2_name = me.StringField(required=True)
-  cofog3 = me.StringField(required=True)
-  cofog3_name = me.StringField(required=True) 
+  cofog1 = me.StringField()
+  cofog1_name = me.StringField()
+  cofog2 = me.StringField()
+  cofog2_name = me.StringField()
+  cofog3 = me.StringField()
+  cofog3_name = me.StringField() 
 
 class PublicPolicyAgency(me.EmbeddedDocument):
   organization = me.StringField(required=True)

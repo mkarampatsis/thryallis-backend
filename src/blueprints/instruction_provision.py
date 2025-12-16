@@ -43,7 +43,7 @@ def delete_instruction_provision(instructionProvisionID: str):
   what = {"entity": "instructionProvision", "key": {"instructionProvisionID": instructionProvisionID}}
   change = existing_instruction_provision.to_mongo().to_dict()
   Change(action="delete", who=who, what=what, change=change).save()
-  return Response(json.dumps({"message": "<strong>H διάταξη διαγράφηκε</strong>"}), mimetype="application/json", status=201)
+  return Response(json.dumps({"message": "<strong>Η επιμέρους ενότητα εγκυκλίου διαγράφηκε</strong>"}), mimetype="application/json", status=201)
 
 
 @instruction_provision.route("", methods=["PUT"])
@@ -98,7 +98,7 @@ def update_instruction_provision():
     return Response(
       json.dumps(
         {
-          "message": "<strong>H διάταξη ανανεώθηκε</strong>",
+          "message": "<strong>Η επιμέρους ενότητα εγκυκλίου ανανεώθηκε</strong>",
           "updatedInstructionProvision": {
             "instructionActKey": updated_instructionActKey,
             "instructionProvisionSpecs": updated_instructionProvisionSpecs,
@@ -112,7 +112,7 @@ def update_instruction_provision():
     )
   except Exception as e:
     print(e)
-    return Response(json.dumps({"message": f"<strong>Error:</strong> {str(e)}"}), mimetype="application/json", status=500)
+    return Response(json.dumps({"message": f"<strong>Πρόβλημα στην τροποποίηση της επιμέρους ενότητα εγκυκλίου:</strong> {str(e)}"}), mimetype="application/json", status=500)
 
 
 @instruction_provision.route("/count", methods=["GET"])
