@@ -91,7 +91,7 @@ connect(
 # CORS configuration
 cors = CORS(
   app,
-  resources={r"*": {"origins": ["http://localhost:4200", "https://thryallis-frontend.duckdns.org", "https://thryallis.ypes.gov.gr"]}},
+  resources={r"*": {"origins": ["http://localhost:4200", "https://thryallis.training.ypes.gov.gr", "https://thryallis.ypes.gov.gr"]}},
 )
 
 # Register blueprints
