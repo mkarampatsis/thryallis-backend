@@ -5,7 +5,7 @@ from src.apografi.utils import apografi_get
 from src.apografi.constants import APOGRAFI_ORGANIZATIONS_URL
 from deepdiff import DeepDiff
 import requests
-
+import json
 
 def sync_one_organization(organization_dict):
     doc = {k: v for k, v in organization_dict.items() if v}
@@ -47,10 +47,13 @@ def sync_one_organization(organization_dict):
         existing_dict = existing.to_mongo().to_dict()
         existing_dict.pop("_id")
         new_doc = Organization(**doc).to_mongo().to_dict()
-        diff = DeepDiff(existing_dict, new_doc)
+        # diff = DeepDiff(existing_dict, new_doc)
+        diff = DeepDiff(existing_dict, new_doc, view='tree').to_json() 
+        diff = json.loads(diff)
         if diff:
             for key, value in doc.items():
                 setattr(existing, key, value)
+            print(existing.to_mongo().to_dict())
             existing.save()
             Log(entity="organization", action="update", doc_id=doc_id, value=diff).save()
     else:

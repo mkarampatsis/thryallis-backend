@@ -5,16 +5,16 @@ from src.apografi.utils import apografi_get
 from deepdiff import DeepDiff
 from alive_progress import alive_bar
 import redis
-
+import json
 
 def sync_apografi_dictionaries():
     print("Συγχρονισμός λεξικών από την Απογραφή...")
 
     with alive_bar(len(APOGRAFI_DICTIONARIES)) as bar:
         for dictionary in APOGRAFI_DICTIONARIES.keys():
+            print(f"  - Συγχρονισμός λεξικού: {dictionary}...")
             response = apografi_get(f"{APOGRAFI_DICTIONARIES_URL}{dictionary}")
             for item in response.json()["data"]:
-                print(">>",dictionary,item)
                 doc = {
                     "code": dictionary,
                     "code_el": APOGRAFI_DICTIONARIES[dictionary],
@@ -32,21 +32,14 @@ def sync_apografi_dictionaries():
                 ).first()
 
                 if existing:
-                    print("existing")
                     existing_dict = existing.to_mongo().to_dict()
                     existing_dict.pop("_id")
-                    diff = DeepDiff(
-                        existing_dict,
-                        doc,
-                    )
+                    diff = DeepDiff(existing_dict, doc, view='tree').to_json() 
+                    diff = json.loads(diff)
                     if diff:
                         for key, value in doc.items():
                             setattr(existing, key, value)
                         existing.save()
-                        print("key>>",key)
-                        print("value>>",value)
-                        print("doc_id>>",doc_id)
-                        print("diff>>",diff)
                         Log(
                             entity="dictionary",
                             action="update",
@@ -54,7 +47,6 @@ def sync_apografi_dictionaries():
                             value=diff,
                         ).save()
                 else:
-                    print("new")
                     Dictionary(**doc).save()
                     Log(
                         entity="dictionary", action="insert", doc_id=doc_id, value=doc
