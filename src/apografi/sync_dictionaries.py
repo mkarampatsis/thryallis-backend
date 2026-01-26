@@ -14,6 +14,7 @@ def sync_apografi_dictionaries():
         for dictionary in APOGRAFI_DICTIONARIES.keys():
             response = apografi_get(f"{APOGRAFI_DICTIONARIES_URL}{dictionary}")
             for item in response.json()["data"]:
+                print(">>",dictionary,item)
                 doc = {
                     "code": dictionary,
                     "code_el": APOGRAFI_DICTIONARIES[dictionary],
@@ -31,6 +32,7 @@ def sync_apografi_dictionaries():
                 ).first()
 
                 if existing:
+                    print("existing")
                     existing_dict = existing.to_mongo().to_dict()
                     existing_dict.pop("_id")
                     diff = DeepDiff(
@@ -41,6 +43,10 @@ def sync_apografi_dictionaries():
                         for key, value in doc.items():
                             setattr(existing, key, value)
                         existing.save()
+                        print("key>>",key)
+                        print("value>>",value)
+                        print("doc_id>>",doc_id)
+                        print("diff>>",diff)
                         Log(
                             entity="dictionary",
                             action="update",
@@ -48,6 +54,7 @@ def sync_apografi_dictionaries():
                             value=diff,
                         ).save()
                 else:
+                    print("new")
                     Dictionary(**doc).save()
                     Log(
                         entity="dictionary", action="insert", doc_id=doc_id, value=doc

@@ -1,22 +1,23 @@
-APOGRAFI_API_URL = "https://hr.apografi.gov.gr/api"
+APOGRAFI_API_URL = "https://hrms.gov.gr/api"
 
 # https://hr.apografi.gov.gr/api.html#genikes-plhrofories-le3ika
 
 APOGRAFI_DICTIONARIES_URL = f"{APOGRAFI_API_URL}/public/metadata/dictionary/"
 
 APOGRAFI_DICTIONARIES = {
-    "OrganizationTypes": "Τύποι Φορέων",
-    "OrganizationCategories": "Κατηγορίες Φορέων",
-    "EmploymentTypes": "Εργασιακές Σχέσεις",
-    "EmployeeCategories": "Κατηγορίες Προσωπικού",
-    "SupervisorPositions": "Τύποι Θέσεων Ευθύνης",
-    "UnitTypes": "Τύποι Μονάδων",
-    "Functions": "Λειτουργίες",
-    "FunctionalAreas": "Τομείς Πολιτικής",
-    "ProfessionCategories": "Κλάδοι",
-    "Specialities": "Ειδικότητες",
-    "EducationTypes": "Κατηγορίες Εκπαίδευσης",
-    "Countries": "Χώρες",
+    # "OrganizationTypes": "Τύποι Φορέων",
+    # "OrganizationCategories": "Κατηγορίες Φορέων",
+    # "EmploymentTypes": "Εργασιακές Σχέσεις",
+    # "EmployeeCategories": "Κατηγορίες Προσωπικού",
+    # "SupervisorPositions": "Τύποι Θέσεων Ευθύνης",
+    # "SpecialPositions":"Ειδικών Θέσεων και Καθηκόντων Θέσης Απασχόλησης",
+    # "UnitTypes": "Τύποι Μονάδων",
+    # "Functions": "Λειτουργίες",
+    # "FunctionalAreas": "Τομείς Πολιτικής",
+    # "ProfessionCategories": "Κλάδοι",
+    # "Specialities": "Ειδικότητες",
+    # "EducationTypes": "Κατηγορίες Εκπαίδευσης",
+    # "Countries": "Χώρες",
     "Cities": "Δήμοι",
 }
 

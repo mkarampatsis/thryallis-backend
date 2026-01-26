@@ -1,6 +1,6 @@
 from src.models.apografi.organization import Organization
 from src.models.apografi.embedded import Address, ContactPoint, FoundationFek, Spatial
-from src.models.utils import SyncLogLog as Log
+from src.models.utils import SyncLog as Log
 from src.apografi.utils import apografi_get
 from src.apografi.constants import APOGRAFI_ORGANIZATIONS_URL
 from deepdiff import DeepDiff
