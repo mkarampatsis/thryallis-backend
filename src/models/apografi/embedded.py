@@ -15,7 +15,9 @@ class ContactPoint(me.EmbeddedDocument):
 
 class FoundationFek(me.EmbeddedDocument):
     year = me.IntField()
-    number = me.StringField()
+    # change from Marko
+    # number = me.StringField()
+    number = me.IntField()
     issue = me.StringField()
 
 
