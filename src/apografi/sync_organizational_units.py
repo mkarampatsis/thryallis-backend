@@ -66,7 +66,7 @@ def sync_one_organization_units(units):
 def sync_organizational_units():
   print("Συγχρονισμός οργανωτικών μονάδων από το ΣΔΑΔ...")
   for organization in Organization.objects():
-    print(f"{organization['code']} {organization['preferredLabel']}\n")
+    # print(f"{organization['code']} {organization['preferredLabel']}\n")
     response = apografi_get(f"{APOGRAFI_ORGANIZATIONAL_UNITS_URL}{organization['code']}")
 
     if response.status_code != 404:
