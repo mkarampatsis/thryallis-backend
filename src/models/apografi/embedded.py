@@ -5,7 +5,8 @@ import mongoengine as me
 
 class Spatial(me.EmbeddedDocument):
     countryId = me.IntField()
-    cityId = me.IntField()
+    cityId = me.IntField(null=True)
+    dimosId = me.IntField()
 
 
 class ContactPoint(me.EmbeddedDocument):

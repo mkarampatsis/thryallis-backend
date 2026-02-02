@@ -61,16 +61,16 @@ class OrganizationalUnit(me.Document):
                     ).decode("utf-8")
                     if spatial.countryId is not None
                     else None,
-                    "cityId": spatial.cityId,
+                    "dimosId": spatial.dimosId,
                     # "cityDescription": Dictionary.objects(
-                    #     code="Cities", apografi_id=spatial.cityId
+                    #     code="Cities", apografi_id=spatial.dimosId
                     # )
                     # .first()
                     # .description
-                    "cityDescription": self.dict_cache.get(
-                        f"Cities:{spatial.cityId}"
+                    "dimosDescription": self.dict_cache.get(
+                        f"Dimos:{spatial.dimosId}"
                     ).decode("utf-8")
-                    if spatial.cityId is not None
+                    if spatial.dimosId is not None
                     else None,
                 }.items()
                 if value is not None
@@ -237,17 +237,17 @@ class OrganizationalUnit(me.Document):
             for spatial in self.spatial:
                 if (
                     hasattr(spatial, "countryId")
-                    and spatial.cityId is not None
+                    and spatial.dimosId is not None
                     and not r.sismember("Countries", spatial.countryId)
                 ):
                     country_not_in_dict.append(spatial.countryId)
 
                 if (
-                    hasattr(spatial, "cityId")
-                    and spatial.cityId is not None
-                    and not r.sismember("Cities", spatial.cityId)
+                    hasattr(spatial, "dimosId")
+                    and spatial.dimosId is not None
+                    and not r.sismember("Cities", spatial.dimosId)
                 ):
-                    city_not_in_dict.append(spatial.cityId)
+                    city_not_in_dict.append(spatial.dimosId)
             if len(country_not_in_dict) or len(city_not_in_dict):
                 Error(
                     entity="organizational-unit",

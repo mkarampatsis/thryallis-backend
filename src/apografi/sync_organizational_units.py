@@ -20,7 +20,7 @@ def sync_one_organization_units(units):
       if key == "spatial":
         value = sorted(
           value or [],
-          key=lambda x: (x.get("countryId", 0), x.get("cityId", 0)),
+          key=lambda x: (x.get("countryId", 0), x.get("dimosId", 0)),
         )
         value = [Spatial(**item) for item in value]
         doc[key] = value
@@ -47,10 +47,12 @@ def sync_one_organization_units(units):
       new_doc = OrganizationalUnit(**doc).to_mongo().to_dict()
       # diff = DeepDiff(existing_dict, new_doc)
       diff = DeepDiff(existing_dict, new_doc, view='tree').to_json() 
+      print("DIFF:", diff)
       diff = json.loads(diff)
       if diff:
         for key, value in doc.items():
           setattr(existing, key, value)
+        print(existing.to_mongo().to_dict())
         existing.save()
         Log(
           entity="organizational-unit",
@@ -66,7 +68,7 @@ def sync_one_organization_units(units):
 def sync_organizational_units():
   print("Συγχρονισμός οργανωτικών μονάδων από το ΣΔΑΔ...")
   for organization in Organization.objects():
-    # print(f"{organization['code']} {organization['preferredLabel']}\n")
+    print(organization.to_mongo().to_dict())
     response = apografi_get(f"{APOGRAFI_ORGANIZATIONAL_UNITS_URL}{organization['code']}")
 
     if response.status_code != 404:
