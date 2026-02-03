@@ -20,7 +20,7 @@ def sync_one_organization_units(units):
       if key == "spatial":
         value = sorted(
           value or [],
-          key=lambda x: (x.get("countryId", 0), x.get("dimosId", 0)),
+          key=lambda x: (x.get("countryId", 0), x.get("dimosId", 0) or x.get("cityId", 0) ),
         )
         value = [Spatial(**item) for item in value]
         doc[key] = value
