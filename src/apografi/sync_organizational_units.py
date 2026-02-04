@@ -12,7 +12,7 @@ def sync_one_organization_units(units):
   for unit in units:
     doc = {k: v for k, v in unit.items() if v}
     doc_id = doc["code"]
-    print("Μονάδα:", doc_id['code'])
+    print("Μονάδα:", doc_id)
 
     for key, value in doc.items():
       if key in ["purpose", "alternativeLabels"]:
