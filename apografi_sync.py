@@ -16,19 +16,19 @@ USERNAME = "jraptaki"
 PASSWORD = "l1vadak1a"
 
 message_dictionaries = '''
-    <p>Ο συγχρονισμός των λεξικών ολοκληρώθηκε</p>
+    <p>Ο συγχρονισμός των λεξικών απογραφής ολοκληρώθηκε</p>
     <p>Ώρα που ξεκίνησε: %s</p>
     <p>Ώρα που τελειώσε: %s</p>
 ''' 
 
 message_organizations = '''
-    <p>Ο συγχρονισμός των φορέων ολοκληρώθηκε</p>
+    <p>Ο συγχρονισμός των φορέων απογραφής ολοκληρώθηκε</p>
     <p>Ώρα που ξεκίνησε: %s</p>
     <p>Ώρα που τελειώσε: %s</p>
 ''' 
 
 message_organizational_units = '''
-    <p>Ο συγχρονισμός των μονάδων ολοκληρώθηκε</p>
+    <p>Ο συγχρονισμός των μονάδων απογραφής ολοκληρώθηκε</p>
     <p>Ώρα που ξεκίνησε: %s</p>
     <p>Ώρα που τελειώσε: %s</p>
 '''
@@ -61,10 +61,10 @@ def send_email(subject, message, start_time, end_time):
 
 # Sync Dictionaries
 start_time = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
-#sync_apografi_dictionaries()
+sync_apografi_dictionaries()
 end_time = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
 send_email(
-    subject="Thryallis - Συγχρονισμός Λεξικών ΣΔΑΔ",
+    subject="Thryallis - Συγχρονισμός Λεξικών ΣΔΑΔ για απογραφή",
     message=message_dictionaries,
     start_time=start_time,
     end_time=end_time
@@ -72,10 +72,10 @@ send_email(
 
 # Sync Organizations
 start_time = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
-#sync_organizations()
+sync_organizations()
 end_time = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
 send_email(
-  subject="Thryallis - Συγχρονισμός Φορέων ΣΔΑΔ",
+  subject="Thryallis - Συγχρονισμός Φορέων ΣΔΑΔ για απογραφή",
   message=message_organizations,
   start_time=start_time,
   end_time=end_time
@@ -86,7 +86,7 @@ start_time = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
 sync_organizational_units()
 end_time = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
 send_email(
-  subject="Thryallis - Συγχρονισμός Μονάδων ΣΔΑΔ",
+  subject="Thryallis - Συγχρονισμός Μονάδων ΣΔΑΔ για απογραφή",
   message=message_organizational_units,
   start_time=start_time,
   end_time=end_time
