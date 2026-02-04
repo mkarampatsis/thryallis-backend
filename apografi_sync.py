@@ -61,7 +61,7 @@ def send_email(subject, message, start_time, end_time):
 
 # Sync Dictionaries
 start_time = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
-sync_apografi_dictionaries()
+#sync_apografi_dictionaries()
 end_time = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
 send_email(
     subject="Thryallis - Συγχρονισμός Λεξικών ΣΔΑΔ",
@@ -72,7 +72,7 @@ send_email(
 
 # Sync Organizations
 start_time = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
-sync_organizations()
+#sync_organizations()
 end_time = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
 send_email(
   subject="Thryallis - Συγχρονισμός Φορέων ΣΔΑΔ",
