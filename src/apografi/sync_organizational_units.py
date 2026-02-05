@@ -7,6 +7,9 @@ from src.apografi.constants import APOGRAFI_ORGANIZATIONAL_UNITS_URL
 from deepdiff import DeepDiff
 import json
 
+units_with_problems = [
+  { "code":"763976", "field":"email" }
+]
 
 def sync_one_organization_units(units):
   for unit in units:
