@@ -4,15 +4,21 @@ from email.mime.text import MIMEText
 
 from datetime import datetime
 from time import sleep
+from src.config import (
+  EMAIL_USERNAME,
+  EMAIL_PASSWORD,
+  EMAIL_SMTPSERVER,
+  EMAIL_DESTINATION
+)
 
 
-SMTPSERVER = "mailgate.cosmotemail.gr"
+SMTPSERVER = EMAIL_SMTPSERVER
 SENDER = 'no-reply@thryallis.ypes.gov.gr'
-DESTINATION = ['marka@mail.ntua.gr','marka@central.ntua.gr']
+DESTINATION = EMAIL_DESTINATION
 SUBJECT = "Message from Tryallis System"
 
-USERNAME = "thryallis@ypes.gov.gr"
-PASSWORD = "thr68$37@"
+USERNAME = EMAIL_USERNAME
+PASSWORD = EMAIL_PASSWORD
 
 users = ["Markos", "Nikos", "Giorgos"]
 
