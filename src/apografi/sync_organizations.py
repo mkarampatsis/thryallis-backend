@@ -10,6 +10,7 @@ import json
 def sync_one_organization(organization_dict):
   doc = {k: v for k, v in organization_dict.items() if v}
   doc_id = doc["code"]
+  print("Φορέας:", doc_id)
 
   for key, value in doc.items():
     if key in ["purpose", "alternativeLabels"]:
@@ -51,6 +52,7 @@ def sync_one_organization(organization_dict):
     diff = DeepDiff(existing_dict, new_doc, view='tree').to_json() 
     diff = json.loads(diff)
     if diff:
+      # print("DIFF:", diff)
       for key, value in doc.items():
         setattr(existing, key, value)
       # print(existing.to_mongo().to_dict())

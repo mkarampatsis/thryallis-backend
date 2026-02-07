@@ -1,6 +1,7 @@
 import mongoengine as me
 from src.models.apografi.embedded import Spatial, Address
 from src.models.apografi.dictionary import Dictionary
+from src.models.apografi.timestamp import TimeStampedModel
 from src.models.utils import JSONEncoder, Error
 import json
 import redis
@@ -10,7 +11,7 @@ r = redis.Redis()
 # A model for every organizational unit from https://hr.apografi.gov.gr/api.html#genikes-plhrofories-monades
 
 
-class OrganizationalUnit(me.Document):
+class OrganizationalUnit(TimeStampedModel):
     meta = {
         "collection": "organizational-units",
         "db_alias": "apografi",

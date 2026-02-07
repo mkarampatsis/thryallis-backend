@@ -1,7 +1,7 @@
 import json
 import mongoengine as me
 from src.models.apografi.embedded import Spatial, ContactPoint, FoundationFek, Address
-from src.models.apografi.dictionary import Dictionary
+from src.models.apografi.timestamp import TimeStampedModel
 import redis
 
 from src.models.utils import JSONEncoder, Error
@@ -10,7 +10,7 @@ from src.models.utils import JSONEncoder, Error
 # A model for every organization from https://hr.apografi.gov.gr/api.html#genikes-plhrofories-foreis
 
 
-class Organization(me.Document):
+class Organization(TimeStampedModel):
     meta = {
         "collection": "organizations",
         "db_alias": "apografi",
