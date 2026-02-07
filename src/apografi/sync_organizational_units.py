@@ -17,9 +17,9 @@ def sync_one_organization_units(units):
     doc_id = doc["code"]
     print("Μονάδα:", doc_id)
 
-    for p in units_with_problems:
-      if p['code'] == '763976':
-        doc['email'] = unit['email'].split('/')[0].trim()
+    # Units with problem
+    if doc_id == "763976":
+      doc['email'] = unit['email'].split('/')[0].trim()
 
     for key, value in doc.items():
       if key in ["purpose", "alternativeLabels"]:
