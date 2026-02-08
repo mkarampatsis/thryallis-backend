@@ -272,7 +272,7 @@ class Organization(TimeStampedModel):
                     "Countries",
                     str(self.mainAddress.adminUnitLevel1).encode("utf-8"),
                 ):
-                    adminUnitLevel1_not_in_dict = self.mainAddress.adminUnitLevel
+                    adminUnitLevel1_not_in_dict = self.mainAddress.adminUnitLevel1
 
             if self.mainAddress.adminUnitLevel2:
                 if not r.sismember(
