@@ -19,7 +19,7 @@ def sync_one_organization_units(units):
 
     # Units with problem
     if doc_id == "763976":
-      doc['email'] = unit['email'].split('/')[0].trim()
+      doc['email'] = unit['email'].split('/')[0].strip()
 
     for key, value in doc.items():
       if key in ["purpose", "alternativeLabels"]:
