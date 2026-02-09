@@ -8,7 +8,8 @@ from deepdiff import DeepDiff
 import json
 
 units_with_problems = [
-  { "code":"763976", "field":"email", 'problem':'email is tm.sint.td.akiklades@efka.gov.gr  / tm.par.td.akiklades@efka.gov.gr' }
+  { "code":"763976", "field":"email", 'problem':'email is tm.sint.td.akiklades@efka.gov.gr  / tm.par.td.akiklades@efka.gov.gr' },
+  { "code":"280815", "field":"email", 'problem':'ayor@epidavros.gr, syzefxis@1288.syzefxis.gov.gr' }
 ]
 
 def sync_one_organization_units(units):
@@ -20,6 +21,8 @@ def sync_one_organization_units(units):
     # Units with problem
     if doc_id == "763976":
       doc['email'] = unit['email'].split('/')[0].trim()
+    if doc_id == "280815":
+      doc['email'] = unit['email'].split(',')[0].trim()
 
     for key, value in doc.items():
       if key in ["purpose", "alternativeLabels"]:
