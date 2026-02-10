@@ -62,7 +62,7 @@ def get_organization():
 @apografi.route("/organization/all")
 def get_all_organizations():
     data = (
-        Organization.objects.only("code", "organizationType", "preferredLabel", "subOrganizationOf", "status")
+        Organization.objects.get(status="active").only("code", "organizationType", "preferredLabel", "subOrganizationOf", "status")
         .exclude("id")
         .order_by("preferredLabel")
     )
