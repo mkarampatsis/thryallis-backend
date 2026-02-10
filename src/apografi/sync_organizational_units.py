@@ -55,6 +55,9 @@ def sync_one_organization_units(units):
     if existing:
       existing_dict = existing.to_mongo().to_dict()
       existing_dict.pop("_id")
+      existing_dict.pop("createdAt")
+      existing_dict.pop("updatedAt")
+      
       new_doc = OrganizationalUnit(**doc).to_mongo().to_dict()
       # diff = DeepDiff(existing_dict, new_doc)
       diff = DeepDiff(existing_dict, new_doc, view='tree').to_json() 
