@@ -9,7 +9,8 @@ import json
 
 units_with_problems = [
   { "code":"763976", "field":"email", 'problem':'email is tm.sint.td.akiklades@efka.gov.gr  / tm.par.td.akiklades@efka.gov.gr' },
-  { "code":"280815", "field":"email", 'problem':'email is mayor@epidavros.gr, syzefxis@1288.syzefxis.gov.gr'}
+  { "code":"280815", "field":"email", 'problem':'email is mayor@epidavros.gr, syzefxis@1288.syzefxis.gov.gr'},
+  { "code":"703974", "field":"email", 'problem':'email is syzefxis@1288.syzefxis.gov.gr, mayor@epidavros.gr'},
 ]
 
 def sync_one_organization_units(units):
@@ -22,6 +23,8 @@ def sync_one_organization_units(units):
     if doc_id == "763976":
       doc['email'] = unit['email'].split('/')[0].strip()
     if doc_id == "280815":
+      doc['email'] = unit['email'].split(',')[0].strip()
+    if doc_id == "703974":
       doc['email'] = unit['email'].split(',')[0].strip()
 
     for key, value in doc.items():
