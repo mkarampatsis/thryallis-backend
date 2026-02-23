@@ -10,6 +10,7 @@ from datetime import timedelta
 from src.blueprints.auth import auth
 from src.blueprints.user import user
 from src.blueprints.apografi import apografi
+from src.blueprints.sdad import sdad
 from src.blueprints.psped import psped
 from src.blueprints.stats import stats
 from src.blueprints.cofog import cofog
@@ -35,6 +36,7 @@ from src.config import (
     MONGO_PORT,
     MONGO_APOGRAFI_DB,
     MONGO_PSPED_DB,
+    MONGO_SDAD_DB,
     MONGO_RESOURCES_DB,
     MONGO_USERNAME,
     MONGO_PASSWORD,
@@ -84,6 +86,12 @@ connect(
 
 connect(
   host=MONGO_URI,
+  db=MONGO_SDAD_DB,
+  alias=MONGO_SDAD_DB,
+)
+
+connect(
+  host=MONGO_URI,
   db=MONGO_RESOURCES_DB,
   alias=MONGO_RESOURCES_DB,
 )
@@ -98,6 +106,7 @@ cors = CORS(
 app.register_blueprint(auth, url_prefix="/auth")
 app.register_blueprint(user, url_prefix="/user")
 app.register_blueprint(apografi, url_prefix="/apografi")
+app.register_blueprint(sdad, url_prefix="/sdad")
 app.register_blueprint(stats, url_prefix="/apografi/stats")
 app.register_blueprint(psped, url_prefix="/psped")
 app.register_blueprint(cofog, url_prefix="/cofog")
