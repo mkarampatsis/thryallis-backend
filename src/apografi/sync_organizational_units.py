@@ -87,19 +87,19 @@ def sync_organizational_units():
   skip = 0
 
   while True:
-     organizations = list(Organization.objects.skip(skip).limit(200))
-     if not organizations:
-       break
-     try: 
-       for organization in organizations: 
-         print("Φορέας:", organization['code'])
-         response = apografi_get(f"{APOGRAFI_ORGANIZATIONAL_UNITS_URL}{organization['code']}")
+    organizations = list(Organization.objects.skip(skip).limit(200))
+    if not organizations:
+      break
+    #  try: 
+    for organization in organizations: 
+      print("Φορέας:", organization['code'])
+      response = apografi_get(f"{APOGRAFI_ORGANIZATIONAL_UNITS_URL}{organization['code']}")
 
-         if response.status_code != 404:
-           units = response.json()["data"]
-           sync_one_organization_units(units)
-     finally: organizations.close()
-     skip += 100
+      if response.status_code != 404:
+        units = response.json()["data"]
+        sync_one_organization_units(units)
+    #  finally: organizations.close()
+    skip += 100
   print("Τέλος συγχρονισμού οργανωτικών μονάδων από το ΣΔΑΔ.")
 
 # def sync_organizational_units():
