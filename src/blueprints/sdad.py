@@ -125,7 +125,10 @@ def get_all_organizational_units_with_pagination():
         query = {}
         
         for field, condition in filters.items():
-            value = condition.get("filter")
+            print("Field>>",field)
+            print("Condition>>",condition)  
+            value = condition
+            print("Value>>",value)
             if value:
                 # Use icontains for text fields
                 query[f"{field}__icontains"] = value
