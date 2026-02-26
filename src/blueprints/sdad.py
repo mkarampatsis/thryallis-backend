@@ -125,14 +125,12 @@ def get_all_organizational_units_with_pagination():
         query = {}
         
         for field, condition in filters.items():
-            print("Field>>",field)
-            print("Condition>>",condition)  
-            value = condition
-            print("Value>>",value)
+            field = field.split(".")[0] + "__" + field.split(".")[1] if field in ["organizationCode.preferredLabel", "supervisorUnitCode.preferredLabel"] else field
+            value = condition.get("filter")
             if value:
                 # Use icontains for text fields
-                query[f"{field}__icontains"] = value
-
+                query[f"{field}__icontains"] = value   
+        # print("Constructed Query>>", query)
         # Sorting
         sort_model = json.loads(request.args.get("sortModel", "[]"))
         order_by_list = []
@@ -141,12 +139,11 @@ def get_all_organizational_units_with_pagination():
             order = sort.get("sort")
             if col and order:
                 order_by_list.append(f"{'' if order == 'asc' else '-'}{col}")
-
         total = OrganizationalUnit.objects(**query).count()
-
-        print("Query>>",**query)
-        print("order_by_list>>",order_by_list)
-        print("Pages>>",page, page_size)
+        # print("Total Count>>", total)
+        # print("Query>>",**query)
+        # print("order_by_list>>",order_by_list)
+        # print("Pages>>",page, page_size)
 
         org_units  = (
           OrganizationalUnit.objects(**query)
