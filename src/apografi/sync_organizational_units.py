@@ -97,7 +97,8 @@ def sync_organizational_units():
 
       if response.status_code != 404:
         units = response.json()["data"]
-        sync_one_organization_units(units)
+        if units:
+          sync_one_organization_units(units)
     #  finally: organizations.close()
     skip += 100
   print("Τέλος συγχρονισμού οργανωτικών μονάδων από το ΣΔΑΔ.")
