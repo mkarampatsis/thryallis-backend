@@ -35,6 +35,8 @@ class Organization(TimeStampedModel):
   organizationStructureUpdateDate = me.DateTimeField(null=True)
   foundationFek = me.EmbeddedDocumentField(FekDoc, null=True)
   mainAddress = me.EmbeddedDocumentField(MainAddressDoc, null=True)
+  elasticSync = me.BooleanField(default=False)
+  pspedSync = me.BooleanField(default=False)
 
   def to_mongo_dict(self):
     mongo_dict = self.to_mongo().to_dict()

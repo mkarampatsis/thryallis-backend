@@ -45,6 +45,7 @@ class OrganizationalUnit(TimeStampedModel):
     secondaryAddresses = me.EmbeddedDocumentListField(SecondaryAddressesDoc, null=True)
     remitsFinalized = me.BooleanField(default=False)
     elasticSync = me.BooleanField(default=False)
+    pspedSync = me.BooleanField(default=False)
     
     def to_json(self):
       data = self.to_mongo().to_dict()
