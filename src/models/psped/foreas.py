@@ -50,6 +50,25 @@ class Apografi(me.EmbeddedDocument):
   foreas = me.ReferenceField(Organization)
   monades = me.ListField(me.ReferenceField(OrganizationalUnit))
 
+class Sdad(me.EmbeddedDocument):
+  organization = me.ReferenceField(Organization)
+  organization_preferredLabel = me.StringField()
+  organizational_unit = me.ListField(
+      me.ReferenceField(OrganizationalUnit)
+  )
+  organizational_unit_preferredLabel = me.ListField(
+      me.StringField()
+  )
+  subOrganizationOf = me.ReferenceField(Organization)
+  subOrganizationOf_preferredLabel = me.StringField()
+
+class TreeSdadNode(me.EmbeddedDocument):
+  code = me.StringField(required=True)
+  preferredLabel = me.StringField()
+  unitType = me.IntField(null=True)
+  children = me.EmbeddedDocumentListField('TreeSdadNode')
+  expandable = me.BooleanField()
+  level = me.IntField()
 
 class Foreas(me.Document):
   meta = {"collection": "foreis", "db_alias": "psped"}
@@ -62,6 +81,8 @@ class Foreas(me.Document):
   provisionText = me.StringField()
   apografi = me.EmbeddedDocumentField(Apografi, required=True)
   tree = me.EmbeddedDocumentListField(TreeNode)
+  sdad = me.EmbeddedDocumentField(Sdad)
+  treeSdad = me.EmbeddedDocumentField(TreeSdadNode)
 
   def to_dict(self):
     return self.to_mongo().to_dict()
@@ -91,3 +112,20 @@ class Foreas(me.Document):
         }
       )
     return tree
+
+  def flatten_tree_sdad(self):
+    flat = []
+
+    def walk(node, level):
+      flat.append({
+        "code": node.code,
+        "preferredLabel": node.preferredLabel,
+        "unitType": node.unitType,
+        "level": level,
+        "expandable": bool(node.children),
+      })
+      for child in node.children or []:
+        walk(child, level + 1)
+
+    walk(self.treeSdad, 0)
+    return flat

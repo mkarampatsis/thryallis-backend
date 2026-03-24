@@ -11,6 +11,17 @@ class Apografi(me.EmbeddedDocument):
   proistamenh_monada = me.ReferenceField(OrganizationalUnit)
   proistamenh_monada_preferredLabel = me.StringField()
 
+class Sdad(me.EmbeddedDocument):
+  organization = me.ReferenceField(Organization)
+  organization_preferredLabel = me.StringField()
+  organizational_unit = me.ListField(
+      me.ReferenceField(OrganizationalUnit)
+  )
+  organizational_unit_preferredLabel = me.ListField(
+      me.StringField()
+  )
+  supervisor_unit = me.ReferenceField(Organization)
+  supervisor_unit_preferredLabel = me.StringField()
 
 class Monada(me.Document):
   meta = {"collection": "monades", "db_alias": "psped"}
@@ -19,6 +30,7 @@ class Monada(me.Document):
   apografi = me.EmbeddedDocumentField(Apografi)
   remitsFinalized = me.BooleanField()
   provisionText = me.StringField()
+  sdad = me.EmbeddedDocumentField(Sdad)
 
   def to_dict(self):
     data = {
