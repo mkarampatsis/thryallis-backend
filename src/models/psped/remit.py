@@ -2,16 +2,20 @@ import mongoengine as me
 from src.config import MONGO_PSPED_DB
 from src.models.psped.legal_provision import LegalProvision
 
+class orgData(me.EmbeddedDocument):
+    code = me.StringField()
+    preferredLabel = me.StringField()
 
 class COFOG(me.EmbeddedDocument):
     cofog1 = me.StringField(required=True)
     cofog2 = me.StringField(required=True)
     cofog3 = me.StringField(required=True)
 
-
 class Remit(me.Document):
     meta = {"collection": "remits", "db_alias": MONGO_PSPED_DB}
 
+    organization = me.EmbeddedDocumentField(orgData)
+    organizational_unit = me.EmbeddedDocumentField(orgData)
     organizationalUnitCode = me.StringField(required=True)
     remitText = me.StringField(required=True)
     remitType = me.StringField(
