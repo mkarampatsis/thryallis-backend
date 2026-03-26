@@ -1,4 +1,4 @@
-from bson import ObjectId
+from bson import ObjectId, json_util
 from flask import Blueprint, Response, request
 from flask_jwt_extended import get_jwt_identity, jwt_required
 from mongoengine import DoesNotExist
@@ -13,7 +13,6 @@ import json
 from .utils import debug_print
 
 remit = Blueprint("remit", __name__)
-
 
 @remit.route("", methods=["POST"])
 @jwt_required()
@@ -382,3 +381,55 @@ def delete_remit_by_code(id):
     # print(remit_to_delete.to_json())
     Change(action="delete", who=who, what=what, change={"remit":remit_to_delete.to_json()}).save()
     return Response(json.dumps({"message": "<strong>H Αρμοδιότητα διαγράφηκε</strong>"}), mimetype="application/json", status=201)
+
+@remit.route("/all/pagination")
+def get_all_remits_with_pagination():
+  try:
+    # Pagination
+    page = int(request.args.get("page", 1))
+    page_size = int(request.args.get("pageSize", 100))
+
+    # Filtering
+    filters = json.loads(request.args.get("filter", "{}"))
+    # print("FIlters>>",filters)
+    query = {}
+    
+    for field, condition in filters.items():
+      field = field.split(".")[0] + "__" + field.split(".")[1] if field in ["remitText", "remitType", "organizationalUnitCode"] else field
+      value = condition.get("filter")
+      if value:
+          # Use icontains for text fields
+          query[f"{field}__icontains"] = value   
+    # print("Constructed Query>>", query)
+    # Sorting
+    sort_model = json.loads(request.args.get("sortModel", "[]"))
+    order_by_list = []
+    for sort in sort_model:
+      col = sort.get("colId")
+      order = sort.get("sort")
+      if col and order:
+          order_by_list.append(f"{'' if order == 'asc' else '-'}{col}")
+    total = Remit.objects(**query).count()
+    # print("Total Count>>", total)
+    # print("Query>>",**query)
+    # print("order_by_list>>",order_by_list)
+    # print("Pages>>",page, page_size)
+
+    orgs  = (
+      Remit.objects(**query)
+        .order_by(*order_by_list)
+        .skip((page - 1) * page_size)
+        .limit(page_size)
+        .order_by("preferredLabel")
+    )
+
+    data = [u.to_mongo().to_dict() for u in orgs]
+
+    return json.loads(json_util.dumps({"rows": data, "total": total})), 200
+  except Exception as e:
+    print("Error:", e)
+    return Response(
+      json.dumps({"error": f"Δεν βρέθηκαν στοιχεία για τους φορείς {e}"}),
+      mimetype="application/json",
+      status=404,
+    )
