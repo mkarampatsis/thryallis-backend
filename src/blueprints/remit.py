@@ -417,11 +417,19 @@ def get_all_remits_with_pagination():
     query = {}
     
     for field, condition in filters.items():
-      field = field.split(".")[0] + "__" + field.split(".")[1] if field in ["remitText", "remitType", "organization.preferredLabel", "organizational_unit.preferredLabel"] else field
       value = condition.get("filter")
-      if value:
-          # Use icontains for text fields
-          query[f"{field}__icontains"] = value   
+      if not value:
+          continue
+
+      # Handle nested fields like organization.preferredLabel
+      if "." in field:
+          parent, child = field.split(".", 1)
+          mongo_field = f"{parent}__{child}"
+      else:
+          mongo_field = field
+
+      query[f"{mongo_field}__icontains"] = value
+      
     # print("Constructed Query>>", query)
     # Sorting
     sort_model = json.loads(request.args.get("sortModel", "[]"))
@@ -433,7 +441,7 @@ def get_all_remits_with_pagination():
           order_by_list.append(f"{'' if order == 'asc' else '-'}{col}")
     total = Remit.objects(**query).count()
     # print("Total Count>>", total)
-    # print("Query>>",**query)
+    # print("Query>>",str(**query))
     # print("order_by_list>>",order_by_list)
     # print("Pages>>",page, page_size)
 
