@@ -277,7 +277,7 @@ def retrieve_remit_by_code(code):
 
     remitsToReturn.append(data)
 
-  # print(remitsToReurn)
+  print(remitsToReturn)
 
   return Response(
     json.dumps(remitsToReturn),
