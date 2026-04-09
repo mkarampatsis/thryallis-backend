@@ -447,7 +447,7 @@ def get_all_remits_with_pagination():
     
     orgs  = (
       Remit.objects(**query)
-        .order_by(*order_by_list)
+        # .order_by(*order_by_list)
         .skip((page - 1) * page_size)
         .limit(page_size)
         .order_by("organization.preferredLabel")
