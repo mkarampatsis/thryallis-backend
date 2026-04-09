@@ -444,13 +444,13 @@ def get_all_remits_with_pagination():
     # print("Query>>",str(**query))
     # print("order_by_list>>",order_by_list)
     # print("Pages>>",page, page_size)
-
+    
     orgs  = (
       Remit.objects(**query)
         .order_by(*order_by_list)
         .skip((page - 1) * page_size)
         .limit(page_size)
-        .order_by("preferredLabel")
+        .order_by("organization.preferredLabel")
     )
 
     data = [u.to_mongo().to_dict() for u in orgs]
