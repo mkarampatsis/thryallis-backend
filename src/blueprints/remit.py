@@ -441,7 +441,7 @@ def get_all_remits_with_pagination():
           order_by_list.append(f"{'' if order == 'asc' else '-'}{col}")
     total = Remit.objects(**query).count()
     # print("Total Count>>", total)
-    # print("Query>>",str(**query))
+    print("Query>>",str(**query))
     # print("order_by_list>>",order_by_list)
     # print("Pages>>",page, page_size)
     
