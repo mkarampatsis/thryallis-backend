@@ -459,7 +459,7 @@ def get_all_remits_with_pagination():
   except Exception as e:
     print("Error:", e)
     return Response(
-      json.dumps({"error": f"Δεν βρέθηκαν στοιχεία για τους φορείς {e}"}),
+      json.dumps({"error": f"Πρόβλημα στο διάβασμα των αρμοδιοτήτων: {e}"}),
       mimetype="application/json",
       status=404,
     )
