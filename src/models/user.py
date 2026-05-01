@@ -5,7 +5,21 @@ import mongoengine as me
 
 
 class UserRole(me.EmbeddedDocument):
-    role = me.StringField(required=True, choices=["EDITOR", "READER", "ADMIN", "ROOT", "HELPDESK"], default="READER")
+    role = me.StringField(required=True, choices=[
+      'EDITOR', 
+      'HELPDESK', 
+      'ADMIN', 
+      'FACILITY_EDITOR', 
+      'FACILITY_ADMIN', 
+      'EQUIPMENT_EDITOR', 
+      'EQUIPMENT_ADMIN', 
+      'OTA_EDITOR', 
+      'OTA_ADMIN', 
+      'USER_RESOURCES_EDITOR', 
+      'USER_RESOURCES_ADMIN'
+      "READER", 
+      "ROOT", 
+    ], default="READER")
     active = me.BooleanField(required=True, default=True)
     foreas = me.ListField(me.StringField(), default=[])
     monades = me.ListField(me.StringField(), default=[])

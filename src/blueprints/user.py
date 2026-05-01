@@ -56,34 +56,48 @@ def get_all_users():
 @has_admin_role
 def set_user_accesses(email: str):
 
-  data = request.get_json()
+  try:
+    
+    data = request.get_json()
 
-  orgarganizationCodes = data["organizationCodes"]
-  organizationalUnitCodes = data["organizationalUnitCodes"]
+    # orgarganizationCodes = data["organizationCodes"]
+    # organizationalUnitCodes = data["organizationalUnitCodes"]
+    roles_data = data["roles"]
+    # Convert dicts to UserRole embedded documents
+    roles = [UserRole(**r) for r in roles_data]
 
-  user = User.objects.get(email=email)
+    user = User.objects.get(email=email)
 
-  editor_role = None
-  for role in user.roles:
-    if role.role == 'EDITOR':
-      editor_role = role
-      break
+    # editor_role = None
+    # for role in user.roles:
+    #   if role.role == 'EDITOR':
+    #     editor_role = role
+    #     break
 
-  if editor_role:
-    editor_role.foreas = orgarganizationCodes
-    editor_role.monades = organizationalUnitCodes
-  else:
-    new_role = UserRole(role='EDITOR', foreas=orgarganizationCodes, monades=organizationalUnitCodes)
-    user.roles.append(new_role)
-  
-  user.save()
+    # if editor_role:
+    #   editor_role.foreas = orgarganizationCodes
+    #   editor_role.monades = organizationalUnitCodes
+    # else:
+    #   new_role = UserRole(role='EDITOR', foreas=orgarganizationCodes, monades=organizationalUnitCodes)
+    #   user.roles.append(new_role)
+    
+    user.roles = roles
+    user.save()
 
-  who = get_jwt_identity()
-  what = {"entity": "user", "key": {"email": email}}
-  Change(action="update", who=who, what=what, change={"foreas": orgarganizationCodes, "monades":organizationalUnitCodes}).save()
+    who = get_jwt_identity()
+    what = {"entity": "user", "key": {"email": email}}
+    # Change(action="update", who=who, what=what, change={"foreas": orgarganizationCodes, "monades":organizationalUnitCodes}).save()
+    Change(action="update", who=who, what=what, change={"roles": roles}).save()
 
-  return Response(
-    json.dumps({"message": "<strong>Ο χρηστης ενημερώθηκε</strong>"}),
-    mimetype="application/json",
-    status=201,
-  )
+    return Response(
+      json.dumps({"message": "<strong>Ο χρηστης ενημερώθηκε</strong>"}),
+      mimetype="application/json",
+      status=201,
+    )
+  except Exception as e:
+    print(e)
+    return Response(
+      json.dumps({"message": f"<strong>Αποτυχία τροποποίησης του χρήστη:</strong> {e}"}),
+      mimetype="application/json",
+      status=500,
+    )
