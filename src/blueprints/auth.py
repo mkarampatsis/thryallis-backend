@@ -239,6 +239,7 @@ def gsis_system_info():
       
   try:
     OPSDD_EMP_LIST = HORIZONTAL_URL + "/padEmplList"
+    OPSDD_SYSTEM_INFO = HORIZONTAL_URL + "/padInfoSystemAll"
 
     client_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
     
@@ -259,26 +260,37 @@ def gsis_system_info():
         "auditUserId": "markos.karampatsis",
         "auditUserIp": client_ip
       },
+      "padEmplListInputRecord": {
+        "page": "1",
+        "size": "15",
+        "lang": "el",
+        "source": {
+          "employee": {}
+          # "employee":  { "employeeVatNo": "065733009" }
+        }
+      }
+    }
+
+    horizontal_system_info = {
+      "auditRecord": {
+        "auditTransactionId": randomString(),
+        "auditTransactionDate": datetime.datetime.now().isoformat(),
+        "auditUnit": "ΥΠΟΥΡΓΕΙΟ ΕΣΩΤΕΡΙΚΩΝ",
+        "auditProtocol": randomString(),
+        "auditUserId": "markos.karampatsis",
+        "auditUserIp": client_ip
+      },
       "padInfoSystemAllInputRecord": {
         "lang": "el"        
       }
-      # ,
-      # "padEmplListInputRecord": {
-      #   "page": "1",
-      #   "size": "15",
-      #   "lang": "el",
-      #   "source": {
-      #     "employee": {}
-      #     # "employee":  { "employeeVatNo": "065733009" }
-      #   }
-      # }
     }
 
     listOPSDD = gsisRequest.post(OPSDD_EMP_LIST, headers=horizontal_header, json=horizontal_emp_list_payload).json()
-
+    systemInfo = gsisRequest.post(OPSDD_SYSTEM_INFO, headers=horizontal_header, json=horizontal_system_info).json()   
     if (bool(listOPSDD["padEmplListOutputRecord"]["pageModel"]["pubAuthDoc"])):
       return Response(json.dumps({
-        "systemInfo": listOPSDD, 
+        "employeeList": listOPSDD, 
+        "systemInfo": systemInfo,
         "client": client_ip, 
         "host": request.host, 
         "timestamp": datetime.datetime.now().isoformat(),
