@@ -294,7 +294,9 @@ def gsis_system_info():
         "client": client_ip, 
         "host": request.host, 
         "timestamp": datetime.datetime.now().isoformat(),
-      }), status=200)
+      }), 
+      mimetype="application/json",
+      status=200)
     else: 
       return Response(json.dumps({"message": "Δεν βρέθηκαν στοιχεία για το οριζόντιο ΠΣ"}), status=204)
   except Exception as err:
