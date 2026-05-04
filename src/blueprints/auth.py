@@ -259,6 +259,9 @@ def gsis_system_info():
         "auditUserId": "markos.karampatsis",
         "auditUserIp": client_ip
       },
+      "padInfoSystemAllInputRecord": {
+        "lang": "el"        
+      },
       "padEmplListInputRecord": {
         "page": "1",
         "size": "15",
