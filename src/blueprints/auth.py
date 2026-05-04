@@ -261,16 +261,17 @@ def gsis_system_info():
       },
       "padInfoSystemAllInputRecord": {
         "lang": "el"        
-      },
-      "padEmplListInputRecord": {
-        "page": "1",
-        "size": "15",
-        "lang": "el",
-        "source": {
-          "employee": {}
-          # "employee":  { "employeeVatNo": "065733009" }
-        }
       }
+      # ,
+      # "padEmplListInputRecord": {
+      #   "page": "1",
+      #   "size": "15",
+      #   "lang": "el",
+      #   "source": {
+      #     "employee": {}
+      #     # "employee":  { "employeeVatNo": "065733009" }
+      #   }
+      # }
     }
 
     listOPSDD = gsisRequest.post(OPSDD_EMP_LIST, headers=horizontal_header, json=horizontal_emp_list_payload).json()
