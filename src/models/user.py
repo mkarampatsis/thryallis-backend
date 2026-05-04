@@ -16,8 +16,8 @@ class UserRole(me.EmbeddedDocument):
       'OTA_EDITOR', 
       'OTA_ADMIN', 
       'USER_RESOURCES_EDITOR', 
-      'USER_RESOURCES_ADMIN'
-      "READER", 
+      'USER_RESOURCES_ADMIN',
+      "READER",
       "ROOT", 
     ], default="READER")
     active = me.BooleanField(required=True, default=True)
