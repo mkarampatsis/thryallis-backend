@@ -1,7 +1,7 @@
 from flask import Blueprint, request, Response
 from google.oauth2 import id_token
 from google.auth.transport import requests
-from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
+from flask_jwt_extended import create_access_token, current_user, jwt_required, get_jwt_identity
 from src.config import GOOGLE_AUDIENCE, CLIENT_ID, CLIENT_PWD, HORIZONTAL_ID, HORIZONTAL_PWD, TOKEN_URL, USER_INFO_URL, REDIRECT_URI, HORIZONTAL_URL
 from src.models.user import User
 from src.models.userGsis import UserGsis
@@ -56,7 +56,6 @@ def google_auth():
   Log(user_id=id_info["email"], action="login", data={"email": id_info["email"]}).save()
 
   return Response(json.dumps({"accessToken": access_token, "user": user}), status=200)
-
 
 @auth.route("/gsisUser/<string:code>", methods=["GET"])
 def gsis_login(code: str):
@@ -233,7 +232,64 @@ def gsis_login(code: str):
       mimetype="application/json",
       status=404,
     )
+  
+@auth.route("/gsisUser/system_info", methods=["GET"])
+def gsis_system_info():
+  print("GET OPSDD System Info")
+      
+  try:
+    OPSDD_EMP_LIST = HORIZONTAL_URL + "/padEmplList"
+
+    client_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
     
+    data = f"{HORIZONTAL_ID}:{HORIZONTAL_PWD}".encode('utf-8')
+    encoded_data = base64.b64encode(data).decode('utf-8')
+    basic_auth = f"Basic { encoded_data }"
+    horizontal_header = {
+      "Authorization": basic_auth,
+      "Content-Type": "application/json"
+    }
+
+    horizontal_emp_list_payload = {
+      "auditRecord": {
+        "auditTransactionId": randomString(),
+        "auditTransactionDate": datetime.datetime.now().isoformat(),
+        "auditUnit": "ΥΠΟΥΡΓΕΙΟ ΕΣΩΤΕΡΙΚΩΝ",
+        "auditProtocol": randomString(),
+        "auditUserId": "markos.karampatsis",
+        "auditUserIp": client_ip
+      },
+      "padEmplListInputRecord": {
+        "page": "1",
+        "size": "15",
+        "lang": "el",
+        "source": {
+          "employee": {}
+          # "employee":  { "employeeVatNo": "065733009" }
+        }
+      }
+    }
+
+    listOPSDD = gsisRequest.post(OPSDD_EMP_LIST, headers=horizontal_header, json=horizontal_emp_list_payload).json()
+
+    if (bool(listOPSDD["padEmplListOutputRecord"]["pageModel"]["pubAuthDoc"])):
+      return Response(json.dumps({
+        "systemInfo": listOPSDD, 
+        "client": client_ip, 
+        "host": request.host, 
+        "timestamp": datetime.datetime.now().isoformat(),
+      }), status=200)
+    else: 
+      return Response(json.dumps({"message": "Δεν βρέθηκαν στοιχεία για το οριζόντιο ΠΣ"}), status=204)
+  except Exception as err:
+    print(err)
+    return Response(
+      json.dumps({"message": "Πρόβλημα στην εμφάνιση των στοιχειών της εφαρμογής, προσπαθήστε ξανά.", "details":err}),
+      mimetype="application/json",
+      status=404,
+    )
+
+# Creates a new role in OPSDD. 
 @auth.route("/gsisRole/<string:role>", methods=["GET"])
 def gsis_create_role(role: str):
   print("OPSDD Create Role")
@@ -289,6 +345,7 @@ def gsis_create_role(role: str):
       status=404,
     )
 
+# Updates an existing role in OPSDD. Requires roleId and hid to identify the role, and new roleName for the update. 
 @auth.route("/gsisRole", methods=["PUT"])
 def gsis_update_role():
     print("OPSDD Update Role")
