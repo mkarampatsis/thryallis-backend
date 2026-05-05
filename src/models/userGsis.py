@@ -2,12 +2,25 @@ from src.config import MONGO_PSPED_DB
 import mongoengine as me
 
 
-class UserRole(me.EmbeddedDocument):
-  role = me.StringField(required=True, choices=["EDITOR", "READER", "ADMIN", "ROOT", "HELPDESK"], default="READER")
+class UserRoleGSIS(me.EmbeddedDocument):
+  role = me.StringField(required=True, choices=[
+    'EDITOR', 
+    'HELPDESK', 
+    'ADMIN', 
+    'FACILITY_EDITOR', 
+    'FACILITY_ADMIN', 
+    'EQUIPMENT_EDITOR', 
+    'EQUIPMENT_ADMIN', 
+    'OTA_EDITOR', 
+    'OTA_ADMIN', 
+    'USER_RESOURCES_EDITOR', 
+    'USER_RESOURCES_ADMIN',
+    "READER",
+    "ROOT", 
+  ], default="READER")
   active = me.BooleanField(required=True, default=True)
   foreas = me.ListField(me.StringField(), default=[])
   monades = me.ListField(me.StringField(), default=[])
-
 
 class UserGsis(me.Document):
   email = me.EmailField()
@@ -20,8 +33,8 @@ class UserGsis(me.Document):
   gsisUserid = me.StringField(required=True)
   empOrgUnitTexts = me.ListField(me.StringField(), default=[])
   employeeId = me.IntField(required=True)
-  roles = me.EmbeddedDocumentListField(UserRole, default=[UserRole(role="READER")])
-
+  roles = me.EmbeddedDocumentListField(UserRoleGSIS, default=[UserRoleGSIS(role="READER")])
+  
   meta = {
     "collection": "users_gsis", 
     "db_alias": MONGO_PSPED_DB,

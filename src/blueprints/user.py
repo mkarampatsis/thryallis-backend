@@ -1,7 +1,8 @@
 from flask import Blueprint, Response, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from wtforms.validators import email
 from src.models.user import User, UserRole
-from src.models.userGsis import UserGsis
+from src.models.userGsis import UserGsis, UserRoleGSIS
 from src.models.psped.change import Change
 from src.blueprints.decorators import has_admin_role
 import json
@@ -87,6 +88,40 @@ def set_user_accesses(email: str):
     who = get_jwt_identity()
     what = {"entity": "user", "key": {"email": email}}
     # Change(action="update", who=who, what=what, change={"foreas": orgarganizationCodes, "monades":organizationalUnitCodes}).save()
+    Change(action="update", who=who, what=what, change={"roles": roles}).save()
+
+    return Response(
+      json.dumps({"message": "<strong>Ο χρηστης ενημερώθηκε</strong>"}),
+      mimetype="application/json",
+      status=201,
+    )
+  except Exception as e:
+    print(e)
+    return Response(
+      json.dumps({"message": f"<strong>Αποτυχία τροποποίησης του χρήστη:</strong> {e}"}),
+      mimetype="application/json",
+      status=500,
+    )
+
+@user.route("/gsis/<string:taxid>", methods=["PUT"])
+@jwt_required()
+@has_admin_role
+def set_user_accesses_gsis(taxid: str):
+
+  try:
+    
+    data = request.get_json()
+    roles_data = data["roles"]
+
+    # Convert dicts to UserRole embedded documents
+    roles = [UserRoleGSIS(**r) for r in roles_data]
+
+    user = UserGsis.objects.get(taxid=taxid)
+    user.roles = roles
+    user.save()
+
+    who = get_jwt_identity()
+    what = {"entity": "user", "key": {"taxid": taxid}}
     Change(action="update", who=who, what=what, change={"roles": roles}).save()
 
     return Response(
