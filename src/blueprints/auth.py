@@ -146,7 +146,7 @@ def gsis_login(code: str):
                   preserved_roles.append({
                     "role": r.role,
                     "active": r.active if hasattr(r, "active") else True,
-                    "foreas": r.foreas if hasattr(r, "foreas") else []
+                    "foreas": r.foreas if hasattr(r, "foreas") else [],
                     "monades": r.monades if hasattr(r, "monades") else []
                     # "active": getattr(r, "active", True),
                     # "foreas": getattr(r, "foreas", []),
