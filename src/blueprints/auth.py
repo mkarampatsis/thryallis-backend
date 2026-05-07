@@ -154,7 +154,7 @@ def gsis_login(code: str):
               except Exception as e:
                 print("Error while processing existing role:", str(e))
 
-            print("preserved_roles",preserved_roles)
+            # print("preserved_roles",preserved_roles)
 
             # Merge preserved + new roles (avoid duplicates)
             combined_roles = preserved_roles.copy()
@@ -162,7 +162,7 @@ def gsis_login(code: str):
             for r in roles:
               if not any(pr.get("role") == r["role"] for pr in preserved_roles):
                 combined_roles.append(r)
-            print("combined_roles",combined_roles)
+            # print("combined_roles",combined_roles)
             # Update the document
             userGsis.update(
               firstName=gsisUser["firstname"],
@@ -522,7 +522,7 @@ def getOpsddUser(vat:str):
 
     listOPSDD = gsisRequest.post(OPSDD_EMP_LIST, headers=horizontal_header, json=horizontal_emp_list_payload).json()
 
-    print(listOPSDD)
+    # print(listOPSDD)
     if (bool(listOPSDD["padEmplListOutputRecord"]["pageModel"]["pubAuthDoc"])):
       return listOPSDD["padEmplListOutputRecord"]["pageModel"]["pubAuthDoc"]["employeesList"]["employees"]
     else: 
