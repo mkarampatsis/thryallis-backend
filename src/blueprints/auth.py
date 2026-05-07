@@ -158,7 +158,7 @@ def gsis_login(code: str):
             for r in roles:
               if not any(pr.get("role") == r["role"] for pr in preserved_roles):
                 combined_roles.append(r)
-
+            print("combined_roles",combined_roles)
             # Update the document
             userGsis.update(
               firstName=gsisUser["firstname"],
