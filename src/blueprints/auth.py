@@ -145,9 +145,11 @@ def gsis_login(code: str):
                 if hasattr(r, "role") and r.role in ["ADMIN", "HELPDESK", "EDITOR"]:
                   preserved_roles.append({
                     "role": r.role,
-                    "active": getattr(r, "active", r.get("active", True)),
-                    "foreas": getattr(r, "foreas", r.get("foreas", [])),
-                    "monades": getattr(r, "monades", r.get("monades", []))
+                    "active": r.active if hasattr(r, "active") else True,
+                    "foreas": r.foreas if hasattr(r, "foreas") else []
+                    "monades": r.monades if hasattr(r, "monades") else []
+                    # "active": getattr(r, "active", True),
+                    # "foreas": getattr(r, "foreas", []),
                   })
               except Exception as e:
                 print("Error while processing existing role:", str(e))
