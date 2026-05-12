@@ -249,8 +249,8 @@ def retrieve_remit_by_code(code):
     # print(remit.to_json())
     data = {
       "_id": str(remit.id),
-      "organization": remit.organization,
-      "organizational_unit": remit.organizational_unit,
+      "organization": remit.organization.to_mongo().to_dict() if remit.organization else None,
+      "organizational_unit": remit.organizational_unit.to_mongo().to_dict() if remit.organizational_unit else None  ,
       "organizationalUnitCode": remit.organizationalUnitCode,
       "remitText": remit.remitText,
       "remitType": remit.remitType,
@@ -277,7 +277,7 @@ def retrieve_remit_by_code(code):
 
     remitsToReturn.append(data)
 
-  print(remitsToReturn)
+  # print(">>>>>",remitsToReturn)
 
   return Response(
     json.dumps(remitsToReturn),

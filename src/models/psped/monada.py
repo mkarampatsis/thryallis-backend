@@ -14,12 +14,8 @@ class Apografi(me.EmbeddedDocument):
 class Sdad(me.EmbeddedDocument):
   organization = me.ReferenceField(Organization)
   organization_preferredLabel = me.StringField()
-  organizational_unit = me.ListField(
-      me.ReferenceField(OrganizationalUnit)
-  )
-  organizational_unit_preferredLabel = me.ListField(
-      me.StringField()
-  )
+  organizational_unit = me.ReferenceField(OrganizationalUnit)
+  organizational_unit_preferredLabel = me.StringField()
   supervisor_unit = me.ReferenceField(Organization)
   supervisor_unit_preferredLabel = me.StringField()
 
