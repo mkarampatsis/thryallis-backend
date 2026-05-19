@@ -416,21 +416,29 @@ def get_all_remits_with_pagination():
     # print("FIlters>>",filters)
     query = {}
     
+    # for field, condition in filters.items():
+    #   value = condition.get("filter")
+    #   if not value:
+    #     continue
+
+    #   # Handle nested fields like organization.preferredLabel
+    #   if "." in field:
+    #     parent, child = field.split(".", 1)
+    #     mongo_field = f"{parent}__{child}"
+    #   else:
+    #     mongo_field = field
+
+    #   print("Constructed Query>>", query)
+    #   query[f"{mongo_field}__icontains"] = value
+
     for field, condition in filters.items():
+      field = field.split(".")[0] + "__" + field.split(".")[1] if field in ["organization.preferredLabel", "organizational_unit.preferredLabel"] else field
       value = condition.get("filter")
-      if not value:
-          continue
-
-      # Handle nested fields like organization.preferredLabel
-      if "." in field:
-          parent, child = field.split(".", 1)
-          mongo_field = f"{parent}__{child}"
-      else:
-          mongo_field = field
-
-      query[f"{mongo_field}__icontains"] = value
+      if value:
+          # Use icontains for text fields
+          query[f"{field}__icontains"] = value   
       
-    # print("Constructed Query>>", query)
+    print("Constructed Query>>", query)
     # Sorting
     sort_model = json.loads(request.args.get("sortModel", "[]"))
     order_by_list = []
@@ -439,9 +447,10 @@ def get_all_remits_with_pagination():
       order = sort.get("sort")
       if col and order:
           order_by_list.append(f"{'' if order == 'asc' else '-'}{col}")
+    # print("order_by_list>>",order_by_list)
     total = Remit.objects(**query).count()
     # print("Total Count>>", total)
-    print("Query>>",str(**query))
+    # print("Query>>",str(**query))
     # print("order_by_list>>",order_by_list)
     # print("Pages>>",page, page_size)
     
@@ -454,6 +463,7 @@ def get_all_remits_with_pagination():
     )
 
     data = [u.to_mongo().to_dict() for u in orgs]
+    print("Data>>", data)
   
     return json.loads(json_util.dumps({"rows": data, "total": total})), 200
   except Exception as e:
