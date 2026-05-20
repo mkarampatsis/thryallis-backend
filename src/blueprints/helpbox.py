@@ -292,7 +292,7 @@ def update_question(id):
     helpbox.save()
 
     return Response(
-      json.dumps({"message": "Η απάντηση σας καταχωρήθηκε με επιτυχία"}),
+      json.dumps({"message": "Το νέο ερώτημα σας καταχωρήθηκε με επιτυχία"}),
       mimetype="application/json",
       status=201,
     )
@@ -409,7 +409,7 @@ def finalize_question():
         helpbox.save()
 
         return Response(
-            json.dumps({"message": "Η απάντηση σας καταχωρήθηκε με επιτυχία"}),
+            json.dumps({"message": "Η δήλωση σας καταχωρήθηκε με επιτυχία"}),
             mimetype="application/json",
             status=201,
         )
@@ -417,7 +417,7 @@ def finalize_question():
     except Exception as e:
         print(e)
         return Response(
-            json.dumps({"message": f"<strong>Αποτυχία καταχώρησης απάντησης:</strong> {e}"}),
+            json.dumps({"message": f"<strong>Αποτυχία καταχώρησης της δήλωσης:</strong> {e}"}),
             mimetype="application/json",
             status=500,
         )

@@ -463,7 +463,7 @@ def get_all_remits_with_pagination():
     )
 
     data = [u.to_mongo().to_dict() for u in orgs]
-    print("Data>>", data)
+    # print("Data>>", data)
   
     return json.loads(json_util.dumps({"rows": data, "total": total})), 200
   except Exception as e:
