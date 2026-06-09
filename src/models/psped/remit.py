@@ -29,7 +29,7 @@ class Remit(me.Document):
         ],
     )
     cofog = me.EmbeddedDocumentField(COFOG, required=True)
-    status = me.StringField(choices=["ΕΝΕΡΓΗ", "ΑΝΕΝΕΡΓΗ"], default="ΕΝΕΡΓΗ")
+    status = me.StringField(choices=["ΕΝΕΡΓΗ", "ΑΝΕΝΕΡΓΗ", "ΜH ΑΝΑΤΕΘΕΙΜΕΝΗ"], default="ΕΝΕΡΓΗ")
     legalProvisionRefs = me.ListField(me.ReferenceField(LegalProvision))
     
     # def to_dict(self):
