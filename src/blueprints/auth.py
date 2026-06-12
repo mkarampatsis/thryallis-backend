@@ -142,7 +142,19 @@ def gsis_login(code: str):
             preserved_roles = []
             for r in userGsis.roles:
               try:
-                if hasattr(r, "role") and r.role in ["ADMIN", "HELPDESK", "EDITOR"]:
+                if hasattr(r, "role") and r.role in [
+                  'EDITOR', 
+                  'HELPDESK', 
+                  'ADMIN', 
+                  'FACILITY_EDITOR', 
+                  'FACILITY_ADMIN', 
+                  'EQUIPMENT_EDITOR', 
+                  'EQUIPMENT_ADMIN', 
+                  'OTA_EDITOR', 
+                  'OTA_ADMIN', 
+                  'USER_RESOURCES_EDITOR', 
+                  'USER_RESOURCES_ADMIN',
+                ]:
                   preserved_roles.append({
                     "role": r.role,
                     "active": r.active if hasattr(r, "active") else True,
