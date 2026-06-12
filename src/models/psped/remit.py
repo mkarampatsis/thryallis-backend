@@ -6,6 +6,12 @@ class orgData(me.EmbeddedDocument):
     code = me.StringField()
     preferredLabel = me.StringField()
 
+    def to_dict(self):
+      return {
+          "code": self.code,
+          "preferredLabel": self.preferredLabel
+      }
+
 class COFOG(me.EmbeddedDocument):
     cofog1 = me.StringField(required=True)
     cofog2 = me.StringField(required=True)

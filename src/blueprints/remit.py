@@ -311,6 +311,7 @@ def copy_remit(id):
       cofog=cofog,
     ).save()
     newRemitID = newRemit.id
+
     regulatedObject = RegulatedObject(
       regulatedObjectType="remit",
       regulatedObjectId=newRemitID,
@@ -332,8 +333,8 @@ def copy_remit(id):
     
     data = {
       "_id": str(newRemit.id),
-      "organization" : newRemit.organization,
-      "organizational_unit" : newRemit.organizational_unit,
+      "organization": newRemit.organization.to_dict(),
+      "organizational_unit": newRemit.organizational_unit.to_dict(),
       "organizationalUnitCode": newRemit.organizationalUnitCode,
       "remitText": newRemit.remitText,
       "remitType": newRemit.remitType,
@@ -360,7 +361,7 @@ def copy_remit(id):
     who = get_jwt_identity()
     what = {"entity": "remit", "key": {"organizationalUnitCode": organizationalUnitCode}}
     Change(action="create", who=who, what=what, change=curr_change).save()
-    
+
     return Response(
       # json.dumps({"message": "Η αρμοδιότητα αντιγράφηκε με επιτυχία", "remit":newRemit.to_dict()}),
       json.dumps({"message": "Η αρμοδιότητα αντιγράφηκε με επιτυχία", "remit":data}),
