@@ -130,7 +130,7 @@ def update_ota(id: str):
   curr_change = {}
   try:
     data = request.get_json()
-    debug_print("UPDATE REMIT", data)
+    debug_print("UPDATE OTA", data)
 
     remitText = data["remitText"]
     remitCompetence = data["remitCompetence"]
@@ -214,7 +214,7 @@ def update_ota(id: str):
     )
 
   except Exception as e:
-    print("UPDATE REMIT EXCEPTION", e)
+    print("UPDATE OTA EXCEPTION", e)
     return Response(
       json.dumps({"message": f"<strong>Αποτυχία ενημέρωσης αρμοδιότητας:</strong> {e}"}),
       mimetype="application/json",
@@ -227,7 +227,7 @@ def update_ota(id: str):
 def update_ota_status(remitID: str):
     try:
         data = request.get_json()
-        debug_print("UPDATE REMIT STATUS", data)
+        debug_print("UPDATE OTA STATUS", data)
 
         status = data["status"]
         remit = Ota.objects.get(id=ObjectId(remitID))
@@ -244,7 +244,7 @@ def update_ota_status(remitID: str):
         )
 
     except Exception as e:
-        print("UPDATE REMIT STATUS EXCEPTION", e)
+        print("UPDATE OTA STATUS EXCEPTION", e)
         return Response(
             json.dumps({"message": f"<strong>Αποτυχία ενημέρωσης κατάστασης αρμοδιότητας:</strong> {e}"}),
             mimetype="application/json",
@@ -258,7 +258,7 @@ def copy_ota(id):
     newLegalProvisions = []
     try:
         remit = Ota.objects(id=ObjectId(id)).first()
-        debug_print("COPY REMIT BY ID", remit.to_json())
+        debug_print("COPY OTA BY ID", remit.to_json())
 
         organizationalUnitCode = remit.organizationalUnitCode
         remitText = remit.remitText

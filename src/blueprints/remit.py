@@ -205,8 +205,8 @@ def retrieve_remit_by_id(id):
   
   data = {
     "_id": str(remit.id),
-    "organization": remit.organization,
-    "organizational_unit": remit.organizational_unit,
+    "organization": remit.organization.to_dict(),
+    "organizational_unit": remit.organizational_unit.to_dict(),
     "organizationalUnitCode": remit.organizationalUnitCode,
     "remitText": remit.remitText,
     "remitType": remit.remitType,
