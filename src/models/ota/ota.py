@@ -74,7 +74,7 @@ class Ota(TimeStampedModel):
             if provision.instructionAct else None
         ),
         "instructionActKey" : provision.instructionAct.instructionActKey if provision.instructionAct else None,
-        "instructionProvisionSpecs": provision.instructionProvisionSpecs.to_mongo(),
+        # "instructionProvisionSpecs": provision.instructionProvisionSpecs.to_mongo(),
         "instructionProvisionText": provision.instructionProvisionText,
         "instructionPages": provision.instructionPages.to_mongo(),
       }

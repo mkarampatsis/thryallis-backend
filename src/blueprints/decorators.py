@@ -9,6 +9,7 @@ from src.models.ota.instruction_provision import InstructionProvision
 from src.models.apografi.organizational_unit import OrganizationalUnit
 from src.models.psped.foreas import Foreas
 from src.models.psped.remit import Remit
+from src.models.ota.ota import Ota
 
 
 def can_edit(f):
@@ -78,8 +79,8 @@ def can_delete_legal_provision(f):
     user_roles = claims["roles"]
     # with admin or root then save is not made because admin and root do not have foreas and monades
     # roles = [x for x in user_roles if x["role"] in ["EDITOR", "ADMIN", "ROOT"]]
-    roles = [x for x in user_roles if x["role"] in ["EDITOR"]]
-    # print(">>>>>> ROLES >>", roles)
+    roles = [x for x in user_roles if x["role"] in ["EDITOR", "OTA_EDITOR"]]
+    print(">>>>>> ROLES >>", roles)
     all_codes = [code for entry in roles for code_list in (entry["foreas"], entry["monades"]) for code in code_list]
     # print(">>>>>> ALL CODES >>", all_codes)
 
@@ -101,6 +102,10 @@ def can_delete_legal_provision(f):
     elif regulatedObjectType == "remit":
       remit = Remit.objects.get(id=regulatedObjectId)
       code = remit.organizationalUnitCode
+    elif regulatedObjectType == "ota":
+      ota = Ota.objects.get(id=regulatedObjectId)
+      code = "ota" if ota else ""
+      all_codes.append("ota")  # Add "ota" to all_codes if the user has OTA_EDITOR role  
 
     if code not in all_codes:
       return Response(

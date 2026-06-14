@@ -28,16 +28,24 @@ class InstructionProvision(me.Document):
     "collection": "instruction_provisions",
     "db_alias": "psped",
     "indexes": [
-      { "fields": [
-        "regulatedObject.regulatedObjectType", "regulatedObject.regulatedObjectId", 
-        "instructionAct", "instructionProvisionSpecs.arthro", "instructionProvisionSpecs.paragrafos", "instructionProvisionSpecs.edafio"
-      ], "unique": True, "name":"regulatedObject_instructionAct_instructionProvisionSpecs" }
+      { 
+        # "fields": [
+        #   "regulatedObject.regulatedObjectType", "regulatedObject.regulatedObjectId", 
+        #   "instructionAct", "instructionProvisionSpecs.arthro", "instructionProvisionSpecs.paragrafos", "instructionProvisionSpecs.edafio"
+        # ], "unique": True, "name":"regulatedObject_instructionAct_instructionProvisionSpecs"
+        "fields": [
+          "regulatedObject.regulatedObjectType", 
+          "regulatedObject.regulatedObjectId", 
+          "instructionAct", 
+          # "instructionProvisionSpecs.arthro", "instructionProvisionSpecs.paragrafos", "instructionProvisionSpecs.edafio"
+        ], "unique": True, "name":"regulatedObject_instructionAct" 
+      }
     ],
   }
 
   regulatedObject = me.EmbeddedDocumentField(RegulatedObjectOta, required=True)
   instructionAct = me.ReferenceField(InstructionAct, required=True)
-  instructionProvisionSpecs = me.EmbeddedDocumentField(InstructionProvisionSpecs, required=True)
+  # instructionProvisionSpecs = me.EmbeddedDocumentField(InstructionProvisionSpecs, required=True)
   instructionProvisionText = me.StringField(required=True)
   instructionPages = me.EmbeddedDocumentField(InstructionPages)
 
@@ -49,7 +57,7 @@ class InstructionProvision(me.Document):
         "_id": str(self.instructionAct.id),
         **self.instructionAct.to_mongo().to_dict()
       },
-      "instructionProvisionSpecs": self.instructionProvisionSpecs.to_mongo() if self.instructionProvisionSpecs else None,
+      # "instructionProvisionSpecs": self.instructionProvisionSpecs.to_mongo() if self.instructionProvisionSpecs else None,
       "instructionProvisionText": self.instructionProvisionText,
       "instructionPages": self.instructionPages.to_mongo() if self.instructionPages else None,  
     }
@@ -61,13 +69,13 @@ class InstructionProvision(me.Document):
     for provision in instruction_provisions:
       instructionActKey = provision["instructionActKey"]
       instructionAct = InstructionAct.objects.get(instructionActKey=instructionActKey)
-      instructionProvisionSpecs = provision["instructionProvisionSpecs"]
+      # instructionProvisionSpecs = provision["instructionProvisionSpecs"]
       instructionProvisionText = provision["instructionProvisionText"]
       instructionPages = provision.get("instructionPages")
       instructionProvision = InstructionProvision(
         regulatedObject=regulatedObject,
         instructionAct=instructionAct,
-        instructionProvisionSpecs=instructionProvisionSpecs,
+        # instructionProvisionSpecs=instructionProvisionSpecs,
         instructionProvisionText=instructionProvisionText,
         instructionPages=instructionPages
       ).save()

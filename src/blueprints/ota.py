@@ -86,7 +86,7 @@ def create_ota():
       regulatedObjectType="ota",
       regulatedObjectId=newRemitID,
     )
-    
+  
     legal_provisions_changes_inserts = []
     legal_provisions_docs = LegalProvision.save_new_legal_provisions(legalProvisions, regulatedObject)
     legal_provisions_changes_inserts = [provision.to_mongo() for provision in legal_provisions_docs]
@@ -130,6 +130,7 @@ def update_ota(id: str):
   curr_change = {}
   try:
     data = request.get_json()
+
     debug_print("UPDATE OTA", data)
 
     remitText = data["remitText"]
@@ -158,10 +159,10 @@ def update_ota(id: str):
       regulatedObjectType="ota",
       regulatedObjectId=remitID,
     )
-    
+
     legal_provisions_docs = LegalProvision.save_new_legal_provisions(legalProvisions, regulatedObject)
     instruction_provisions_docs = InstructionProvision.save_new_instruction_provisions(instructionProvisions, regulatedObjectOta)
-    
+
     remit = Ota.objects.get(id=ObjectId(id))
 
     existingLegalProvisions = remit.legalProvisionRefs
@@ -169,7 +170,7 @@ def update_ota(id: str):
 
     existingInstructionProvisions = remit.instructionProvisionRefs
     updatedInstructionProvisions = existingInstructionProvisions + instruction_provisions_docs
-    
+
     remit.update(
       remitText=remitText,
       remitCompetence=remitCompetence,
