@@ -61,21 +61,18 @@ def update_instruction_provision():
 
   instructionActKey = currentProvision["instructionActKey"]
   instructionAct = InstructionAct.objects.get(instructionActKey=instructionActKey)
-  instructionProvisionSpecs = currentProvision["instructionProvisionSpecs"]
   instructionPages = currentProvision["instructionPages"]
   existing_instruction_provision = InstructionProvision.objects(
-    instructionAct=instructionAct, instructionProvisionSpecs=instructionProvisionSpecs, instructionPages=instructionPages
+    instructionAct=instructionAct, instructionPages=instructionPages
   ).first()
 
   try:
     updated_instructionActKey = updatedProvision["instructionActKey"]
     updated_instructionAct = InstructionAct.objects.get(instructionActKey=updated_instructionActKey)
-    updated_instructionProvisionSpecs = updatedProvision["instructionProvisionSpecs"]
     updated_instructionProvisionText = updatedProvision["instructionProvisionText"]
     updated_instructionPages = updatedProvision["instructionPages"]
     existing_instruction_provision.update(
       instructionAct=updated_instructionAct,
-      instructionProvisionSpecs=updated_instructionProvisionSpecs,
       instructionProvisionText=updated_instructionProvisionText,
       instructionPages=updated_instructionPages,
     )
@@ -86,7 +83,6 @@ def update_instruction_provision():
       "key": {
         "code": code,
         "instructionActKey": instructionActKey,
-        "instructionProvisionSpecs": instructionProvisionSpecs,
         "instructionPages": instructionPages,
       },
     }
@@ -101,7 +97,6 @@ def update_instruction_provision():
           "message": "<strong>Η επιμέρους ενότητα εγκυκλίου ανανεώθηκε</strong>",
           "updatedInstructionProvision": {
             "instructionActKey": updated_instructionActKey,
-            "instructionProvisionSpecs": updated_instructionProvisionSpecs,
             "instructionProvisionText": updated_instructionProvisionText,
             "instructionPages": updated_instructionPages,
           },

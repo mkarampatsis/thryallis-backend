@@ -159,18 +159,20 @@ def update_ota(id: str):
       regulatedObjectType="ota",
       regulatedObjectId=remitID,
     )
-
+    print("1>>>>", legalProvisions)
     legal_provisions_docs = LegalProvision.save_new_legal_provisions(legalProvisions, regulatedObject)
+    print("2>>>>")
     instruction_provisions_docs = InstructionProvision.save_new_instruction_provisions(instructionProvisions, regulatedObjectOta)
-
+    print("3>>>>",instructionProvisions)
     remit = Ota.objects.get(id=ObjectId(id))
 
     existingLegalProvisions = remit.legalProvisionRefs
     updatedLegalProvisions = existingLegalProvisions + legal_provisions_docs
 
     existingInstructionProvisions = remit.instructionProvisionRefs
+    print("4>>>>",existingInstructionProvisions)
     updatedInstructionProvisions = existingInstructionProvisions + instruction_provisions_docs
-
+    print("5>>>>",updatedInstructionProvisions)
     remit.update(
       remitText=remitText,
       remitCompetence=remitCompetence,
@@ -181,7 +183,7 @@ def update_ota(id: str):
       legalProvisionRefs=updatedLegalProvisions,
       instructionProvisionRefs=updatedInstructionProvisions,
     )
-    
+    print("6>>>>")
     curr_change = {
       "old": {
         "remitText": remit.remitText,
@@ -190,8 +192,8 @@ def update_ota(id: str):
         "remitLocalOrGlobal": remit.remitLocalOrGlobal,
         "publicPolicyAgency": remit.publicPolicyAgency,
         "cofog": remit.cofog.to_mongo().to_dict(),
-        "legalProvisions": [provision.to_mongo().to_dict() for provision in existingLegalProvisions],
-        "instructionProvisions": [provision.to_mongo().to_dict() for provision in existingInstructionProvisions], 
+        "legalProvisions": [provision for provision in existingLegalProvisions],
+        "instructionProvisions": [provision for provision in existingInstructionProvisions], 
       },
       "new": {
         "remitText": remitText,
@@ -200,8 +202,8 @@ def update_ota(id: str):
         "remitLocalOrGlobal":remitLocalOrGlobal,
         "publicPolicyAgency":publicPolicyAgency,
         "cofog": cofog,
-        "legalProvisions": [provision.to_mongo().to_dict() for provision in updatedLegalProvisions],
-        "instructionProvisions": [provision.to_mongo().to_dict() for provision in updatedInstructionProvisions],  
+        "legalProvisions": [provision for provision in updatedLegalProvisions],
+        "instructionProvisions": [provision for provision in updatedInstructionProvisions],  
       },
     }
     who = get_jwt_identity()

@@ -4,6 +4,8 @@ from functools import wraps
 import json
 
 
+from src.models.ota import ota
+from src.models.ota import ota
 from src.models.psped.legal_provision import LegalProvision
 from src.models.ota.instruction_provision import InstructionProvision
 from src.models.apografi.organizational_unit import OrganizationalUnit
@@ -49,13 +51,17 @@ def can_update_delete(f):
     user_roles = claims["roles"]
     # with admin or root then save is not made because admin and root do not have foreas and monades
     # roles = [x for x in user_roles if x["role"] in ["EDITOR", "ADMIN", "ROOT"]]
-    roles = [x for x in user_roles if x["role"] in ["EDITOR"]]
+    roles = [x for x in user_roles if x["role"] in ["EDITOR", "OTA_EDITOR"]]
     # print(">>>>>> ROLES >>", roles)
     all_codes = [code for entry in roles for code_list in (entry["foreas"], entry["monades"]) for code in code_list]
     # print(">>>>>> ALL CODES >>", all_codes)
     data = request.get_json()
     code = data.get("code", "")
     # print(">>>>>> CODE >>", code)
+    
+    if "OTA_EDITOR" in [x["role"] for x in roles]:
+      code = "ota"
+      all_codes.append("ota") 
 
     if code not in all_codes:
       return Response(
@@ -113,7 +119,7 @@ def can_delete_legal_provision(f):
         mimetype="application/json",
         status=403,
       )
-    print(">>>>>>>>>>>>> GO ON DELETE THE FUCKING LEGAL PROVISION !!!!")
+    # print(">>>>>>>>>>>>> GO ON DELETE THE FUCKING LEGAL PROVISION !!!!")
 
     return f(*args, **kwargs)
 
