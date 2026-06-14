@@ -35,10 +35,12 @@ class InstructionProvision(me.Document):
         # ], "unique": True, "name":"regulatedObject_instructionAct_instructionProvisionSpecs"
         "fields": [
           "regulatedObject.regulatedObjectType", 
-          "regulatedObject.regulatedObjectId", 
+          "regulatedObject.regulatedObjectId",
+          "instructionPages.from_pages",
+          "instructionPages.to_pages",
           "instructionAct", 
           # "instructionProvisionSpecs.arthro", "instructionProvisionSpecs.paragrafos", "instructionProvisionSpecs.edafio"
-        ], "unique": True, "name":"regulatedObject_instructionAct" 
+        ], "unique": True, "name":"regulatedObject_instructionAct_instructionPages" 
       }
     ],
   }
