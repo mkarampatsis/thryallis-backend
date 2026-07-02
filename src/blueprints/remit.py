@@ -415,8 +415,25 @@ def get_all_remits_with_pagination():
     # Filtering
     filters = json.loads(request.args.get("filter", "{}"))
     # print("FIlters>>",filters)
-    query = {}
+    status = json.loads(request.args.get("status", "{}"))
+    print("Status>>",status)
     
+    query = {}
+    selected_statuses = []
+    
+    if status.get("active"):
+      selected_statuses.append("ΕΝΕΡΓΗ")
+
+    if status.get("inactive"):
+      selected_statuses.append("ΑΝΕΝΕΡΓΗ")
+
+    if status.get("unassigned"):
+      selected_statuses.append("ΜH ΑΝΑΤΕΘΕΙΜΕΝΗ")
+
+    # If at least one status is selected → use $in
+    if selected_statuses:
+      query["status__in"] = selected_statuses
+
     # for field, condition in filters.items():
     #   value = condition.get("filter")
     #   if not value:
