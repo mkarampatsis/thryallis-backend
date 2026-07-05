@@ -7,7 +7,8 @@ import mongoengine as me
 class UserRole(me.EmbeddedDocument):
     role = me.StringField(required=True, choices=[
       'EDITOR', 
-      'HELPDESK', 
+      'HELPDESK',
+      'HELPDESK_OTA', 
       'ADMIN', 
       'FACILITY_EDITOR', 
       'FACILITY_ADMIN', 

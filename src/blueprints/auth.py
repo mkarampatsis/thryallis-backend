@@ -144,7 +144,8 @@ def gsis_login(code: str):
               try:
                 if hasattr(r, "role") and r.role in [
                   'EDITOR', 
-                  'HELPDESK', 
+                  'HELPDESK',
+                  'HELPDESK_OTA', 
                   'ADMIN', 
                   'FACILITY_EDITOR', 
                   'FACILITY_ADMIN', 

@@ -30,6 +30,37 @@ def get_my_organizations():
 
   return Response(json.dumps({"organizations": organizationCodes, "organizational_units": monadesCodes}), status=200)
 
+@user.route("/<string:category>/<string:id>", methods=["GET"])
+@jwt_required()
+@has_admin_role
+def get_user(category: str, id: str):
+
+  try:
+    if category == "google":
+      user = User.objects.get(email=id)
+    elif category == "gsis":
+      user = UserGsis.objects.get(taxid=id)
+    else:
+      return Response(
+        json.dumps({"message": f"<strong>Αποτυχία εμφάνισης χρήστη:</strong> Άγνωστη κατηγορία χρήστη {category}"}),
+        mimetype="application/json",
+        status=400,
+      ) 
+    
+    return Response(
+      json.dumps({"user": json.loads(user.to_json())}),
+      mimetype="application/json",
+      status=200,
+    )
+  
+  except Exception as e:
+    print(e)
+    return Response(
+      json.dumps({"message": f"<strong>Αποτυχία εμφάνισης χρήστη:</strong> {e}"}),
+      mimetype="application/json",
+      status=500,
+    )
+
 @user.route("/all")
 @jwt_required()
 @has_admin_role
@@ -61,33 +92,17 @@ def set_user_accesses(email: str):
     
     data = request.get_json()
 
-    # orgarganizationCodes = data["organizationCodes"]
-    # organizationalUnitCodes = data["organizationalUnitCodes"]
     roles_data = data["roles"]
     # Convert dicts to UserRole embedded documents
     roles = [UserRole(**r) for r in roles_data]
 
     user = User.objects.get(email=email)
 
-    # editor_role = None
-    # for role in user.roles:
-    #   if role.role == 'EDITOR':
-    #     editor_role = role
-    #     break
-
-    # if editor_role:
-    #   editor_role.foreas = orgarganizationCodes
-    #   editor_role.monades = organizationalUnitCodes
-    # else:
-    #   new_role = UserRole(role='EDITOR', foreas=orgarganizationCodes, monades=organizationalUnitCodes)
-    #   user.roles.append(new_role)
-    
     user.roles = roles
     user.save()
 
     who = get_jwt_identity()
     what = {"entity": "user", "key": {"email": email}}
-    # Change(action="update", who=who, what=what, change={"foreas": orgarganizationCodes, "monades":organizationalUnitCodes}).save()
     Change(action="update", who=who, what=what, change={"roles": roles}).save()
 
     return Response(

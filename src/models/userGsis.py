@@ -6,6 +6,7 @@ class UserRoleGSIS(me.EmbeddedDocument):
   role = me.StringField(required=True, choices=[
     'EDITOR', 
     'HELPDESK', 
+    'HELPDESK_OTA',
     'ADMIN', 
     'FACILITY_EDITOR', 
     'FACILITY_ADMIN', 
