@@ -38,10 +38,10 @@ class LegalProvision(me.Document):
         "db_alias": "psped",
         "indexes": [
             { "fields": [
-                            "regulatedObject.regulatedObjectType", "regulatedObject.regulatedObjectId", 
-                            "legalAct",
-                            "legalProvisionSpecs.meros", "legalProvisionSpecs.arthro", "legalProvisionSpecs.paragrafos", "legalProvisionSpecs.edafio", "legalProvisionSpecs.pararthma"
-                        ], "unique": True, "name":"regulatedObject_legalAct_legalProvisionSpecs" }
+                "regulatedObject.regulatedObjectType", "regulatedObject.regulatedObjectId", 
+                "legalAct",
+                "legalProvisionSpecs.meros", "legalProvisionSpecs.arthro", "legalProvisionSpecs.paragrafos", "legalProvisionSpecs.edafio", "legalProvisionSpecs.pararthma"
+            ], "unique": True, "name":"regulatedObject_legalAct_legalProvisionSpecs" }
         ],
         # From index I have removed legalProvisionSpecs.kefalaio
     }
