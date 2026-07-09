@@ -4,7 +4,11 @@ ATTRIBUTE_DICT_TO_GREEK = {
     "meros": "Μέρος",
     "arthro": "Άρθρο",
     "paragrafos": "Παράγραφος",
-    "edafio": "Έδαφιο",
+    # "edafio": "Έδαφιο",
+    "periptosi": "Περίπτωση",
+    "ypoperiptosi": "Υποπερίπτωση",
+    "stoixeio": "Στοιχείο",
+    "ypostoixeio": "Υποστοιχείο",
     "pararthma": "Παράρτημα",
 }
 

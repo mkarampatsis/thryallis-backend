@@ -22,14 +22,18 @@ class LegalProvisionSpecs(me.EmbeddedDocument):
     kefalaio = me.StringField()
     arthro = me.StringField()
     paragrafos = me.StringField()
-    edafio = me.StringField()
+    periptosi = me.StringField()
+    ypoperiptosi = me.StringField()
+    stoixeio = me.StringField()
+    ypostoixeio = me.StringField()
+    # edafio = me.StringField()
     pararthma = me.StringField()
 
     def validate(self, clean=True):
         super(LegalProvisionSpecs, self).validate(clean)
-        fields = [self.meros, self.kefalaio, self.arthro, self.paragrafos, self.edafio, self.pararthma]
+        fields = [self.meros, self.kefalaio, self.arthro, self.paragrafos, self.periptosi, self.ypoperiptosi, self.stoixeio, self.ypostoixeio, self.pararthma]
         if not any(fields):
-            raise me.ValidationError("Κάποιο πεδίο της Διάταξης πρέπει να συμπληρωθεί")
+          raise me.ValidationError("Κάποιο πεδίο της Διάταξης πρέπει να συμπληρωθεί")
 
 
 class LegalProvision(me.Document):
@@ -40,7 +44,7 @@ class LegalProvision(me.Document):
             { "fields": [
                 "regulatedObject.regulatedObjectType", "regulatedObject.regulatedObjectId", 
                 "legalAct",
-                "legalProvisionSpecs.meros", "legalProvisionSpecs.arthro", "legalProvisionSpecs.paragrafos", "legalProvisionSpecs.edafio", "legalProvisionSpecs.pararthma"
+                "legalProvisionSpecs.meros", "legalProvisionSpecs.arthro", "legalProvisionSpecs.paragrafos", "legalProvisionSpecs.periptosi","legalProvisionSpecs.ypoperiptosi"
             ], "unique": True, "name":"regulatedObject_legalAct_legalProvisionSpecs" }
         ],
         # From index I have removed legalProvisionSpecs.kefalaio
