@@ -19,35 +19,74 @@ legal_provision = Blueprint("legal_provision", __name__)
 @legal_provision.route("/by_regulated_organization/<string:code>", methods=["GET"])
 # @jwt_required()
 def get_legal_provisions_by_regulated_organization(code: str):
+    # organization = Foreas.objects.get(code=code)
+    # # debug_print("LEGAL PROVISIONS BY ORGANIZATION CODE", organization.to_mongo().to_dict())
+    # organization_id = organization.id
+    # regulatedObject = RegulatedObject(
+    #     regulatedObjectType="organization",
+    #     regulatedObjectId=organization_id,
+    # )
+
+    # legal_provisions = [provision.to_mongo().to_dict() for provision in LegalProvision.objects(regulatedObject=regulatedObject)]
+    # # debug_print("LEGAL PROVISIONS BY ORGANIZATION CODE", legal_provisions)
+
+    # for provision in legal_provisions:
+    #     # Determize legalActKey from legalActRef
+    #     legalActRef = provision["legalAct"]
+    #     print(">>>",legalActRef)
+    #     legalAct = LegalAct.objects.get(id=legalActRef)
+    #     legalActKey = legalAct.legalActKey
+    #     # Add legalActKey to provision
+    #     provision["legalActKey"] = legalActKey
+    #     provision["_id"] = str(provision["_id"])
+    #     # Delete all ObjectId fields as they are not JSON serializable
+    #     del provision["legalAct"]
+    #     del provision["regulatedObject"]
+    #     print(provision)
+      
+    # # debug_print("LEGAL PROVISIONS BY ORGANIZATION CODE", legal_provisions)
+
+    # return Response(json.dumps(legal_provisions), mimetype="application/json", status=200)
     organization = Foreas.objects.get(code=code)
-    # debug_print("LEGAL PROVISIONS BY ORGANIZATION CODE", organization.to_mongo().to_dict())
-    organization_id = organization.id
     regulatedObject = RegulatedObject(
         regulatedObjectType="organization",
-        regulatedObjectId=organization_id,
+        regulatedObjectId=organization.id,
     )
 
-    legal_provisions = [provision.to_mongo().to_dict() for provision in LegalProvision.objects(regulatedObject=regulatedObject)]
-    # debug_print("LEGAL PROVISIONS BY ORGANIZATION CODE", legal_provisions)
+    legal_provisions_raw = LegalProvision.objects(regulatedObject=regulatedObject)
 
-    for provision in legal_provisions:
-        # Determize legalActKey from legalActRef
-        legalActRef = provision["legalAct"]
+    valid_provisions = []
 
-        legalAct = LegalAct.objects.get(id=legalActRef)
-        legalActKey = legalAct.legalActKey
+    for provision in legal_provisions_raw:
+        p = provision.to_mongo().to_dict()
 
-        # Add legalActKey to provision
-        provision["legalActKey"] = legalActKey
-        provision["_id"] = str(provision["_id"])
-        # Delete all ObjectId fields as they are not JSON serializable
-        del provision["legalAct"]
-        del provision["regulatedObject"]
+        legalActRef = p.get("legalAct")
+        if not legalActRef:
+            # No legalAct reference → skip
+            continue
 
-    # debug_print("LEGAL PROVISIONS BY ORGANIZATION CODE", legal_provisions)
+        try:
+            legalAct = LegalAct.objects.get(id=legalActRef)
+        except LegalAct.DoesNotExist:
+            # Invalid reference → skip this provision
+            continue
 
-    return Response(json.dumps(legal_provisions), mimetype="application/json", status=200)
+        # Build cleaned JSON‑serializable version
+        cleaned = {
+            "_id": str(p["_id"]),
+            "legalActKey": legalAct.legalActKey,
+            "legalProvisionSpecs": p.get("legalProvisionSpecs"),
+            "legalProvisionText": p.get("legalProvisionText"),
+            # Add any other fields you want to keep
+        }
 
+        valid_provisions.append(cleaned)
+
+    return Response(
+        json.dumps(valid_provisions),
+        mimetype="application/json",
+        status=200,
+    )
 
 @legal_provision.route("by_regulated_organization_unit/<string:code>", methods=["GET"])
 # @jwt_required()
