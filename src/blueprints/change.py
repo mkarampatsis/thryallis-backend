@@ -17,59 +17,60 @@ change = Blueprint("change", __name__)
 def getOrganizations(entity: str):
     try:
         print("Entity received:", entity)
-        pipeline = [
-            # {"$match": {"what.entity": "organization"}},
-            {"$match": {"what.entity": entity}},
-            {"$group": {"_id": None, "organizations": {"$addToSet": "$what.key.code"}}},
-            {"$project": {"_id": 0, "organizations": 1}},
-        ]
-        resultOrganizations = Change.objects.aggregate(pipeline)
-        # Convert the CommandCursor to a list
-        result_list_organizations = list(resultOrganizations)
+        result = Change.objects(what__entity=entity)
+        # pipeline = [
+        #     # {"$match": {"what.entity": "organization"}},
+        #     {"$match": {"what.entity": entity}},
+        #     {"$group": {"_id": None, "organizations": {"$addToSet": "$what.key.code"}}},
+        #     {"$project": {"_id": 0, "organizations": 1}},
+        # ]
+        # resultOrganizations = Change.objects.aggregate(pipeline)
+        # # Convert the CommandCursor to a list
+        # result_list_organizations = list(resultOrganizations)
 
-        pipeline = [
-            {"$match": {"what.entity": "organizationalUnit"}},
-            {
-                "$group": {
-                    "_id": None,
-                    "organizationalUnits": {"$addToSet": "$what.key.code"},
-                }
-            },
-            {"$project": {"_id": 0, "organizationalUnits": 1}},
-        ]
-        resultOrganizationalUnits = Change.objects.aggregate(pipeline)
-        # Convert the CommandCursor to a list
-        result_list_organizationalUnits = list(resultOrganizationalUnits)
+        # pipeline = [
+        #     {"$match": {"what.entity": "organizationalUnit"}},
+        #     {
+        #         "$group": {
+        #             "_id": None,
+        #             "organizationalUnits": {"$addToSet": "$what.key.code"},
+        #         }
+        #     },
+        #     {"$project": {"_id": 0, "organizationalUnits": 1}},
+        # ]
+        # resultOrganizationalUnits = Change.objects.aggregate(pipeline)
+        # # Convert the CommandCursor to a list
+        # result_list_organizationalUnits = list(resultOrganizationalUnits)
 
-        pipeline = [
-            {"$match": {"what.entity": "remit"}},
-            {
-                "$project": {
-                    "_id": 1,
-                }
-            },
-        ]
+        # pipeline = [
+        #     {"$match": {"what.entity": "remit"}},
+        #     {
+        #         "$project": {
+        #             "_id": 1,
+        #         }
+        #     },
+        # ]
 
-        resultRemits = Change.objects.aggregate(pipeline)
+        # resultRemits = Change.objects.aggregate(pipeline)
 
-        # Convert the CommandCursor to a list
-        result_list_remits = list(resultRemits)
-        # Convert ObjectIds to strings
-        for r in result_list_remits:
-            if isinstance(r.get("_id"), ObjectId):
-                r["_id"] = str(r["_id"])
+        # # Convert the CommandCursor to a list
+        # result_list_remits = list(resultRemits)
+        # # Convert ObjectIds to strings
+        # for r in result_list_remits:
+        #     if isinstance(r.get("_id"), ObjectId):
+        #         r["_id"] = str(r["_id"])
 
-        result = {
-            "organizations": result_list_organizations[0]["organizations"],
-            "organizationalUnits": result_list_organizationalUnits[0][
-                "organizationalUnits"
-            ],
-            "remits": result_list_remits[0],
-        }
+        # result = {
+        #     "organizations": result_list_organizations[0]["organizations"],
+        #     "organizationalUnits": result_list_organizationalUnits[0][
+        #         "organizationalUnits"
+        #     ],
+        #     "remits": result_list_remits[0],
+        # }
 
-        # print(result)
+        print(result)
         return Response(
-            json.dumps({"data": result}),
+            json.dumps({"data": result.to_json()}),
             mimetype="application/json",
             status=200,
         )
