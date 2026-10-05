@@ -12,57 +12,44 @@ from .utils import debug_print
 change = Blueprint("change", __name__)
 
 
-@change.route("/allChangesCodesByType", methods=["get"])
+@change.route("/allChangesCodesByType/<string:entity>", methods=["get"])
 @jwt_required()
-def getOrganizations():
+def getOrganizations(entity: str):
     try:
+        print("Entity received:", entity)
         pipeline = [
-            {"$match": {"what.entity": "organization"}},
-            {
-                "$group":{
-                    "_id":None,
-                    "organizations": { "$addToSet": "$what.key.code" }
-                }
-            },
-            {
-                "$project": {
-                    "_id": 0,
-                    "organizations": 1
-                }
-            }
+            # {"$match": {"what.entity": "organization"}},
+            {"$match": {"what.entity": entity}},
+            {"$group": {"_id": None, "organizations": {"$addToSet": "$what.key.code"}}},
+            {"$project": {"_id": 0, "organizations": 1}},
         ]
         resultOrganizations = Change.objects.aggregate(pipeline)
         # Convert the CommandCursor to a list
         result_list_organizations = list(resultOrganizations)
-        
+
         pipeline = [
             {"$match": {"what.entity": "organizationalUnit"}},
             {
-                "$group":{
-                    "_id":None,
-                    "organizationalUnits": { "$addToSet": "$what.key.code" }
+                "$group": {
+                    "_id": None,
+                    "organizationalUnits": {"$addToSet": "$what.key.code"},
                 }
             },
-            {
-                "$project": {
-                    "_id": 0,
-                    "organizationalUnits":1
-                }
-            }
+            {"$project": {"_id": 0, "organizationalUnits": 1}},
         ]
         resultOrganizationalUnits = Change.objects.aggregate(pipeline)
         # Convert the CommandCursor to a list
         result_list_organizationalUnits = list(resultOrganizationalUnits)
 
         pipeline = [
-            {"$match": {"what.entity":"remit"}},
+            {"$match": {"what.entity": "remit"}},
             {
                 "$project": {
-                "_id":1,
+                    "_id": 1,
                 }
-            }
+            },
         ]
-        
+
         resultRemits = Change.objects.aggregate(pipeline)
 
         # Convert the CommandCursor to a list
@@ -73,9 +60,11 @@ def getOrganizations():
                 r["_id"] = str(r["_id"])
 
         result = {
-            "organizations": result_list_organizations[0]['organizations'],
-            "organizationalUnits": result_list_organizationalUnits[0]['organizationalUnits'],
-            "remits": result_list_remits[0]
+            "organizations": result_list_organizations[0]["organizations"],
+            "organizationalUnits": result_list_organizationalUnits[0][
+                "organizationalUnits"
+            ],
+            "remits": result_list_remits[0],
         }
 
         # print(result)
@@ -88,59 +77,68 @@ def getOrganizations():
     except Exception as e:
         print(e)
         return Response(
-            json.dumps({"message": f"<strong>Αποτυχία ανάκτησης ιστορικών στοιχείων φορεών:</strong> {e}"}),
+            json.dumps(
+                {
+                    "message": f"<strong>Αποτυχία ανάκτησης ιστορικών στοιχείων φορεών:</strong> {e}"
+                }
+            ),
             mimetype="application/json",
             status=500,
         )
 
+
 @change.route("/allChangesByEntity", methods=["get"])
 @jwt_required()
 def getChangesByEntity():
-  try:
-    distinct_entities = Change.objects.distinct('what__entity')
+    try:
+        distinct_entities = Change.objects.distinct("what.entity")
 
-    print(distinct_entities)
-    return Response(
-      json.dumps({"data": distinct_entities}),
-      mimetype="application/json",
-      status=200,
-    )
+        print(distinct_entities)
+        return Response(
+            json.dumps({"data": distinct_entities}),
+            mimetype="application/json",
+            status=200,
+        )
 
-  except Exception as e:
-    print(e)
-    return Response(
-      json.dumps({"message": f"<strong>Αποτυχία ανάκτησης ιστορικών στοιχείων φορεών:</strong> {e}"}),
-      mimetype="application/json",
-      status=500,
-    )
-
+    except Exception as e:
+        print(e)
+        return Response(
+            json.dumps(
+                {
+                    "message": f"<strong>Αποτυχία ανάκτησης ιστορικών στοιχείων φορεών:</strong> {e}"
+                }
+            ),
+            mimetype="application/json",
+            status=500,
+        )
 
 
 @change.route("/<string:code>", methods=["GET"])
 @jwt_required()
 def retrieve_change_by_code(code):
     # print(code)
-    changes = Change.objects(__raw__={"$or":[
-        {"what.key.code":code},
-        {"what.key.organizationalUnitCode":code}
-    ]}).order_by("when")
+    changes = Change.objects(
+        __raw__={
+            "$or": [{"what.key.code": code}, {"what.key.organizationalUnitCode": code}]
+        }
+    ).order_by("when")
 
     result = []
     for row in changes:
-        try: 
+        try:
             user = User.objects.get(email=row.who)
             who_data = {
-                "firstName" : user.firstName,
-                "lastName" :user.lastName,
-                "email" : user.email
+                "firstName": user.firstName,
+                "lastName": user.lastName,
+                "email": user.email,
             }
         except User.DoesNotExist:
             who_data = {"email": row.who, "firstName": "", "lastName": ""}
-        
+
         row_dict = row.to_mongo().to_dict()
         row_dict["who"] = who_data  # override string with full object
         result.append(row_dict)
-    
+
     # debug_print("GET CHANGES BY CODE", changes.to_json())
 
     return Response(
@@ -154,7 +152,7 @@ def retrieve_change_by_code(code):
 @change.route("/<string:id>", methods=["GET"])
 @jwt_required()
 def retrieve_change_by_id(id):
-    
+
     try:
         change = Change.objects.get(id=ObjectId(id))
 
@@ -162,12 +160,12 @@ def retrieve_change_by_id(id):
             change.to_json(),
             mimetype="application/json",
             status=200,
-        )    
+        )
     except Exception as e:
         return Response(
-            json.dumps({"message": f"<strong>Αποτυχία εμφάνισης ιστορικού:</strong> {e}"}),
+            json.dumps(
+                {"message": f"<strong>Αποτυχία εμφάνισης ιστορικού:</strong> {e}"}
+            ),
             mimetype="application/json",
             status=500,
         )
-
-     
