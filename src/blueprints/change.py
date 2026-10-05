@@ -13,7 +13,7 @@ change = Blueprint("change", __name__)
 
 
 @change.route("/allChangesCodesByType", methods=["get"])
-# @jwt_required()
+@jwt_required()
 def getOrganizations():
     try:
         pipeline = [
@@ -92,6 +92,29 @@ def getOrganizations():
             mimetype="application/json",
             status=500,
         )
+
+@change.route("/allChangesByEntity", methods=["get"])
+@jwt_required()
+def getChangesByEntity():
+  try:
+    distinct_entities = Change.objects.distinct('what__entity')
+
+    print(distinct_entities)
+    return Response(
+      json.dumps({"data": distinct_entities}),
+      mimetype="application/json",
+      status=200,
+    )
+
+  except Exception as e:
+    print(e)
+    return Response(
+      json.dumps({"message": f"<strong>Αποτυχία ανάκτησης ιστορικών στοιχείων φορεών:</strong> {e}"}),
+      mimetype="application/json",
+      status=500,
+    )
+
+
 
 @change.route("/<string:code>", methods=["GET"])
 @jwt_required()
