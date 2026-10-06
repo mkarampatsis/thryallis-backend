@@ -62,7 +62,10 @@ def create_remit():
         who = get_jwt_identity()
         what = {
             "entity": "remit",
-            "key": {"organizationalUnitCode": organizationalUnitCode},
+            "key": {
+                "organizationalUnit": organizational_unit,
+                "code": organizationalUnitCode,
+            },
         }
         Change(action="create", who=who, what=what, change=curr_change).save()
 
@@ -153,7 +156,10 @@ def update_remit():
         who = get_jwt_identity()
         what = {
             "entity": "remit",
-            "key": {"organizationalUnitCode": organizationalUnitCode},
+            "key": {
+                "organizationalUnit": organizational_unit,
+                "code": organizationalUnitCode,
+            },
         }
         Change(action="update", who=who, what=what, change=curr_change).save()
 
@@ -187,7 +193,7 @@ def update_remit_status(remitID: str):
 
         who = get_jwt_identity()
         what = {"entity": "remit", "key": {"remitID": remitID}}
-        Change(action="update", who=who, what=what, change={"status": status}).save()
+        Change(action="update status", who=who, what=what, change={"status": status}).save()
 
         return Response(
             json.dumps({"message": f"Η αρμοδιότητα είναι πλέον {status}"}),
@@ -410,9 +416,12 @@ def copy_remit(id):
         who = get_jwt_identity()
         what = {
             "entity": "remit",
-            "key": {"organizationalUnitCode": organizationalUnitCode},
+            "key": {
+                "organizationalUnit": organizational_unit,
+                "code": organizationalUnitCode,
+            },
         }
-        Change(action="create", who=who, what=what, change=curr_change).save()
+        Change(action="copy", who=who, what=what, change=curr_change).save()
 
         return Response(
             # json.dumps({"message": "Η αρμοδιότητα αντιγράφηκε με επιτυχία", "remit":newRemit.to_dict()}),
@@ -465,7 +474,7 @@ def delete_remit_by_code(id):
         )
 
     who = get_jwt_identity()
-    what = {"entity": "remit", "key": {"RemitID": id}}
+    what = {"entity": "remit", "key": {"remitID": id}}
     # print(remit_to_delete.to_json())
     Change(
         action="delete", who=who, what=what, change={"remit": remit_to_delete.to_json()}

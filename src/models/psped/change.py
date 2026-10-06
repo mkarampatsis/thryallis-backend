@@ -29,7 +29,7 @@ class What(me.EmbeddedDocument):
 class Change(me.Document):
     meta = {"collection": "changes", "db_alias": MONGO_PSPED_DB}
 
-    action = me.StringField(required=True, choices=["create", "read", "update", "delete"])
+    action = me.StringField(required=True, choices=["create", "read", "update", "delete", "update status", "copy"])
     who = me.StringField(required=True)
     what = me.EmbeddedDocumentField(What, required=True)
     when = me.DateTimeField(default=datetime.now)

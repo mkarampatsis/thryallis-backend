@@ -19,8 +19,7 @@ def getOrganizations(entity: str):
         print("Entity received:", entity)
         result = Change.objects(what__entity=entity)
         # pipeline = [
-        #     # {"$match": {"what.entity": "organization"}},
-        #     {"$match": {"what.entity": entity}},
+        #     {"$match": {"what.entity": "organization"}},
         #     {"$group": {"_id": None, "organizations": {"$addToSet": "$what.key.code"}}},
         #     {"$project": {"_id": 0, "organizations": 1}},
         # ]
@@ -69,12 +68,6 @@ def getOrganizations(entity: str):
         # }
 
         print(result)
-        # return Response(
-        #             json.dumps({"data": result.to_json()}),
-        #             mimetype="application/json",
-        #             status=200,
-        #         )
-        
         data = json.loads(result.to_json())
 
         return Response(

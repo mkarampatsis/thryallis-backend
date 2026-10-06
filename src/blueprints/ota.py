@@ -6,7 +6,10 @@ from mongoengine import DoesNotExist
 from src.models.psped.legal_act import LegalAct
 from src.models.ota.ota import Ota
 from src.models.psped.legal_provision import LegalProvision, RegulatedObject
-from src.models.ota.instruction_provision import InstructionProvision, RegulatedObjectOta
+from src.models.ota.instruction_provision import (
+    InstructionProvision,
+    RegulatedObjectOta,
+)
 from src.models.psped.change import Change
 from src.blueprints.decorators import can_edit
 import json
@@ -15,214 +18,251 @@ from .utils import debug_print
 
 ota = Blueprint("ota", __name__)
 
+
 @ota.route("", methods=["GET"])
 def retrieve_all_ota():
-  otaData = Ota.objects().select_related()
+    otaData = Ota.objects().select_related()
 
-  result = [ota.to_dict() for ota in otaData]
+    result = [ota.to_dict() for ota in otaData]
 
-  return Response(
-    json.dumps(result, default=str),
-    mimetype="application/json",
-    status=200
-  )
+    return Response(
+        json.dumps(result, default=str), mimetype="application/json", status=200
+    )
+
 
 @ota.route("/<string:id>", methods=["GET"])
 def retrieve_ota_by_id(id):
-  otaData = Ota.objects.get(id=ObjectId(id))
-  
-  return Response(
-     json.dumps(otaData.to_dict(), default=str),
-    mimetype="application/json",
-    status=200,
-  )
+    otaData = Ota.objects.get(id=ObjectId(id))
+
+    return Response(
+        json.dumps(otaData.to_dict(), default=str),
+        mimetype="application/json",
+        status=200,
+    )
+
 
 @ota.route("", methods=["POST"])
 @jwt_required()
 def create_ota():
-  curr_change = {}
-  
-  try:
-    data = request.get_json()
-    debug_print("POST OTA", data)
+    curr_change = {}
 
-    remitText = data["remitText"]
-    remitCompetence = data["remitCompetence"]
-    remitType = data["remitType"]
-    remitLocalOrGlobal = data["remitLocalOrGlobal"]
-    publicPolicyAgency = data["publicPolicyAgency"]
-    cofog = {
-       "cofog1" : data["cofog1"],
-       "cofog1_name" : data["cofog1_name"],
-       "cofog2" : data["cofog2"],
-       "cofog2_name" : data["cofog2_name"],
-       "cofog3" : data["cofog3"],            
-       "cofog3_name" : data["cofog3_name"],
-    } 
-    legalProvisions = data["legalProvisions"]
-    instructionProvisions = data["instructionProvisions"]
-    
-    status = data.get("status", "ΕΝΕΡΓΗ")
-    finalized = data.get("finalized", False)
+    try:
+        data = request.get_json()
+        debug_print("POST OTA", data)
 
-    newRemit = Ota(
-      remitText=remitText,
-      remitCompetence=remitCompetence,
-      remitType=remitType,
-      remitLocalOrGlobal=remitLocalOrGlobal,
-      publicPolicyAgency=publicPolicyAgency,
-      cofog=cofog,
-      status=status,
-      finalized=finalized,
-    ).save()
+        remitText = data["remitText"]
+        remitCompetence = data["remitCompetence"]
+        remitType = data["remitType"]
+        remitLocalOrGlobal = data["remitLocalOrGlobal"]
+        publicPolicyAgency = data["publicPolicyAgency"]
+        cofog = {
+            "cofog1": data["cofog1"],
+            "cofog1_name": data["cofog1_name"],
+            "cofog2": data["cofog2"],
+            "cofog2_name": data["cofog2_name"],
+            "cofog3": data["cofog3"],
+            "cofog3_name": data["cofog3_name"],
+        }
+        legalProvisions = data["legalProvisions"]
+        instructionProvisions = data["instructionProvisions"]
 
-    newRemitID = newRemit.id
-    regulatedObject = RegulatedObject(
-      regulatedObjectType="ota",
-      regulatedObjectId=newRemitID,
-    )
+        status = data.get("status", "ΕΝΕΡΓΗ")
+        finalized = data.get("finalized", False)
 
-    regulatedObjectOta = RegulatedObjectOta(
-      regulatedObjectType="ota",
-      regulatedObjectId=newRemitID,
-    )
-  
-    legal_provisions_changes_inserts = []
-    legal_provisions_docs = LegalProvision.save_new_legal_provisions(legalProvisions, regulatedObject)
-    legal_provisions_changes_inserts = [provision.to_mongo() for provision in legal_provisions_docs]
-    curr_change["legalProvisions"] = {
-      "inserts": legal_provisions_changes_inserts,
-    }
+        newRemit = Ota(
+            remitText=remitText,
+            remitCompetence=remitCompetence,
+            remitType=remitType,
+            remitLocalOrGlobal=remitLocalOrGlobal,
+            publicPolicyAgency=publicPolicyAgency,
+            cofog=cofog,
+            status=status,
+            finalized=finalized,
+        ).save()
 
-    instruction_provisions_changes_inserts = []
-    instruction_provisions_docs = InstructionProvision.save_new_instruction_provisions(instructionProvisions, regulatedObjectOta)
-    instruction_provisions_changes_inserts = [provision.to_mongo() for provision in instruction_provisions_docs]
-    curr_change["instructionProvisions"] = {
-      "inserts": instruction_provisions_changes_inserts,
-    }
+        newRemitID = newRemit.id
+        regulatedObject = RegulatedObject(
+            regulatedObjectType="ota",
+            regulatedObjectId=newRemitID,
+        )
 
-    who = get_jwt_identity()
-    what = {"entity": "ota", "key": {"organization": publicPolicyAgency["organization"], "organizationCode": publicPolicyAgency["organizationCode"]}}
-    Change(action="create", who=who, what=what, change=curr_change).save()
+        regulatedObjectOta = RegulatedObjectOta(
+            regulatedObjectType="ota",
+            regulatedObjectId=newRemitID,
+        )
 
-    newRemit.legalProvisionRefs = legal_provisions_docs
-    newRemit.instructionProvisionRefs = instruction_provisions_docs
-    newRemit.save()
+        legal_provisions_changes_inserts = []
+        legal_provisions_docs = LegalProvision.save_new_legal_provisions(
+            legalProvisions, regulatedObject
+        )
+        legal_provisions_changes_inserts = [
+            provision.to_mongo() for provision in legal_provisions_docs
+        ]
+        curr_change["legalProvisions"] = {
+            "inserts": legal_provisions_changes_inserts,
+        }
 
-    return Response(
-      json.dumps({"message": "Η αρμοδιότητα του ΟΤΑ δημιουργήθηκε με επιτυχία"}),
-      mimetype="application/json",
-      status=201,
-    )
+        instruction_provisions_changes_inserts = []
+        instruction_provisions_docs = (
+            InstructionProvision.save_new_instruction_provisions(
+                instructionProvisions, regulatedObjectOta
+            )
+        )
+        instruction_provisions_changes_inserts = [
+            provision.to_mongo() for provision in instruction_provisions_docs
+        ]
+        curr_change["instructionProvisions"] = {
+            "inserts": instruction_provisions_changes_inserts,
+        }
 
-  except Exception as e:
-    print(e)
-    return Response(
-      json.dumps({"message": f"<strong>Αποτυχία δημιουργίας αρμοδιότητας ΟΤΑ:</strong> {e}"}),
-      mimetype="application/json",
-      status=500,
-    )
+        who = get_jwt_identity()
+        what = {
+            "entity": "ota",
+            "key": {
+                "organization": publicPolicyAgency["organization"],
+                "code": publicPolicyAgency["organizationCode"],
+            },
+        }
+        Change(action="create", who=who, what=what, change=curr_change).save()
+
+        newRemit.legalProvisionRefs = legal_provisions_docs
+        newRemit.instructionProvisionRefs = instruction_provisions_docs
+        newRemit.save()
+
+        return Response(
+            json.dumps({"message": "Η αρμοδιότητα του ΟΤΑ δημιουργήθηκε με επιτυχία"}),
+            mimetype="application/json",
+            status=201,
+        )
+
+    except Exception as e:
+        print(e)
+        return Response(
+            json.dumps(
+                {
+                    "message": f"<strong>Αποτυχία δημιουργίας αρμοδιότητας ΟΤΑ:</strong> {e}"
+                }
+            ),
+            mimetype="application/json",
+            status=500,
+        )
 
 
 @ota.route("/<string:id>", methods=["PUT"])
 @jwt_required()
 def update_ota(id: str):
-  curr_change = {}
-  try:
-    data = request.get_json()
+    curr_change = {}
+    try:
+        data = request.get_json()
 
-    debug_print("UPDATE OTA", data)
+        debug_print("UPDATE OTA", data)
 
-    remitText = data["remitText"]
-    remitCompetence = data["remitCompetence"]
-    remitType = data["remitType"]
-    remitLocalOrGlobal = data["remitLocalOrGlobal"]
-    publicPolicyAgency = data["publicPolicyAgency"]
-    cofog = {
-       "cofog1" : data["cofog1"],
-       "cofog1_name" : data["cofog1_name"],
-       "cofog2" : data["cofog2"],
-       "cofog2_name" : data["cofog2_name"],
-       "cofog3" : data["cofog3"],            
-       "cofog3_name" : data["cofog3_name"],
-    } 
-    legalProvisions = data["legalProvisions"]
-    instructionProvisions = data["instructionProvisions"]
-    
-    remitID = ObjectId(id)
-    regulatedObject = RegulatedObject(
-      regulatedObjectType="ota",
-      regulatedObjectId=remitID,
-    )
+        remitText = data["remitText"]
+        remitCompetence = data["remitCompetence"]
+        remitType = data["remitType"]
+        remitLocalOrGlobal = data["remitLocalOrGlobal"]
+        publicPolicyAgency = data["publicPolicyAgency"]
+        cofog = {
+            "cofog1": data["cofog1"],
+            "cofog1_name": data["cofog1_name"],
+            "cofog2": data["cofog2"],
+            "cofog2_name": data["cofog2_name"],
+            "cofog3": data["cofog3"],
+            "cofog3_name": data["cofog3_name"],
+        }
+        legalProvisions = data["legalProvisions"]
+        instructionProvisions = data["instructionProvisions"]
 
-    regulatedObjectOta = RegulatedObjectOta(
-      regulatedObjectType="ota",
-      regulatedObjectId=remitID,
-    )
-    print("1>>>>", legalProvisions)
-    legal_provisions_docs = LegalProvision.save_new_legal_provisions(legalProvisions, regulatedObject)
-    print("2>>>>")
-    instruction_provisions_docs = InstructionProvision.save_new_instruction_provisions(instructionProvisions, regulatedObjectOta)
-    print("3>>>>",instructionProvisions)
-    remit = Ota.objects.get(id=ObjectId(id))
+        remitID = ObjectId(id)
+        regulatedObject = RegulatedObject(
+            regulatedObjectType="ota",
+            regulatedObjectId=remitID,
+        )
 
-    existingLegalProvisions = remit.legalProvisionRefs
-    updatedLegalProvisions = existingLegalProvisions + legal_provisions_docs
+        regulatedObjectOta = RegulatedObjectOta(
+            regulatedObjectType="ota",
+            regulatedObjectId=remitID,
+        )
+        legal_provisions_docs = LegalProvision.save_new_legal_provisions(
+            legalProvisions, regulatedObject
+        )
+        instruction_provisions_docs = (
+            InstructionProvision.save_new_instruction_provisions(
+                instructionProvisions, regulatedObjectOta
+            )
+        )
+        remit = Ota.objects.get(id=ObjectId(id))
 
-    existingInstructionProvisions = remit.instructionProvisionRefs
-    print("4>>>>",existingInstructionProvisions)
-    updatedInstructionProvisions = existingInstructionProvisions + instruction_provisions_docs
-    print("5>>>>",updatedInstructionProvisions)
-    remit.update(
-      remitText=remitText,
-      remitCompetence=remitCompetence,
-      remitType=remitType,
-      remitLocalOrGlobal=remitLocalOrGlobal,
-      publicPolicyAgency=publicPolicyAgency,
-      cofog=cofog,
-      legalProvisionRefs=updatedLegalProvisions,
-      instructionProvisionRefs=updatedInstructionProvisions,
-    )
-    print("6>>>>")
-    curr_change = {
-      "old": {
-        "remitText": remit.remitText,
-        "remitCompetence":remit.remitCompetence,
-        "remitType": remit.remitType,
-        "remitLocalOrGlobal": remit.remitLocalOrGlobal,
-        "publicPolicyAgency": remit.publicPolicyAgency,
-        "cofog": remit.cofog.to_mongo().to_dict(),
-        "legalProvisions": [provision for provision in existingLegalProvisions],
-        "instructionProvisions": [provision for provision in existingInstructionProvisions], 
-      },
-      "new": {
-        "remitText": remitText,
-        "remitCompetence":remitCompetence,
-        "remitType": remitType,
-        "remitLocalOrGlobal":remitLocalOrGlobal,
-        "publicPolicyAgency":publicPolicyAgency,
-        "cofog": cofog,
-        "legalProvisions": [provision for provision in updatedLegalProvisions],
-        "instructionProvisions": [provision for provision in updatedInstructionProvisions],  
-      },
-    }
-    who = get_jwt_identity()
-    what = {"entity": "ota", "key":  {"organization": publicPolicyAgency["organization"], "organizationCode": publicPolicyAgency["organizationCode"]}}
-    Change(action="update", who=who, what=what, change=curr_change).save()
+        existingLegalProvisions = remit.legalProvisionRefs
+        updatedLegalProvisions = existingLegalProvisions + legal_provisions_docs
 
-    return Response(
-      json.dumps({"message": "Η αρμοδιότητα ενημερώθηκε με επιτυχία"}),
-      mimetype="application/json",
-      status=201,
-    )
+        existingInstructionProvisions = remit.instructionProvisionRefs
+        updatedInstructionProvisions = (
+            existingInstructionProvisions + instruction_provisions_docs
+        )
 
-  except Exception as e:
-    print("UPDATE OTA EXCEPTION", e)
-    return Response(
-      json.dumps({"message": f"<strong>Αποτυχία ενημέρωσης αρμοδιότητας:</strong> {e}"}),
-      mimetype="application/json",
-      status=500,
-    )
+        remit.update(
+            remitText=remitText,
+            remitCompetence=remitCompetence,
+            remitType=remitType,
+            remitLocalOrGlobal=remitLocalOrGlobal,
+            publicPolicyAgency=publicPolicyAgency,
+            cofog=cofog,
+            legalProvisionRefs=updatedLegalProvisions,
+            instructionProvisionRefs=updatedInstructionProvisions,
+        )
+
+        curr_change = {
+            "old": {
+                "remitText": remit.remitText,
+                "remitCompetence": remit.remitCompetence,
+                "remitType": remit.remitType,
+                "remitLocalOrGlobal": remit.remitLocalOrGlobal,
+                "publicPolicyAgency": remit.publicPolicyAgency,
+                "cofog": remit.cofog.to_mongo().to_dict(),
+                "legalProvisions": [provision for provision in existingLegalProvisions],
+                "instructionProvisions": [
+                    provision for provision in existingInstructionProvisions
+                ],
+            },
+            "new": {
+                "remitText": remitText,
+                "remitCompetence": remitCompetence,
+                "remitType": remitType,
+                "remitLocalOrGlobal": remitLocalOrGlobal,
+                "publicPolicyAgency": publicPolicyAgency,
+                "cofog": cofog,
+                "legalProvisions": [provision for provision in updatedLegalProvisions],
+                "instructionProvisions": [
+                    provision for provision in updatedInstructionProvisions
+                ],
+            },
+        }
+        who = get_jwt_identity()
+        what = {
+            "entity": "ota",
+            "key": {
+                "organization": publicPolicyAgency["organization"],
+                "code": publicPolicyAgency["organizationCode"],
+            },
+        }
+        Change(action="update", who=who, what=what, change=curr_change).save()
+
+        return Response(
+            json.dumps({"message": "Η αρμοδιότητα ενημερώθηκε με επιτυχία"}),
+            mimetype="application/json",
+            status=201,
+        )
+
+    except Exception as e:
+        print("UPDATE OTA EXCEPTION", e)
+        return Response(
+            json.dumps(
+                {"message": f"<strong>Αποτυχία ενημέρωσης αρμοδιότητας:</strong> {e}"}
+            ),
+            mimetype="application/json",
+            status=500,
+        )
 
 
 @ota.route("/status/<string:remitID>", methods=["PUT"])
@@ -237,8 +277,8 @@ def update_ota_status(remitID: str):
         remit.update(status=status)
 
         who = get_jwt_identity()
-        what = {"entity": "remit", "key": {"remitID": remitID}}
-        Change(action="update", who=who, what=what, change={"status": status}).save()
+        what = {"entity": "ota", "key": {"remitID": remitID}}
+        Change(action="update status", who=who, what=what, change={"status": status}).save()
 
         return Response(
             json.dumps({"message": f"Η αρμοδιότητα είναι πλέον {status}"}),
@@ -249,10 +289,15 @@ def update_ota_status(remitID: str):
     except Exception as e:
         print("UPDATE OTA STATUS EXCEPTION", e)
         return Response(
-            json.dumps({"message": f"<strong>Αποτυχία ενημέρωσης κατάστασης αρμοδιότητας:</strong> {e}"}),
+            json.dumps(
+                {
+                    "message": f"<strong>Αποτυχία ενημέρωσης κατάστασης αρμοδιότητας:</strong> {e}"
+                }
+            ),
             mimetype="application/json",
             status=500,
         )
+
 
 @ota.route("/copy/<string:id>", methods=["GET"])
 @jwt_required()
@@ -266,35 +311,51 @@ def copy_ota(id):
         organizationalUnitCode = remit.organizationalUnitCode
         remitText = remit.remitText
         remitType = remit.remitType
+        remitCompetence = remit.remitCompetence
+        remitLocalOrGlobal = remit.remitLocalOrGlobal
+        legalProvisionRefs = remit.legalProvisionRefs
+        instructionProvisionRefs = remit.instructionProvisionRefs
         cofog = remit.cofog
         legalProvisions = remit.legalProvisionRefs
-        
+        publicPolicyAgency = remit.publicPolicyAgency
+
         newRemit = Ota(
             organizationalUnitCode=organizationalUnitCode,
             remitText=remitText,
             remitType=remitType,
             cofog=cofog,
+            remitCompetence=remitCompetence,
+            remitLocalOrGlobal=remitLocalOrGlobal,
+            legalProvisionRefs=legalProvisionRefs,
+            instructionProvisionRefs=instructionProvisionRefs,
+            publicPolicyAgency=publicPolicyAgency,
         ).save()
+
         newRemitID = newRemit.id
         regulatedObject = RegulatedObject(
             regulatedObjectType="remit",
             regulatedObjectId=newRemitID,
         )
         for legalProvision in legalProvisions:
-
-            newLegalProvisions.append({
-                "legalActKey": legalProvision.legalAct.legalActKey,
-                "legalProvisionSpecs" : legalProvision.legalProvisionSpecs,
-                "legalProvisionText" : legalProvision.legalProvisionText,
-                'isNew': True
-            })
+            newLegalProvisions.append(
+                {
+                    "legalActKey": legalProvision.legalAct.legalActKey,
+                    "legalProvisionSpecs": legalProvision.legalProvisionSpecs,
+                    "legalProvisionText": legalProvision.legalProvisionText,
+                    "isNew": True,
+                }
+            )
         legal_provisions_changes_inserts = []
 
-        legal_provisions_docs = LegalProvision.save_new_legal_provisions(newLegalProvisions, regulatedObject)
-        legal_provisions_changes_inserts = [provision.to_mongo() for provision in legal_provisions_docs]
+        legal_provisions_docs = LegalProvision.save_new_legal_provisions(
+            newLegalProvisions, regulatedObject
+        )
+        legal_provisions_changes_inserts = [
+            provision.to_mongo() for provision in legal_provisions_docs
+        ]
         newRemit.legalProvisionRefs = legal_provisions_docs
         newRemit.save()
-        
+
         data = {
             "_id": str(newRemit.id),
             "organizationalUnitCode": newRemit.organizationalUnitCode,
@@ -302,31 +363,46 @@ def copy_ota(id):
             "remitType": newRemit.remitType,
             "cofog": newRemit.cofog.to_mongo().to_dict(),
             "status": newRemit.status,
-            "legalProvisions": []
+            "legalProvisions": [],
         }
-        
+
         for provision in legal_provisions_docs:
-            legalActKey = LegalAct.objects(id=ObjectId(str(provision.legalAct.id))).only('legalActKey').exclude('id').first()
+            legalActKey = (
+                LegalAct.objects(id=ObjectId(str(provision.legalAct.id)))
+                .only("legalActKey")
+                .exclude("id")
+                .first()
+            )
             data["legalProvisions"].append(
-                    {
-                        "_id": str(provision.id),
-                        "legalActKey": legalActKey.legalActKey,
-                        "legalProvisionSpecs": provision["legalProvisionSpecs"].to_mongo().to_dict(),
-                        "legalProvisionText": provision["legalProvisionText"]
-                    }
-                )
-        
+                {
+                    "_id": str(provision.id),
+                    "legalActKey": legalActKey.legalActKey,
+                    "legalProvisionSpecs": provision["legalProvisionSpecs"]
+                    .to_mongo()
+                    .to_dict(),
+                    "legalProvisionText": provision["legalProvisionText"],
+                }
+            )
+
         curr_change["legalProvisions"] = {
             "inserts": legal_provisions_changes_inserts,
         }
-        
+
         who = get_jwt_identity()
-        what = {"entity": "remit", "key": {"organizationalUnitCode": organizationalUnitCode}}
-        Change(action="create", who=who, what=what, change=curr_change).save()
-        
+        what = {
+            "entity": "ota",
+            "key": {
+                "organization": publicPolicyAgency["organization"],
+                "code": publicPolicyAgency["organizationCode"],
+            },
+        }
+        Change(action="copy", who=who, what=what, change=curr_change).save()
+
         return Response(
             # json.dumps({"message": "Η αρμοδιότητα αντιγράφηκε με επιτυχία", "remit":newRemit.to_dict()}),
-            json.dumps({"message": "Η αρμοδιότητα αντιγράφηκε με επιτυχία", "remit":data}),
+            json.dumps(
+                {"message": "Η αρμοδιότητα αντιγράφηκε με επιτυχία", "remit": data}
+            ),
             mimetype="application/json",
             status=201,
         )
@@ -334,18 +410,21 @@ def copy_ota(id):
     except Exception as e:
         print(e)
         return Response(
-            json.dumps({"message": f"<strong>Αποτυχία δημιουργίας αρμοδιότητας:</strong> {e}"}),
+            json.dumps(
+                {"message": f"<strong>Αποτυχία δημιουργίας αρμοδιότητας:</strong> {e}"}
+            ),
             mimetype="application/json",
             status=500,
-    )
+        )
+
 
 @ota.route("/<string:id>", methods=["DELETE"])
 @jwt_required()
 def delete_ota_by_code(id):
-    
-    try: 
+
+    try:
         remit_to_delete = Ota.objects(id=ObjectId(id))
-        
+
         # Delete referenced legal provisions
         for remit in remit_to_delete:
             for item in remit.legalProvisionRefs:
@@ -355,35 +434,50 @@ def delete_ota_by_code(id):
                     legal_provision.delete()
         # Delete the main document
         remit_to_delete.delete()
-    
+
     except DoesNotExist:
-        return Response(json.dumps({"message": "Η διάταξη δεν υπάρχει"}), mimetype="application/json", status=404)
+        return Response(
+            json.dumps({"message": "Η διάταξη δεν υπάρχει"}),
+            mimetype="application/json",
+            status=404,
+        )
     except Exception as e:
-        return Response(json.dumps({"message": f"<strong>Error:</strong> {str(e)}"}), mimetype="application/json", status=500)
-    
+        return Response(
+            json.dumps({"message": f"<strong>Error:</strong> {str(e)}"}),
+            mimetype="application/json",
+            status=500,
+        )
+
     who = get_jwt_identity()
-    what = {"entity": "remit", "key": {"RemitID": id}}
+    what = {"entity": "ota", "key": {"remitID": id}}
     # print(remit_to_delete.to_json())
-    Change(action="delete", who=who, what=what, change={"remit":remit_to_delete.to_json()}).save()
-    return Response(json.dumps({"message": "<strong>H Αρμοδιότητα διαγράφηκε</strong>"}), mimetype="application/json", status=201)
+    Change(
+        action="delete", who=who, what=what, change={"remit": remit_to_delete.to_json()}
+    ).save()
+    return Response(
+        json.dumps({"message": "<strong>H Αρμοδιότητα διαγράφηκε</strong>"}),
+        mimetype="application/json",
+        status=201,
+    )
+
 
 @ota.route("/organization-types", methods=["GET"])
 def get_unique_organization_types():
-  collection = Ota._get_collection()
+    collection = Ota._get_collection()
 
-  pipeline = [
-    {"$match": {"publicPolicyAgency.organizationType": {"$exists": True}}},
-    {"$group": {"_id": "$publicPolicyAgency.organizationType"}},
-    {"$sort": {"_id": 1}}
-  ]
+    pipeline = [
+        {"$match": {"publicPolicyAgency.organizationType": {"$exists": True}}},
+        {"$group": {"_id": "$publicPolicyAgency.organizationType"}},
+        {"$sort": {"_id": 1}},
+    ]
 
-  results = list(collection.aggregate(pipeline))
+    results = list(collection.aggregate(pipeline))
 
-  # Convert into a simple list of strings
-  unique_types = [item["_id"] for item in results]
+    # Convert into a simple list of strings
+    unique_types = [item["_id"] for item in results]
 
-  return Response(
-    json.dumps(unique_types, ensure_ascii=False),
-    mimetype="application/json",
-    status=200,
-  )
+    return Response(
+        json.dumps(unique_types, ensure_ascii=False),
+        mimetype="application/json",
+        status=200,
+    )

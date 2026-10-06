@@ -174,6 +174,7 @@ def update_foreas(code: str):
     debug_print("UPDATE FOREAS", data)
 
     organization = Foreas.objects.get(code=code)
+    organization_preferredLabel = organization.sdad.organization_preferredLabel
     existing_level = organization.level
     existing_provisionText = organization.provisionText
 
@@ -225,7 +226,7 @@ def update_foreas(code: str):
     }
 
     who = get_jwt_identity()
-    what = {"entity": "organization", "key": {"code": code}}
+    what = {"entity": "organization", "key": {"organization":organization_preferredLabel, "code": code}}
     Change(action="update", who=who, what=what, change=curr_change).save()
 
     return Response(
@@ -248,6 +249,7 @@ def update_monada(code: str):
 
     try:
         organizationalUnit = Monada.objects.get(code=code)
+        organizational_preferredLabel = organizationalUnit.sdad.organizational_preferredLabel
         existing_provisionText = organizationalUnit.provisionText
 
         if provisionText != existing_provisionText:
@@ -296,7 +298,7 @@ def update_monada(code: str):
     }
 
     who = get_jwt_identity()
-    what = {"entity": "organizationalUnit", "key": {"code": code}}
+    what = {"entity": "organizationalUnit", "key": {"organizationalUnit":organizational_preferredLabel,"code": code}}
     Change(action="update", who=who, what=what, change=curr_change).save()
 
     return Response(
@@ -456,7 +458,8 @@ def finalize_remits(code: str):
     remitsFinalized = data["status"]
 
     monada = Monada.objects(code=code).first()
-
+    organizationalUnit_preferredLabel = monada.sdad.organizational_preferredLabel if monada else None
+    
     if monada:
         monada.update(remitsFinalized=remitsFinalized)
     else:
@@ -464,7 +467,7 @@ def finalize_remits(code: str):
         monada.save()
 
     who = get_jwt_identity()
-    what = {"entity": "organizationalUnit", "key": {"code": code}}
+    what = {"entity": "organizationalUnit", "key": {"organizationalUnit": organizationalUnit_preferredLabel, "code": code}}
     Change(action="update", who=who, what=what, change={"remitsFinalized": remitsFinalized}).save()
 
     return Response(
