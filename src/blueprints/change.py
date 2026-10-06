@@ -12,7 +12,7 @@ from .utils import debug_print
 change = Blueprint("change", __name__)
 
 
-@change.route("/allChangesCodesByType/<string:entity>", methods=["get"])
+@change.route("/allChangesByEntity/<string:entity>", methods=["get"])
 @jwt_required()
 def getOrganizations(entity: str):
     try:
@@ -69,12 +69,20 @@ def getOrganizations(entity: str):
         # }
 
         print(result)
+        # return Response(
+        #             json.dumps({"data": result.to_json()}),
+        #             mimetype="application/json",
+        #             status=200,
+        #         )
+        
+        data = json.loads(result.to_json())
+
         return Response(
-            json.dumps({"data": result.to_json()}),
+            json.dumps({"data": data}),
             mimetype="application/json",
             status=200,
         )
-
+        
     except Exception as e:
         print(e)
         return Response(
@@ -88,7 +96,7 @@ def getOrganizations(entity: str):
         )
 
 
-@change.route("/allChangesByEntity", methods=["get"])
+@change.route("/allEntityNames", methods=["get"])
 @jwt_required()
 def getChangesByEntity():
     try:
