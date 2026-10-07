@@ -63,6 +63,7 @@ def create_remit():
         what = {
             "entity": "remit",
             "key": {
+                "organization": organization,
                 "organizationalUnit": organizational_unit,
                 "code": organizationalUnitCode,
             },
@@ -157,6 +158,7 @@ def update_remit():
         what = {
             "entity": "remit",
             "key": {
+                "organization": organization,
                 "organizationalUnit": organizational_unit,
                 "code": organizationalUnitCode,
             },
@@ -192,7 +194,7 @@ def update_remit_status(remitID: str):
         remit.update(status=status)
 
         who = get_jwt_identity()
-        what = {"entity": "remit", "key": {"remitID": remitID}}
+        what = {"entity": "remit", "key": {"remitID": remitID, "organization": remit.organization.preferredLabel, "organizationalUnit": remit.organizational_unit.preferredLabel}}
         Change(action="update status", who=who, what=what, change={"status": status}).save()
 
         return Response(
@@ -417,6 +419,7 @@ def copy_remit(id):
         what = {
             "entity": "remit",
             "key": {
+                "organization": organization,
                 "organizationalUnit": organizational_unit,
                 "code": organizationalUnitCode,
             },
@@ -474,7 +477,7 @@ def delete_remit_by_code(id):
         )
 
     who = get_jwt_identity()
-    what = {"entity": "remit", "key": {"remitID": id}}
+    what = {"entity": "remit", "key": {"remitID": id, "organization": remit_to_delete.organization.preferredLabel, "organizationalUnit": remit_to_delete.organizational_unit.preferredLabel}}
     # print(remit_to_delete.to_json())
     Change(
         action="delete", who=who, what=what, change={"remit": remit_to_delete.to_json()}
