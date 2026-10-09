@@ -43,6 +43,7 @@ def get_foreas(code: str):
             status=404,
         )
 
+
 # @psped.route("/foreas/pagination", methods=["GET"])
 # def get_foreas_pagination():
 #   try:
@@ -95,7 +96,7 @@ def get_foreas(code: str):
 #             "page": page,
 #             "pageSize": page_size,
 #             "data": data
-#         }, default=str), 
+#         }, default=str),
 #       mimetype="application/json",
 #       status=200,
 #     )
@@ -165,7 +166,7 @@ def get_organization_by_code(code: str):
 def update_foreas(code: str):
     curr_change = {}
 
-    organization = Organization.objects.get(code=code)
+    # organization = Organization.objects.get(code=code)
 
     data = request.get_json()
     level = data["level"]
@@ -175,6 +176,9 @@ def update_foreas(code: str):
 
     organization = Foreas.objects.get(code=code)
     organization_preferredLabel = organization.sdad.organization_preferredLabel
+    subOrganizationOf_preferredLabel = (
+        organization.sdad.subOrganizationOf_preferredLabel
+    )
     existing_level = organization.level
     existing_provisionText = organization.provisionText
 
@@ -202,7 +206,9 @@ def update_foreas(code: str):
         legalProvisionSpecs = provision["legalProvisionSpecs"]
         legalProvisionText = provision["legalProvisionText"]
         existing = LegalProvision.objects(
-            regulatedObject=regulatedObject, legalAct=legalAct, legalProvisionSpecs=legalProvisionSpecs
+            regulatedObject=regulatedObject,
+            legalAct=legalAct,
+            legalProvisionSpecs=legalProvisionSpecs,
         ).first()
         debug_print("CURRENT LEGAL PROVISION", provision)
         if existing:
@@ -226,7 +232,14 @@ def update_foreas(code: str):
     }
 
     who = get_jwt_identity()
-    what = {"entity": "organization", "key": {"organization":organization_preferredLabel, "code": code}}
+    what = {
+        "entity": "organization",
+        "key": {
+            "organization": organization_preferredLabel,
+            "code": code,
+            "subOrganizationOf": subOrganizationOf_preferredLabel,
+        },
+    }
     Change(action="update", who=who, what=what, change=curr_change).save()
 
     return Response(
@@ -249,7 +262,12 @@ def update_monada(code: str):
 
     try:
         organizationalUnit = Monada.objects.get(code=code)
-        organizational_preferredLabel = organizationalUnit.sdad.organizational_preferredLabel
+        organizational_preferredLabel = (
+            organizationalUnit.sdad.organizational_preferredLabel
+        )
+        organization_preferredLabel = (
+            organizationalUnit.sdad.organization_preferredLabel
+        )
         existing_provisionText = organizationalUnit.provisionText
 
         if provisionText != existing_provisionText:
@@ -274,7 +292,9 @@ def update_monada(code: str):
         legalProvisionSpecs = provision["legalProvisionSpecs"]
         legalProvisionText = provision["legalProvisionText"]
         existing = LegalProvision.objects(
-            regulatedObject=regulatedObject, legalAct=legalAct, legalProvisionSpecs=legalProvisionSpecs
+            regulatedObject=regulatedObject,
+            legalAct=legalAct,
+            legalProvisionSpecs=legalProvisionSpecs,
         ).first()
         debug_print("CURRENT LEGAL PROVISION", provision)
         if existing:
@@ -298,7 +318,14 @@ def update_monada(code: str):
     }
 
     who = get_jwt_identity()
-    what = {"entity": "organizationalUnit", "key": {"organizationalUnit":organizational_preferredLabel,"code": code}}
+    what = {
+        "entity": "organizationalUnit",
+        "key": {
+            "organizationalUnit": organizational_preferredLabel,
+            "code": code,
+            "organization": organization_preferredLabel,
+        },
+    }
     Change(action="update", who=who, what=what, change=curr_change).save()
 
     return Response(
@@ -310,38 +337,40 @@ def update_monada(code: str):
 
 @psped.route("/foreas/<string:code>/tree", methods=["GET"])
 def get_foreas_tree(code: str):
-  try:
-    foreas = Foreas.objects.get(code=code)
-    return Response(
-        json.dumps(foreas.tree_to_json()),
-        mimetype="application/json",
-        status=200,
-    )
-  except Foreas.DoesNotExist:
-    return Response(
-      json.dumps({"error": f"Δεν βρέθηκε φορέας με κωδικό {code}"}),
-      mimetype="application/json",
-      status=404,
-    )
+    try:
+        foreas = Foreas.objects.get(code=code)
+        return Response(
+            json.dumps(foreas.tree_to_json()),
+            mimetype="application/json",
+            status=200,
+        )
+    except Foreas.DoesNotExist:
+        return Response(
+            json.dumps({"error": f"Δεν βρέθηκε φορέας με κωδικό {code}"}),
+            mimetype="application/json",
+            status=404,
+        )
+
 
 @psped.route("/foreas/<string:code>/treeSdad", methods=["GET"])
 def get_foreas_treeSdad(code: str):
-  try:
-    foreas = Foreas.objects.get(code=code)
+    try:
+        foreas = Foreas.objects.get(code=code)
 
-    flat = foreas.flatten_tree_sdad()
-    return Response(
-      json.dumps(flat, ensure_ascii=False), 
-      mimetype="application/json",
-      status=200
-    )
-  except Foreas.DoesNotExist:
-    return Response(
-      json.dumps({"error": f"Δεν βρέθηκε φορέας με κωδικό {code}"}),
-      mimetype="application/json",
-      status=404,
-    )
-  
+        flat = foreas.flatten_tree_sdad()
+        return Response(
+            json.dumps(flat, ensure_ascii=False),
+            mimetype="application/json",
+            status=200,
+        )
+    except Foreas.DoesNotExist:
+        return Response(
+            json.dumps({"error": f"Δεν βρέθηκε φορέας με κωδικό {code}"}),
+            mimetype="application/json",
+            status=404,
+        )
+
+
 @psped.route("/monada/<string:code>", methods=["GET"])
 def get_monada(code: str):
     try:
@@ -357,7 +386,8 @@ def get_monada(code: str):
             mimetype="application/json",
             status=200,
         )
-    
+
+
 # @psped.route("/monada/pagination", methods=["GET"])
 # def get_monada_pagination():
 #   try:
@@ -410,7 +440,7 @@ def get_monada(code: str):
 #             "page": page,
 #             "pageSize": page_size,
 #             "data": data
-#         }, default=str), 
+#         }, default=str),
 #       mimetype="application/json",
 #       status=200,
 #     )
@@ -420,6 +450,7 @@ def get_monada(code: str):
 #       mimetype="application/json",
 #       status=200,
 #     )
+
 
 @psped.route("/monada/all", methods=["GET"])
 def get_all_monades():
@@ -458,8 +489,13 @@ def finalize_remits(code: str):
     remitsFinalized = data["status"]
 
     monada = Monada.objects(code=code).first()
-    organizationalUnit_preferredLabel = monada.sdad.organizational_preferredLabel if monada else None
-    
+    organizationalUnit_preferredLabel = (
+        monada.sdad.organizational_preferredLabel if monada else None
+    )
+    organization_preferredLabel = (
+        monada.sdad.organization_preferredLabel if monada else None
+    )
+
     if monada:
         monada.update(remitsFinalized=remitsFinalized)
     else:
@@ -467,13 +503,27 @@ def finalize_remits(code: str):
         monada.save()
 
     who = get_jwt_identity()
-    what = {"entity": "organizationalUnit", "key": {"organizationalUnit": organizationalUnit_preferredLabel, "code": code}}
-    Change(action="update", who=who, what=what, change={"remitsFinalized": remitsFinalized}).save()
+    what = {
+        "entity": "organizationalUnit",
+        "key": {
+            "organizationalUnit": organizationalUnit_preferredLabel,
+            "code": code,
+            "organization": organization_preferredLabel,
+        },
+    }
+    Change(
+        action="update status",
+        who=who,
+        what=what,
+        change={"remitsFinalized": remitsFinalized},
+    ).save()
 
     return Response(
         json.dumps(
             {
-                "message": "Οι αρμοδιότητες της μονάδας ολοκληρώθηκαν" if remitsFinalized else "Αναίρεση ολοκλήρωσης αρμοδιοτήτων",
+                "message": "Οι αρμοδιότητες της μονάδας ολοκληρώθηκαν"
+                if remitsFinalized
+                else "Αναίρεση ολοκλήρωσης αρμοδιοτήτων",
                 "remitsFinalized": remitsFinalized,
             }
         ),
