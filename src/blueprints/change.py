@@ -16,7 +16,6 @@ change = Blueprint("change", __name__)
 @jwt_required()
 def getOrganizations(entity: str):
     try:
-        print("Entity received:", entity)
         result = Change.objects(what__entity=entity)
         # pipeline = [
         #     {"$match": {"what.entity": "organization"}},
@@ -95,7 +94,6 @@ def getChangesByEntity():
     try:
         distinct_entities = Change.objects.distinct("what.entity")
 
-        print(distinct_entities)
         return Response(
             json.dumps({"data": distinct_entities}),
             mimetype="application/json",
