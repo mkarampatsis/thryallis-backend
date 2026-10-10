@@ -66,7 +66,6 @@ def getOrganizations(entity: str):
         #     "remits": result_list_remits[0],
         # }
 
-        print(result)
         data = json.loads(result.to_json())
 
         return Response(
