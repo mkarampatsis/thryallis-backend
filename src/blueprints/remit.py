@@ -194,8 +194,17 @@ def update_remit_status(remitID: str):
         remit.update(status=status)
 
         who = get_jwt_identity()
-        what = {"entity": "remit", "key": {"remitID": remitID, "organization": remit.organization.preferredLabel, "organizationalUnit": remit.organizational_unit.preferredLabel}}
-        Change(action="update status", who=who, what=what, change={"status": status}).save()
+        what = {
+            "entity": "remit",
+            "key": {
+                "remitID": remitID,
+                "organization": remit.organization.preferredLabel,
+                "organizationalUnit": remit.organizational_unit.preferredLabel,
+            },
+        }
+        Change(
+            action="update status", who=who, what=what, change={"status": status}
+        ).save()
 
         return Response(
             json.dumps({"message": f"Η αρμοδιότητα είναι πλέον {status}"}),
@@ -239,6 +248,7 @@ def count_all_remits():
 @remit.route("/by_id/<string:id>", methods=["GET"])
 # @jwt_required()
 def retrieve_remit_by_id(id):
+    print("RETRIEVE REMIT BY ID", id)
     remit = Remit.objects.get(id=ObjectId(id))
 
     data = {
@@ -477,7 +487,14 @@ def delete_remit_by_code(id):
         )
 
     who = get_jwt_identity()
-    what = {"entity": "remit", "key": {"remitID": id, "organization": remit_to_delete.organization.preferredLabel, "organizationalUnit": remit_to_delete.organizational_unit.preferredLabel}}
+    what = {
+        "entity": "remit",
+        "key": {
+            "remitID": id,
+            "organization": remit_to_delete.organization.preferredLabel,
+            "organizationalUnit": remit_to_delete.organizational_unit.preferredLabel,
+        },
+    }
     # print(remit_to_delete.to_json())
     Change(
         action="delete", who=who, what=what, change={"remit": remit_to_delete.to_json()}

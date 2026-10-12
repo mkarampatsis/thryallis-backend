@@ -4,6 +4,7 @@ from flask_jwt_extended import get_jwt_identity, jwt_required
 
 from src.models.psped.change import Change
 from src.models.user import User
+from src.models.psped.legal_act import LegalAct
 from bson import json_util  # handles ObjectId, datetime
 import json
 
@@ -73,7 +74,7 @@ def getOrganizations(entity: str):
             mimetype="application/json",
             status=200,
         )
-        
+
     except Exception as e:
         print(e)
         return Response(
@@ -148,12 +149,49 @@ def retrieve_change_by_code(code):
     )
 
 
-@change.route("/<string:id>", methods=["GET"])
+@change.route("/by_id/<string:id>", methods=["GET"])
 @jwt_required()
 def retrieve_change_by_id(id):
 
     try:
         change = Change.objects.get(id=ObjectId(id))
+
+        try:
+            user = User.objects.get(email=change.who)
+            who_data = {
+                "firstName": user.firstName,
+                "lastName": user.lastName,
+                "email": user.email,
+            }
+        except User.DoesNotExist:
+            who_data = {"email": change.who, "firstName": "", "lastName": ""}
+
+        # Process inserted and updated legal provisions
+        legal_provisions = change.change.get("legalProvisions", {})
+        inserts = legal_provisions.get("inserts", [])
+        updates = legal_provisions.get("updates", [])
+
+        for provision in inserts:
+            # Get the LegalAct document referenced by this provision
+            legal_act_ref = provision.get("legalAct")
+
+            if legal_act_ref:
+                legal_act = LegalAct.objects.get(id=legal_act_ref)
+                provision["legalActKey"] = legal_act.legalActKey
+            else:
+                provision["legalActKey"] = None
+
+        for provision in updates:
+            # Get the LegalAct document referenced by this provision
+            legal_act_ref = provision.get("legalAct")
+
+            if legal_act_ref:
+                legal_act = LegalAct.objects.get(id=legal_act_ref)
+                provision["legalActKey"] = legal_act.legalActKey
+            else:
+                provision["legalActKey"] = None
+
+        change.who = who_data  # override string with full object
 
         return Response(
             change.to_json(),
