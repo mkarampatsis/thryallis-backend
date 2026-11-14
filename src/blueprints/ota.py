@@ -21,6 +21,7 @@ ota = Blueprint("ota", __name__)
 
 @ota.route("", methods=["GET"])
 def retrieve_all_ota():
+    print("GET ALL OTA")
     otaData = Ota.objects().select_related()
 
     result = [ota.to_dict() for ota in otaData]

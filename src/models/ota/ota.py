@@ -56,6 +56,8 @@ class Ota(TimeStampedModel):
   instructionProvisionRefs = me.ListField(me.ReferenceField(InstructionProvision))
   publicPolicyAgency = me.EmbeddedDocumentField(PublicPolicyAgency)
   cofog = me.EmbeddedDocumentField(COFOG)
+  # Δεν υπήρχε στην παλιά έκδοση του μοντέλου, αλλά προστέθηκε για να αποθηκεύεται ο κωδικός αρμοδιότητας από το excel
+  annexCode = me.StringField()
   status = me.StringField(choices=["ΕΝΕΡΓΗ", "ΑΝΕΝΕΡΓΗ"], default="ΕΝΕΡΓΗ")
   finalized = me.BooleanField(default=False)
   elasticSync = me.BooleanField(default=False)
@@ -118,6 +120,7 @@ class Ota(TimeStampedModel):
       "instructionProvisions": instruction_provisions,
       "publicPolicyAgency": self.publicPolicyAgency.to_mongo() if self.publicPolicyAgency else None,
       "cofog": self.cofog.to_mongo() if hasattr(self, 'cofog') else None,
+      "annexCode": self.annexCode,
       "status": self.status,
       "finalized": self.finalized,
       "elasticSync": self.elasticSync,
