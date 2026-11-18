@@ -63,7 +63,7 @@ class Ota(TimeStampedModel):
   elasticSync = me.BooleanField(default=False)
 
   def to_dict(self):
-    
+
     def provision_to_dict_instruction(provision: InstructionProvision):
       if not provision:
           return None
@@ -99,6 +99,7 @@ class Ota(TimeStampedModel):
 
     # Convert instructionProvisionRefs (ObjectIds) → actual docs
     legal_provisions = []
+ 
     for ref in self.legalProvisionRefs:
       provision = LegalProvision.objects(id=ref.id).first()
       if provision:
