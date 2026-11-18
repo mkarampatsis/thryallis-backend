@@ -98,18 +98,29 @@ class Ota(TimeStampedModel):
       }
 
     # Convert instructionProvisionRefs (ObjectIds) → actual docs
-    legal_provisions = []
+    # legal_provisions = []
  
-    for ref in self.legalProvisionRefs:
-      provision = LegalProvision.objects(id=ref.id).first()
-      if provision:
-        legal_provisions.append(provision_to_dict_legal(provision))
+    # for ref in self.legalProvisionRefs:
+    #   provision = LegalProvision.objects(id=ref.id).first()
+    #   if provision:
+    #     legal_provisions.append(provision_to_dict_legal(provision))
 
-    instruction_provisions = []
-    for ref in self.instructionProvisionRefs:
-      provision = InstructionProvision.objects(id=ref.id).first()
-      if provision:
-        instruction_provisions.append(provision_to_dict_instruction(provision))
+    # instruction_provisions = []
+    # for ref in self.instructionProvisionRefs:
+    #   provision = InstructionProvision.objects(id=ref.id).first()
+    #   if provision:
+    #     instruction_provisions.append(provision_to_dict_instruction(provision))
+    legal_provisions = [
+        provision_to_dict_legal(provision)
+        for provision in self.legalProvisionRefs
+        if provision
+    ]
+
+    instruction_provisions = [
+        provision_to_dict_instruction(provision)
+        for provision in self.instructionProvisionRefs
+        if provision
+    ]
 
     return {
       "_id": str(self.id),
